@@ -16,9 +16,8 @@
   },
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder build",
-    "portable": "build -w portable",
-    "appx": "build -w appx",
+    "build": "electron-builder build -p never",
+    "publish": "electron-builder build -p onTagOrDraft",
     "test": "standard --fix",
     "lint": "standard",
     "lint-fix": "standard --fix"
@@ -62,7 +61,10 @@
       "requestExecutionLevel": "user"
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "publish": [
+        "github"
+      ]
     },
     "nsis": {
       "installerLanguages": [
@@ -97,7 +99,6 @@
     "bootstrap": "3.4.1",
     "chart.js": "2.9.4",
     "electron-json-storage": "4.6.0",
-    "electron-squirrel-startup": "1.0.0",
     "font-awesome": "4.7.0",
     "hasha": "5.2.2",
     "humanize-duration": "3.28.0",
