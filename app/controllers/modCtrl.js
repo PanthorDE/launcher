@@ -334,9 +334,9 @@ angular.module('App').controller('modCtrl', ['$scope', '$rootScope', ($scope, $r
   $scope.init = () => {
     $scope.loading = true
     try {
-      fs.lstatSync(app.getPath('userData') + '\\settings.json')
-      $scope.initGraph()
+      fs.lstatSync(app.getPath('userData') + '\\storage\\settings.json')
     } catch (e) {
+      console.log(e)
       $scope.checkregkeys()
     }
   }

@@ -28,19 +28,6 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
     $rootScope.AppTitle = 'Panthor Launcher - ' + app.getVersion() + ' - Mods'
   }
 
-  /*
-  storage.get('agreement', (err, data) => {
-    if (err) {
-      ipcRenderer.send('open-agreement')
-      throw err
-    }
-
-    if (data.version !== config.PRIVACY_POLICY_VERSION) {
-      ipcRenderer.send('open-agreement')
-    }
-  })
-  */
-
   storage.get('player', (err, data) => {
     if (err) throw err
 
@@ -271,22 +258,6 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
       }
     })
 
-    $rootScope.tour.addStep('player', {
-      title: 'Spieler',
-      text: 'Nachdem du dich eingeloggt hast, findest du hier deine Spielerdaten.',
-      attachTo: '.playerTabBtn bottom',
-      buttons: {
-        text: 'Weiter',
-        action: $rootScope.tour.next
-      },
-      when: {
-        show: () => {
-          $rootScope.slide = 2
-          $rootScope.$apply()
-        }
-      }
-    })
-
     $rootScope.tour.addStep('changelog', {
       title: 'Changelog',
       text: 'Hier findest du immer alle Änderungen an der Mission, der Map und den Mods.',
@@ -297,7 +268,7 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
       },
       when: {
         show: () => {
-          $rootScope.slide = 3
+          $rootScope.slide = 2
           $rootScope.$apply()
         }
       }
@@ -313,7 +284,7 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
       },
       when: {
         show: () => {
-          $rootScope.slide = 4
+          $rootScope.slide = 3
           $rootScope.$apply()
         }
       }
@@ -329,7 +300,7 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
       },
       when: {
         show: () => {
-          $rootScope.slide = 5
+          $rootScope.slide = 4
           $rootScope.$apply()
         }
       }
@@ -345,23 +316,7 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
       },
       when: {
         show: () => {
-          $rootScope.slide = 6
-          $rootScope.$apply()
-        }
-      }
-    })
-
-    $rootScope.tour.addStep('about', {
-      title: 'Über',
-      text: 'Hier kannst du allgemeine Informationen zum Launcher finden.',
-      attachTo: '.aboutTabBtn bottom',
-      buttons: {
-        text: 'Weiter',
-        action: $rootScope.tour.next
-      },
-      when: {
-        show: () => {
-          $rootScope.slide = 7
+          $rootScope.slide = 5
           $rootScope.$apply()
         }
       }

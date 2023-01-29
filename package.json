@@ -9,15 +9,15 @@
   "readme": "README.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/PanthorDE/PanthorLauncher.git"
+    "url": "https://github.com/PanthorDE/launcher.git"
   },
   "bugs": {
-    "url": "https://github.com/PanthorDE/PanthorLauncher/issues"
+    "url": "https://github.com/PanthorDE/launcher/issues"
   },
   "scripts": {
     "start": "electron .",
     "build": "electron-builder build -p never",
-    "publish": "electron-builder build -p onTagOrDraft",
+    "publish": "electron-builder build -p always",
     "test": "standard --fix",
     "lint": "standard",
     "lint-fix": "standard --fix"
@@ -55,7 +55,7 @@
   },
   "build": {
     "appId": "panthor.de",
-    "productName": "Panthor",
+    "productName": "Panthor Launcher",
     "copyright": "Copyright ©2023 Panthor",
     "portable": {
       "requestExecutionLevel": "user"
@@ -70,8 +70,7 @@
       "installerLanguages": [
         "de_DE"
       ]
-    },
-    "extraFiles": "README.md"
+    }
   },
   "devDependencies": {
     "electron": "4.2.12",
@@ -106,7 +105,6 @@
     "jquery": "3.6.3",
     "jsonist": "2.1.2",
     "leaflet": "1.9.3",
-    "marked": "0.3.19",
     "mkpath": "1.0.0",
     "moment": "2.29.4",
     "perfect-scrollbar": "1.5.5",
@@ -119,7 +117,6 @@
     "tether": "1.4.7",
     "tether-shepherd": "1.8.1",
     "unzip": "^0.1.11",
-    "webtorrent": "^0.103.0",
     "winreg": "^1.2.4",
     "electron-updater": "^5.3.0"
   }

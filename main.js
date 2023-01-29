@@ -21,7 +21,7 @@ switch (process.argv[1]) {
     break
 }
 
-let win, downWin, webWin, loadWin, child
+let win, downWin, webWin, child
 
 const createWindows = () => {
   // web process
@@ -68,7 +68,7 @@ const createWindows = () => {
 
   // Create the browser window.
   win = new BrowserWindow({
-    icon: 'resources/icon/appicon.ico',
+    icon: 'resources/icon/icon.ico',
     width: 1320,
     height: 730,
     minWidth: 1320,
@@ -125,30 +125,12 @@ const createWindows = () => {
     win.webContents.send('update-available')
   })
 
-  loadWin = new BrowserWindow({
-    icon: 'resources/icon/appicon.ico',
-    width: 300,
-    height: 310,
-    frame: false,
-    webPreferences: {
-      webSecurity: false,
-      nodeIntegration: true,
-      contextIsolation: false,
-      enableRemoteModule: true
-    }
-  }).on('close', () => {
-    app.quit()
-  })
-
-  loadWin.loadURL(`file://${__dirname}/app/loading.html`)
-
   setUpIpcHandlers()
   createTray()
-
 }
 
 const createTray = () => {
-  tray = new Tray(app.getAppPath() + '\\resources\\icon\\tray.ico')
+  tray = new Tray(app.getAppPath() + '\\resources\\icon\\icon.ico')
   const contextMenu = Menu.buildFromTemplate([
     {
       label: 'Auf Updates prüfen',
@@ -208,7 +190,6 @@ const createTray = () => {
 
 const toggleDevTools = () => {
   win.show()
-  loadWin.destroy()
   if (!win || !webWin || !downWin) return
   if (win.webContents.isDevToolsOpened()) {
     win.webContents.closeDevTools()
@@ -282,39 +263,6 @@ ipcMain.on('winprogress-change', (event, arg) => {
 
 ipcMain.on('app-loaded', () => {
   win.show()
-  loadWin.destroy()
-})
-
-ipcMain.on('open-agreement', () => {
-  if (!child) {
-    child = new BrowserWindow({
-      icon: 'resources/icon/workericon.ico',
-      parent: win,
-      modal: true,
-      show: false,
-      reziable: false,
-      closable: false,
-      maximizable: false,
-      minimizable: false,
-      center: true,
-      width: 640,
-      height: 700,
-      minWidth: 640,
-      minHeight: 700,
-      maxWidth: 640,
-      maxHeight: 700
-    })
-    child.loadURL(`file://${__dirname}/app/agreement.html`)
-    child.once('ready-to-show', () => {
-      child.show()
-    })
-  }
-})
-
-ipcMain.on('close-agreement', () => {
-  if (child) {
-    child.destroy()
-  }
 })
 
 ipcMain.on('close-app', () => {

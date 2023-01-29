@@ -4,7 +4,6 @@ const fs = require('fs')
 const {dialog, app} = require('electron').remote
 const storage = require('electron-json-storage')
 const unzip = require('unzip')
-const marked = require('marked')
 const $ = window.jQuery = require('./resources/jquery/jquery-1.12.3.min.js')
 const Shepherd = require('tether-shepherd')
 const path = require('path')

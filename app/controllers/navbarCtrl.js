@@ -12,8 +12,6 @@ angular.module('App').controller('navbarCtrl', ['$scope', '$rootScope', ($scope,
       icon: 'glyphicon glyphicon-cog', title: 'Einstellungen', tag: 'settingsTabBtn'
     }, {
       icon: 'glyphicon glyphicon-question-sign', title: 'FAQ', tag: 'faqTabBtn'
-    }, {
-      icon: 'glyphicon glyphicon-book', title: 'Über', tag: 'aboutTabBtn'
     }]
 
   $scope.switchSlide = (tab) => {

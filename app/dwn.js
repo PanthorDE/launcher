@@ -5,7 +5,6 @@ const request = require('request')
 const progress = require('request-progress')
 const mkpath = require('mkpath')
 const {app} = require('electron').remote
-const WebTorrent = require('webtorrent')
 const hasha = require('hasha')
 const config = require('../config')
 require('events').EventEmitter.defaultMaxListeners = Infinity
@@ -33,10 +32,6 @@ let debug = false
 let downloadTimeouts = 0
 let downloadAsyncList = []
 let threadLimit = 10
-
-let client = window.client = new WebTorrent({
-  maxConns: 150
-})
 
 let path = ''
 
@@ -235,58 +230,6 @@ const removeFilesList = (list, callback) => {
     }
   })
   callback(null)
-}
-
-const initSeeding = (dirPath, TorrentURL) => {
-  update = setInterval(() => {
-    updateProgressTorrentInit({
-      torrentUploadSpeedState: client.progress
-    })
-    try {
-      client.destroy((err) => {
-        if (err) {
-          console.log(err)
-        }
-        client = window.client = new WebTorrent({
-          maxConns: 150
-        })
-        clearInterval(update)
-        cancelled()
-      })
-    } catch (e) {
-      console.log(e)
-      client = window.client = new WebTorrent({
-        maxConns: 150
-      })
-      clearInterval(update)
-      cancelled()
-    }
-  },
-  1000
-  )
-  client.add(TorrentURL, {
-    path: dirPath
-  }, (torrent) => {
-    clearInterval(update)
-    update = setInterval(() => {
-      if (!cancel) {
-        updateProgressSeeding({
-          torrentUploadSpeedState: client.uploadSpeed,
-          torrentMaxConnsState: client.maxConns,
-          torrentRationState: torrent.ratio,
-          torrentUploadedState: torrent.uploaded,
-          torrentNumPeersState: torrent.numPeers
-        })
-      } else {
-        torrent.destroy(() => {
-          clearInterval(update)
-          cancelled()
-        })
-      }
-    },
-    1000
-    )
-  })
 }
 
 const launchDownload = (list, mod, basepath) => {
@@ -571,78 +514,6 @@ const downloadErrorNotify = (msg) => {
   ipcRenderer.send('to-app', {
     type: 'notify-dl',
     err_msg: msg
-  })
-}
-
-const initTorrent = (folder, torrentURL) => {
-  path = folder.replace('addons', '')
-  update = setInterval(() => {
-    updateProgressTorrentInit({
-      torrentUploadSpeedState: client.progress
-    })
-    if (cancel) {
-      try {
-        client.destroy((err) => {
-          if (err) {
-            console.log(err)
-          }
-          client = window.client = new WebTorrent({
-            maxConns: 150
-          })
-          clearInterval(update)
-          cancelled()
-        })
-      } catch (e) {
-        console.log(e)
-        client = window.client = new WebTorrent({
-          maxConns: 150
-        })
-        clearInterval(update)
-        cancelled()
-      }
-    }
-  },
-  1000
-  )
-  client.add(torrentURL, {
-    path: path
-  }, (torrent) => {
-    clearInterval(update)
-    update = setInterval(() => {
-      if (!cancel) {
-        updateProgressTorrent({
-          torrentDownloadSpeedState: client.downloadSpeed,
-          torrentUploadSpeedState: client.uploadSpeed,
-          torrentMaxConnsState: client.maxConns,
-          torrentProgressState: torrent.progress,
-          torrentRationState: torrent.ratio,
-          torrentETAState: torrent.timeRemaining,
-          torrentDownloadedState: torrent.downloaded,
-          torrentUploadedState: torrent.uploaded,
-          torrentNumPeersState: torrent.numPeers,
-          torrentSizeState: torrent.length
-        })
-      } else {
-        torrent.destroy(() => {
-          clearInterval(update)
-          cancelled()
-        })
-      }
-    },
-    1000
-    )
-    torrent.on('done', () => {
-      torrent.destroy(() => {
-        clearInterval(update)
-        cancelled()
-      })
-      changeStatus(false, 'Abgeschlossen - Prüfung ausstehend', 'Inaktiv')
-    })
-  })
-
-  client.on('error', (err) => {
-    changeStatus(false, 'Torrent - Fehler', 'Fataler Fehler')
-    console.log(err)
   })
 }
 
