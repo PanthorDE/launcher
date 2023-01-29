@@ -1,0 +1,6 @@
+/node_modules/*
+/dist/*
+Thumbs.db
+.idea
+yarn.lock
+cert/
