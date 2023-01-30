@@ -104,12 +104,16 @@ const createWindows = () => {
 
   win.loadURL(`file://${__dirname}/index.html`)
 
-  autoUpdater.addListener('update-downloaded', (event, releaseNotes, releaseName, releaseDate, updateURL) => {
+  autoUpdater.addListener('update-downloaded', (event) => {
     win.webContents.send('update-downloaded', {
-      releaseNotes: releaseNotes,
-      releaseName: releaseName,
-      releaseDate: releaseDate,
-      updateURL: updateURL
+      releaseNotes: event.releaseNotes,
+      releaseName: event.releaseName,
+      releaseDate: event.releaseDate
+    })
+  })
+  autoUpdater.addListener('download-progress', (event, bytesPerSecond, percent) => {
+    win.webContents.send('download-progress', {
+      percent: percent
     })
   })
 
@@ -274,5 +278,5 @@ ipcMain.on('focus-window', () => {
 })
 
 ipcMain.on('quitAndInstall', () => {
-  app.quit()
+  autoUpdater.quitAndInstall(false, true)
 })

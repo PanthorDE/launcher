@@ -71,17 +71,15 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
   }
 
   $rootScope.login = () => {
-    alertify.set({labels: {ok: 'Ok', cancel: 'Abbrechen'}})
+    alertify.set({ labels: { ok: 'Ok', cancel: 'Abbrechen' } })
     alertify.prompt('Bitte füge deinen Login-Schlüssel ein', (e, str) => {
       if (e) {
         if (str) {
           $.ajax({
-            url: config.APIBaseURL + config.APIValidatePlayerURL + str,
-            type: 'GET',
-            success: (data) => {
+            url: config.APIBaseURL + config.APIValidatePlayerURL + str, type: 'GET', success: (data) => {
               if (data.status === 'Success') {
                 alertify.success('Willkommen ' + data.name)
-                storage.set('player', {apikey: str}, (err) => {
+                storage.set('player', { apikey: str }, (err) => {
                   if (err) throw err
                 })
                 $rootScope.apiKey = str
@@ -121,10 +119,7 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
       url += '/' + $rootScope.apiKey
     }
     ipcRenderer.send('to-web', {
-      type: 'get-url',
-      callback: 'mod-callback',
-      url: url,
-      callBackTarget: 'to-app'
+      type: 'get-url', callback: 'mod-callback', url: url, callBackTarget: 'to-app'
     })
   }
 
@@ -156,8 +151,7 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
       if (args.success) {
         alertify.set({
           labels: {
-            ok: 'Link kopieren <span class="glyphicon glyphicon-copy"></span>',
-            cancel: 'Abbrechen'
+            ok: 'Link kopieren <span class="glyphicon glyphicon-copy"></span>', cancel: 'Abbrechen'
           }
         })
         alertify.confirm('Hochladen erfolgreich, sende den Link dem Dev/Admin/Support', (e) => {
@@ -206,6 +200,10 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
     $rootScope.$apply()
   })
 
+  ipcRenderer.on('download-progress', (event, args) => {
+    console.log(args)
+  })
+
   $rootScope.$on('ngRepeatFinished', () => {
     $rootScope.tour = new Shepherd.Tour({
       defaults: {
@@ -217,12 +215,9 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
       title: 'Willkommen',
       text: 'Hallo! Du hast dir gerade unseren Launcher geladen, wir wollen dich auf eine kleine Tour einladen um dich mit ihm vetraut zu machen.',
       buttons: [{
-        text: 'Nein Danke',
-        classes: 'shepherd-button-secondary',
-        action: $rootScope.endTour
+        text: 'Nein Danke', classes: 'shepherd-button-secondary', action: $rootScope.endTour
       }, {
-        text: 'Weiter',
-        action: $rootScope.tour.next
+        text: 'Weiter', action: $rootScope.tour.next
       }]
     })
 
@@ -231,8 +226,7 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
       text: 'Hier kannst du unsere Mods downloaden und prüfen, sowie das Spiel starten.',
       attachTo: '.modsTabBtn bottom',
       buttons: {
-        text: 'Weiter',
-        action: $rootScope.tour.next
+        text: 'Weiter', action: $rootScope.tour.next
       },
       when: {
         show: () => {
@@ -247,8 +241,7 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
       text: 'Hier findest du alle unsere Server und Informationen zu ihnen, auch kannst du von diesem Tab direkt auf einen Server joinen.',
       attachTo: '.serversTabBtn bottom',
       buttons: {
-        text: 'Weiter',
-        action: $rootScope.tour.next
+        text: 'Weiter', action: $rootScope.tour.next
       },
       when: {
         show: () => {
@@ -263,8 +256,7 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
       text: 'Hier findest du immer alle Änderungen an der Mission, der Map und den Mods.',
       attachTo: '.changelogTabBtn bottom',
       buttons: {
-        text: 'Weiter',
-        action: $rootScope.tour.next
+        text: 'Weiter', action: $rootScope.tour.next
       },
       when: {
         show: () => {
@@ -279,8 +271,7 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
       text: 'Hier kannst du das Task Force Radio Plugin für deinen Teamspeak 3 Client installieren, sowie einen Skin, der im Panthor Stil gehalten ist.',
       attachTo: '.tfarTabBtn bottom',
       buttons: {
-        text: 'Weiter',
-        action: $rootScope.tour.next
+        text: 'Weiter', action: $rootScope.tour.next
       },
       when: {
         show: () => {
@@ -295,8 +286,7 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
       text: 'Hier findest du Einstellungen wie den Arma 3 Pfad des Launchers und vieles mehr.',
       attachTo: '.settingsTabBtn bottom',
       buttons: {
-        text: 'Weiter',
-        action: $rootScope.tour.next
+        text: 'Weiter', action: $rootScope.tour.next
       },
       when: {
         show: () => {
@@ -311,8 +301,7 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
       text: 'Hier werden viele oft gestellte Fragen direkt beantwortet. Schau kurz mal hier nach, bevor du dich im Support meldest - vielleicht wird deine Frage ja direkt beantwortet.',
       attachTo: '.faqTabBtn bottom',
       buttons: {
-        text: 'Weiter',
-        action: $rootScope.tour.next
+        text: 'Weiter', action: $rootScope.tour.next
       },
       when: {
         show: () => {
@@ -326,8 +315,7 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
       title: 'Viel Spaß!',
       text: 'Genug gelesen, lad dir unseren Mod runter, installier Task Force Radio, betritt den Server und entdecke deine ganz eigene Weise, auf Panthor zu spielen. Viel Spaß von unserem ganzen Team!',
       buttons: {
-        text: 'Beenden',
-        action: $rootScope.endTour
+        text: 'Beenden', action: $rootScope.endTour
       },
       when: {
         show: () => {
@@ -349,7 +337,7 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
 
   $rootScope.endTour = () => {
     $rootScope.tour.cancel()
-    storage.set('tour', {tour: true}, (err) => {
+    storage.set('tour', { tour: true }, (err) => {
       if (err) throw err
     })
   }
@@ -357,8 +345,7 @@ const App = angular.module('App', ['720kb.tooltips']).run(($rootScope) => {
 
 App.directive('onFinishRender', ($timeout) => {
   return {
-    restrict: 'A',
-    link: (scope, element, attr) => {
+    restrict: 'A', link: (scope, element, attr) => {
       if (scope.$last === true) {
         $timeout(() => {
           scope.$emit(attr.onFinishRender)
