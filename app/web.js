@@ -1,3 +1,5 @@
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 const jsonist = require('jsonist')
 const {ipcRenderer} = require('electron')
 const fs = require('fs')
