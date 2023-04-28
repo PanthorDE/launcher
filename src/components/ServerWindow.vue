@@ -1,9 +1,9 @@
 <template>
     <v-row>
-        <v-col cols="12" style="overflow-y: scroll;" :style="{ 'max-height': scroll_height }">
+        <v-col cols="12" style="overflow-y: scroll;" :style="{ 'max-height': scroll_height }" class="mb-3">
             <v-row v-for="server in servers">
                 <v-col>
-                    <server-card :server="server"></server-card>
+                    <server-card :server="server" @load-api-data="$emit('load-api-data')"></server-card>
                 </v-col>
             </v-row>
         </v-col>

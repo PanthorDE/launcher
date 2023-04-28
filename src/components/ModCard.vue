@@ -26,7 +26,7 @@
                 </v-btn>
             </v-col>
             <v-col cols="auto">
-                <v-btn color="warning" flat prepend-icon="mdi-file-cog">
+                <v-btn color="warning" flat prepend-icon="mdi-file-cog" @click="checkMod">
                     Prüfen
                 </v-btn>
             </v-col>
@@ -40,10 +40,26 @@
 </template>
   
 <script lang="ts">
+import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
+
+
+
+import hasha from 'hasha'
+
 export default {
     name: "ModCard",
     props: {
         mod: { type: Object, required: true }
+    },
+    methods: {
+        checkMod() {
+            let file = "O:\\Steam\\steamapps\\common\\Arma 3\\@Panthor_S01\\addons\\cup_terrains_ca_structures.pbo";
+            console.log("File_Read");
+            hasha.fromFile(file, { algorithm: 'md5' }).then(hash => {
+                console.log(hash);
+            })
+        }
     },
 }  
 </script>

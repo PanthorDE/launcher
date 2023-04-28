@@ -6,7 +6,8 @@
                     <v-list-subheader>Updates</v-list-subheader>
                     <v-list-item v-for="(changelog, i) in changelogs" :key="i" :value="changelog" active-color="primary"
                         @click="scrollTo('#' + i)">
-                        <v-list-item-title v-text="`${changelog.version} - ${(new Date(changelog.release_at)).toLocaleTimeString()}`"></v-list-item-title>
+                        <v-list-item-title
+                            v-text="`${changelog.version} - ${(new Date(changelog.release_at)).toLocaleDateString([], { month: '2-digit', day: '2-digit', year: '2-digit' })} - ${(new Date(changelog.release_at)).toLocaleTimeString([], { hour: '2-digit' })}`"></v-list-item-title>
                     </v-list-item>
                 </v-list>
             </v-card>

@@ -24,7 +24,7 @@ export default interface Server {
     Medics: number,
     Cops: number,
     Adac: number,
-    Players:  Array<Side>,
-    Side: Array<Side>,
+    Players: Array<string>,
+    Side: Side,
     updated_at: Date
 }

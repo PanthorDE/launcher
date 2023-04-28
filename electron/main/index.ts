@@ -13,18 +13,9 @@ switch (process.argv[1]) {
     break
 }
 
-// The built directory structure
-//
-// ├─┬ dist-electron
-// │ ├─┬ main
-// │ │ └── index.js    > Electron-Main
-// │ └─┬ preload
-// │   └── index.js    > Preload-Scripts
-// ├─┬ dist
-// │ └── index.html    > Electron-Renderer
-//
 process.env.DIST_ELECTRON = join(__dirname, '..')
 process.env.DIST = join(process.env.DIST_ELECTRON, '../dist')
+process.env.SRC = join(process.env.DIST_ELECTRON, '../src')
 process.env.PUBLIC = process.env.VITE_DEV_SERVER_URL
   ? join(process.env.DIST_ELECTRON, '../public')
   : process.env.DIST
@@ -46,7 +37,9 @@ if (!app.requestSingleInstanceLock()) {
 // process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
 
 let win: BrowserWindow | null = null
-// Here, you can also use other preload
+let worker_win: BrowserWindow | null = null
+
+
 const preload = join(__dirname, '../preload/index.js')
 const url = process.env.VITE_DEV_SERVER_URL
 const indexHtml = join(process.env.DIST, 'index.html')
@@ -70,6 +63,40 @@ app.setUserTasks([
 ])
 
 
+async function createWorker() {
+  let hash = 'worker'
+
+  worker_win = new BrowserWindow({
+    title: 'Panthor Launcher Worker',
+    icon: join(process.env.PUBLIC, 'favicon.ico'),
+    width: 2000,
+    height: 1000,
+    minWidth: 2000,
+    minHeight: 1000,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+  })
+
+  if (process.env.VITE_DEV_SERVER_URL) {
+    worker_win.loadURL(`${url}#${hash}`)
+    worker_win.webContents.openDevTools()
+  } else {
+    worker_win.loadFile(indexHtml, { hash: hash })
+  }
+
+
+  worker_win.on('close', () => {
+    app.quit()
+  })
+
+  worker_win.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('https:')) shell.openExternal(url)
+    return { action: 'deny' }
+  })
+}
+
 async function createWindow() {
   win = new BrowserWindow({
     title: 'Panthor Launcher',
@@ -80,17 +107,13 @@ async function createWindow() {
     minHeight: 1000,
     webPreferences: {
       preload,
-      // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
-      // Consider using contextBridge.exposeInMainWorld
-      // Read more on https://www.electronjs.org/docs/latest/tutorial/context-isolation
       nodeIntegration: true,
       contextIsolation: false,
     },
   })
 
-  if (process.env.VITE_DEV_SERVER_URL) { // electron-vite-vue#298
+  if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(url)
-    // Open devTool if the app is not packaged
     win.webContents.openDevTools()
   } else {
     win.loadFile(indexHtml)
@@ -100,12 +123,10 @@ async function createWindow() {
     app.quit()
   })
 
-  // Test actively push message to the Electron-Renderer
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', new Date().toLocaleString())
   })
 
-  // Make all links open with the browser, not with the application
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('https:')) shell.openExternal(url)
     return { action: 'deny' }
@@ -114,6 +135,7 @@ async function createWindow() {
 }
 
 app.whenReady().then(createWindow)
+app.whenReady().then(createWorker)
 
 app.on('window-all-closed', () => {
   win = null
