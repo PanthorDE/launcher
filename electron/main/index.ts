@@ -2,6 +2,17 @@ import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import { release } from 'node:os'
 import { join } from 'node:path'
 
+switch (process.argv[1]) {
+  case '--open-website':
+    shell.openExternal('https://panthor.de')
+    app.quit()
+    break
+  case '--open-teamspeak':
+    shell.openExternal('ts3server://ts.panthor.de?port=9987')
+    app.quit()
+    break
+}
+
 // The built directory structure
 //
 // ├─┬ dist-electron
@@ -40,10 +51,33 @@ const preload = join(__dirname, '../preload/index.js')
 const url = process.env.VITE_DEV_SERVER_URL
 const indexHtml = join(process.env.DIST, 'index.html')
 
+app.setUserTasks([
+  {
+    program: process.execPath,
+    arguments: '--open-website',
+    iconPath: process.execPath,
+    iconIndex: 0,
+    title: 'Website',
+    description: 'Panthor Website'
+  }, {
+    program: process.execPath,
+    arguments: '--open-teamspeak',
+    iconPath: process.execPath,
+    iconIndex: 0,
+    title: 'Teamspeak',
+    description: 'Panthor Teamspeak'
+  }
+])
+
+
 async function createWindow() {
   win = new BrowserWindow({
-    title: 'Main window',
+    title: 'Panthor Launcher',
     icon: join(process.env.PUBLIC, 'favicon.ico'),
+    width: 2000,
+    height: 1000,
+    minWidth: 2000,
+    minHeight: 1000,
     webPreferences: {
       preload,
       // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
@@ -61,6 +95,10 @@ async function createWindow() {
   } else {
     win.loadFile(indexHtml)
   }
+
+  win.on('close', () => {
+    app.quit()
+  })
 
   // Test actively push message to the Electron-Renderer
   win.webContents.on('did-finish-load', () => {
