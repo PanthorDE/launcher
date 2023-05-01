@@ -69,11 +69,10 @@ async function createWorker() {
   worker_win = new BrowserWindow({
     title: 'Panthor Launcher Worker',
     icon: join(process.env.PUBLIC, 'favicon.ico'),
-    width: 2000,
-    height: 1000,
-    minWidth: 2000,
-    minHeight: 1000,
+    width: 500,
+    height: 500,
     webPreferences: {
+      webSecurity: false,
       nodeIntegration: true,
       contextIsolation: false,
     },
@@ -106,7 +105,6 @@ async function createWindow() {
     minWidth: 2000,
     minHeight: 1000,
     webPreferences: {
-      preload,
       nodeIntegration: true,
       contextIsolation: false,
     },
@@ -137,6 +135,18 @@ async function createWindow() {
 app.whenReady().then(createWindow)
 app.whenReady().then(createWorker)
 
+function modUpdateMessageToWorker(event: any, message: any) {
+  worker_win.webContents.send('mod:update', message)
+}
+
+function modVerifyMessageToWorker(event: any, message: any) {
+  worker_win.webContents.send('mod:verify', message)
+}
+
+function workerStatusUpdateMessageToUI(event: any, message: any) {
+  win.webContents.send('worker_status:update', message)
+}
+
 app.on('window-all-closed', () => {
   win = null
   if (process.platform !== 'darwin') app.quit()
@@ -159,19 +169,8 @@ app.on('activate', () => {
   }
 })
 
-// New window example arg: new windows url
-ipcMain.handle('open-win', (_, arg) => {
-  const childWindow = new BrowserWindow({
-    webPreferences: {
-      preload,
-      nodeIntegration: true,
-      contextIsolation: false,
-    },
-  })
-
-  if (process.env.VITE_DEV_SERVER_URL) {
-    childWindow.loadURL(`${url}#${arg}`)
-  } else {
-    childWindow.loadFile(indexHtml, { hash: arg })
-  }
+app.whenReady().then(() => {
+  ipcMain.on('mod:update', modUpdateMessageToWorker)
+  ipcMain.on('mod:verify', modVerifyMessageToWorker)
+  ipcMain.on('worker_status:update', workerStatusUpdateMessageToUI)
 })

@@ -42,23 +42,19 @@
 <script lang="ts">
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
+import { ipcRenderer } from 'electron'
 
-
-
-import hasha from 'hasha'
+import Mod from '@/interfaces/ModInterface'
+import { PropType } from 'vue'
 
 export default {
     name: "ModCard",
     props: {
-        mod: { type: Object, required: true }
+        mod: { type: Object as PropType<Mod>, required: true }
     },
     methods: {
         checkMod() {
-            let file = "O:\\Steam\\steamapps\\common\\Arma 3\\@Panthor_S01\\addons\\cup_terrains_ca_structures.pbo";
-            console.log("File_Read");
-            hasha.fromFile(file, { algorithm: 'md5' }).then(hash => {
-                console.log(hash);
-            })
+            ipcRenderer.send('mod:verify', this.mod.Id)
         }
     },
 }  

@@ -43,33 +43,36 @@
                   }}%</v-progress-circular><br><span class="text-h5" style="font-size: 18px !important;">Online: {{
   teamspeak.Usercount }} / {{ teamspeak.Slots }}</span></v-card-title>
             </v-card>
-            <v-card flat min-height="100" class="mt-3" v-if="fileop_running" @click="tab = 0">
+            <v-card flat min-height="100" class="mt-3" v-if="worker_status.status !== 0" @click="tab = 0">
               <v-card-title><v-icon icon="mdi-download-network-outline" size="small" class="float-right"></v-icon>
                 Download Status</v-card-title>
-              <v-row class="mt-3 mx-auto ps-5 pe-5">
-                <v-progress-linear rounded striped v-model="fileop_progress" color="red-lighten-1" :height="15"
-                  :stream="fileop_progress != 0" :indeterminate="fileop_progress == 0">
-                  <strong v-if="fileop_progress > 0">{{ Math.ceil(fileop_progress) }}%</strong>
-                  <strong v-if="fileop_progress == 0">Verbindungsaufbau</strong>
+              <v-row class="mt-0 mx-auto ps-5 pe-5">
+                <v-card-text class="text-center">{{ worker_status.message }}</v-card-text>
+                <v-progress-linear rounded striped v-model="worker_status.fileop_progress" color="red-lighten-1"
+                  :height="16" :stream="worker_status.fileop_progress != 0"
+                  :indeterminate="worker_status.fileop_progress == 0">
+                  <strong v-if="worker_status.fileop_progress > 0">{{ Math.ceil(worker_status.fileop_progress)
+                  }}%</strong>
+                  <strong v-if="worker_status.fileop_progress == 0">Verbindungsaufbau</strong>
                 </v-progress-linear>
               </v-row>
               <v-row class="text-center justify-center mb-0 mt-5 pt-3">
-                <v-col cols="auto" v-if="fileop_speed > 0" class="pt-0">
+                <v-col cols="auto" v-if="worker_status.fileop_speed > 0" class="pt-0">
                   <v-chip class="ma-2" color="success">
                     <v-icon start icon="mdi-speedometer-slow"></v-icon>
-                    {{ humanFileSize(fileop_speed) }}
+                    {{ humanFileSize(worker_status.fileop_speed) }}
                   </v-chip>
                 </v-col>
-                <v-col cols="auto" v-if="fileop_files_remaining > 0" class="pt-0">
+                <v-col cols="auto" v-if="worker_status.fileop_files_remaining > 0" class="pt-0">
                   <v-chip class="ma-2" color="success">
                     <v-icon start icon="mdi-file-multiple"></v-icon>
-                    {{ fileop_files_done }} / {{ fileop_files_remaining }}
+                    {{ worker_status.fileop_files_done }} / {{ worker_status.fileop_files_remaining }}
                   </v-chip>
                 </v-col>
-                <v-col cols="auto" v-if="fileop_time_remaining > 0" class="pt-0">
+                <v-col cols="auto" v-if="worker_status.fileop_time_remaining > 0" class="pt-0">
                   <v-chip class="ma-2" color="success">
                     <v-icon start icon="mdi-clock-end"></v-icon>
-                    {{ duration_humanizer.humanize(fileop_time_remaining) }}
+                    {{ duration_humanizer.humanize(worker_status.fileop_time_remaining) }}
                   </v-chip>
                 </v-col>
               </v-row>
@@ -95,10 +98,11 @@
 </template>
 
 <script lang="ts">
+import { ipcRenderer } from 'electron';
 import ModWindow from '@/components/ModWindow.vue'
 import ChangelogWindow from '@/components/ChangelogWindow.vue'
 import ServerWindow from '@/components/ServerWindow.vue'
-import { defineComponent } from 'vue'
+import { PropType, defineComponent } from 'vue'
 import axios from 'axios';
 
 import { HumanizeDurationLanguage, HumanizeDuration } from 'humanize-duration-ts/dist'
@@ -106,13 +110,14 @@ import Server from '@/interfaces/ServerInterface';
 import Mod from '@/interfaces/ModInterface';
 import Changelog from '@/interfaces/ChangelogInterface';
 import Teamspeak from './interfaces/TeamspeakInterface';
+import WorkerStatus from './interfaces/WorkerStatusInterface';
 
 const langService: HumanizeDurationLanguage = new HumanizeDurationLanguage()
 const duration_humanizer = new HumanizeDuration(langService)
 
 export default defineComponent({
   name: "UI",
-  data() {
+  data: () => {
     return {
       links: [
         "Mods",
@@ -130,12 +135,9 @@ export default defineComponent({
       },
       tab: 0,
       logged_in: false,
-      fileop_progress: 50,
-      fileop_speed: 14245060,
-      fileop_running: true,
-      fileop_files_done: 124,
-      fileop_files_remaining: 1200,
-      fileop_time_remaining: 1337,
+      worker_status: {
+        status: 0,
+      } as WorkerStatus,
       duration_humanizer: duration_humanizer,
       loading_api_data: false
     }
@@ -218,6 +220,9 @@ export default defineComponent({
   },
   mounted() {
     this.loadAPIData()
+    ipcRenderer.on('worker_status:update', (_event, message: string) => {
+      this.worker_status = JSON.parse(message)
+    })
   },
   components: { ModWindow, ChangelogWindow, ServerWindow }
 })
