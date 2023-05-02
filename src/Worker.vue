@@ -142,8 +142,8 @@ export default defineComponent({
 
           response.on("data", (chunk) => {
             streamed_chunkslength += chunk.length;
-            console.log(file.FileName)
-            console.log(streamed_chunkslength)
+            //console.log(file.FileName)
+            //console.log(streamed_chunkslength)
             //console.log("Downloading " + (100.0 * streamed_chunkslength / stream_length).toFixed(2) + "% " + (streamed_chunkslength / 1048576).toFixed(2) + " mb\r" + ".<br/> Total size: " + total_progress.toFixed(2) + " mb");
             this.worker_status.fileop_speed = (streamed_chunkslength + size_done) / total_size
 

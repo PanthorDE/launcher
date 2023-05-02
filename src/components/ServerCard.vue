@@ -1,6 +1,5 @@
 <template>
     <v-card flat>
-        <v-card-title>{{ server.Servername }}</v-card-title>
         <v-row class="pt-3 pb-0">
             <v-col cols="4" class="pt-0 pb-0">
                 <v-card-title>
@@ -12,6 +11,11 @@
                     Spieler
                 </v-card-title>
             </v-col>
+            <v-col cols="4" class="pt-0 pb-0 text-right">
+                <v-chip append-icon="mdi-clock-alert-outline" class="mt-3 me-3">
+                    Restart in {{ new Date(restart_in).toISOString().substr(11, 8) }}
+                </v-chip>
+            </v-col>
         </v-row>
         <v-row>
             <v-col cols="4">
@@ -19,7 +23,7 @@
                     <tbody>
                         <tr>
                             <td>Ping</td>
-                            <td v-if="ping !== 0" class="text-right">{{ ping }}ms</td>
+                            <td v-if="ping !== 0" class="text-right">{{ ping }} ms</td>
                             <td v-if="ping === 0" class="text-right"><v-progress-circular indeterminate size="20" width="1"
                                     color="warning"></v-progress-circular></td>
                         </tr>
@@ -43,7 +47,7 @@
                 </v-table>
             </v-col>
             <v-col cols="4">
-                <v-virtual-scroll :items="players_list" height="320" class="mb-4">
+                <v-virtual-scroll :items="players_list" height="330" class="mb-4">
                     <template v-slot:default="{ item }">
                         <v-list-item :title="item.name" density="compact">
                             <template v-slot:append>
@@ -52,6 +56,8 @@
                         </v-list-item>
                     </template>
                 </v-virtual-scroll>
+                <v-text-field label="Filter" density="compact" prepend-icon="mdi-account-search-outline"
+                    v-model="player_search"></v-text-field>
             </v-col>
             <v-col cols="4">
                 <Pie :data="pie_data" :options="pie_options" class="pa-5"></Pie>
@@ -88,10 +94,11 @@ import {
 
 import { Pie } from 'vue-chartjs'
 
+import { ipcRenderer } from 'electron/renderer';
+
+import { promise } from "ping";
 
 ChartJS.register(ArcElement);
-
-//import ping from 'ping'; // @vite-ignore
 
 interface IPlayerWithType {
     name: string,
@@ -112,7 +119,10 @@ export default {
                 tooltips: {
                     enabled: true
                 }
-            }
+            },
+            player_search: '',
+            restart_in: 0,
+            intervalId: 0 as NodeJS.Timeout | number,
         }
     },
     components: {
@@ -158,6 +168,12 @@ export default {
                 list.push(player)
             });
 
+            if (this.player_search != '') {
+                return list.filter((player: IPlayerWithType) => {
+                    return player.name.toLowerCase().includes(this.player_search.toLowerCase())
+                })
+            }
+
             return list
         },
         pie_data: function () {
@@ -185,14 +201,35 @@ export default {
     },
     watch: {
         server: function () {
-            /*
-            ping.promise.probe(this.server.IpAddress)
-                .then((res) => {
-                    this.ping = +res.avg
-                })
-                */
+            this.pingServer();
         }
-    }
+    },
+    methods: {
+        pingServer() {
+            this.ping = 0;
+            promise.probe(this.server.IpAddress).then((res) => {
+                setTimeout(() => {
+                    this.ping = parseInt(res.avg)
+                }, 1000);
+            });
+        },
+        updateTimeUntilNextTarget() {
+            const targets = [6, 12, 18, 24];
+            const now = new Date();
+            const currentHour = now.getHours();
+            const targetHour = targets.find(hour => hour > currentHour) || targets[0];
+            const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetHour);
+
+            this.restart_in = targetTime.getTime() - now.getTime();
+        }
+    },
+    mounted() {
+        this.intervalId = setInterval(this.updateTimeUntilNextTarget, 1000);
+        this.pingServer();
+    },
+    beforeUnmount() {
+        clearInterval(this.intervalId);
+    },
 }  
 </script>
   
