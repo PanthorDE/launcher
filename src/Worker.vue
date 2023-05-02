@@ -13,16 +13,12 @@ import { PropType, defineComponent } from 'vue'
 import { readdirSync, unlinkSync, createWriteStream, unlink, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-import stream from 'node:stream';
 import http from 'node:http';
-
-import axios from 'redaxios';
-
+import axios from 'axios';
 import Mod from './interfaces/ModInterface';
 import ModFile from './interfaces/ModFileInterface';
 import WorkerStatus from './interfaces/WorkerStatusInterface';
 import hasha from 'hasha';
-import { throwStatement } from '@babel/types';
 
 export default defineComponent({
   name: "Worker",
@@ -45,7 +41,7 @@ export default defineComponent({
 
       })
     },
-    verifyMod(mod_id: number, quick: boolean = false, download: boolean = false) {
+    verifyMod(mod_id: number, quick: boolean = false, download: boolean = true) {
       this.worker_status.message = "Lade Modinformationen"
       this.worker_status.status = 1
       this.updateWorkerStatus();
@@ -70,14 +66,25 @@ export default defineComponent({
         this.deleteFiles(hash_result)
         toDownload = toDownload.concat(hash_result)
 
-        this.to_download = toDownload
+        let toDownloadHashlist = [] as ModFile[]
 
-        this.resetWorkerStatus();
+        toDownload.forEach((file, index) => {
+          let hashlist_entry = this.hashlist.find((hashlist_entry) => {
+            return hashlist_entry.RelativPath == file
+          })
+
+          if (hashlist_entry) {
+            toDownloadHashlist.push(hashlist_entry)
+            toDownload.splice(index, 1)
+          }
+        })
 
         console.log(toDownload)
 
+        this.resetWorkerStatus();
+
         if (download) {
-          this.downloadFiles()
+          this.downloadFiles(toDownloadHashlist)
         }
       })
     },
@@ -103,35 +110,50 @@ export default defineComponent({
 
       return promises
     },
-    downloadFiles() {
-      this.to_download.forEach((file) => {
-        let stream = createWriteStream(join(this.a3folder, file))
+    downloadFiles(to_download: Array<ModFile>) {
+      let total_size = 0
+      this.worker_status.message = "Download startet"
+      this.worker_status.status = 5
+      this.worker_status.fileop_files_remaining = to_download.length
+      this.worker_status.fileop_files_done = 0
+      this.updateWorkerStatus()
 
-        let stream_length = 0
+      to_download.forEach((file) => {
+        total_size += file.Size
+      })
+
+      let size_done = 0
+
+      to_download.forEach((file) => {
+        let stream = createWriteStream(join(this.a3folder, file.RelativPath))
+
         let streamed_chunkslength = 0
-        let total_progress = stream_length / 1048576
 
-        let request = http.get(this.mod.DownloadUrl + file, function (response) {
+        let request = http.get(this.mod.DownloadUrl + file.RelativPath, (response) => {
           response.pipe(stream);
-
-          if (response.statusCode == 200) {
-            if (response.headers['content-length']) {
-              stream_length = +response.headers['content-length'];
-            }
-          }
 
           stream.on("finish", () => {
             stream.close();
             console.log("Download Completed");
+            size_done += file.Size
+            this.worker_status.fileop_files_done++
+            this.updateWorkerStatus()
           })
 
-          response.on("data", function (chunk) {
-
+          response.on("data", (chunk) => {
             streamed_chunkslength += chunk.length;
-            console.log("Downloading " + (100.0 * streamed_chunkslength / stream_length).toFixed(2) + "% " + (streamed_chunkslength / 1048576).toFixed(2) + " mb\r" + ".<br/> Total size: " + total_progress.toFixed(2) + " mb");
+            console.log(file.FileName)
+            console.log(streamed_chunkslength)
+            //console.log("Downloading " + (100.0 * streamed_chunkslength / stream_length).toFixed(2) + "% " + (streamed_chunkslength / 1048576).toFixed(2) + " mb\r" + ".<br/> Total size: " + total_progress.toFixed(2) + " mb");
+            this.worker_status.fileop_speed = (streamed_chunkslength + size_done) / total_size
+
+            this.worker_status.fileop_progress = (size_done + streamed_chunkslength) / total_size * 100
+            this.worker_status.message = "Download läuft"
+            this.worker_status.status = 6
+            this.updateWorkerStatus()
           });
         }).on('error', (err) => {
-          unlink(join(this.a3folder, file), () => { });
+          unlink(join(this.a3folder, file.RelativPath), () => { });
         })
       })
     },
@@ -158,9 +180,12 @@ export default defineComponent({
 
       this.worker_status.fileop_files_done = 0
       this.worker_status.fileop_files_remaining = file_list.length
+
       this.updateWorkerStatus();
 
       let total_size = 0
+      let size_done = 0
+      let start_time = Date.now()
 
       file_list.forEach((file) => {
         total_size = total_size + statSync(join(this.a3folder, file)).size
@@ -168,7 +193,9 @@ export default defineComponent({
 
       file_list.forEach((file) => {
         this.worker_status.fileop_files_done++
-        this.worker_status.fileop_progress = this.worker_status.fileop_files_done / file_list.length * 100
+        this.worker_status.fileop_progress = size_done / total_size * 100
+        this.worker_status.fileop_speed = Math.round(size_done / ((Date.now() - start_time) / 1000))
+        this.worker_status.fileop_time_remaining = Math.round(((total_size - size_done) / this.worker_status.fileop_speed) * 1000)
         this.updateWorkerStatus();
 
         if (quick && !file.includes('.bisign')) {
@@ -184,6 +211,8 @@ export default defineComponent({
             }
           }
         })
+
+        size_done = size_done + statSync(join(this.a3folder, file)).size
       })
 
       return files
