@@ -1,3 +1,5 @@
+import APIDate from "./APIDateInterface"
+
 export interface Side {
     Civs: Array<string>,
     Medics: Array<string>,
@@ -26,5 +28,5 @@ export default interface Server {
     Adac: number,
     Players: Array<string>,
     Side: Side,
-    updated_at: Date
+    updated_at: APIDate
 }

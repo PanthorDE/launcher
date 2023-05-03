@@ -173,4 +173,7 @@ app.whenReady().then(() => {
   ipcMain.on('mod:update', modUpdateMessageToWorker)
   ipcMain.on('mod:verify', modVerifyMessageToWorker)
   ipcMain.on('worker_status:update', workerStatusUpdateMessageToUI)
+  ipcMain.on('winprogress-change', (event, arg) => {
+    win.setProgressBar(arg.progress / 100)
+  })
 })

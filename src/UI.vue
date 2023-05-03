@@ -218,6 +218,14 @@ export default defineComponent({
       }
     }
   },
+  watch: {
+    'worker_status.fileop_progress'(newVal, oldVal) {
+      console.log(this.worker_status.fileop_progress)
+      ipcRenderer.send('winprogress-change', {
+        progress: this.worker_status.fileop_progress
+      })
+    }
+  },
   mounted() {
     this.loadAPIData()
     ipcRenderer.on('worker_status:update', (_event, message: string) => {
