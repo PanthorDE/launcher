@@ -37,17 +37,22 @@
                         </tr>
                         <tr>
                             <td>Passwort</td>
-                            <td class="text-right">{{ server.ServerPassword }}</td>
+                            <td class="text-right" @click="copyToClipboard(server.ServerPassword)">{{ server.ServerPassword }}</td>
                         </tr>
                         <tr>
                             <td>Stand</td>
-                            <td class="text-right">{{ server.StartParameters }}</td>
+                            <td class="text-right">{{ new Date(server.updated_at.date).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            }) }}</td>
                         </tr>
                     </tbody>
                 </v-table>
             </v-col>
             <v-col cols="4">
-                <v-virtual-scroll :items="players_list" height="330" class="mb-4">
+                <v-text-field label="Filter" density="compact" prepend-icon="mdi-account-search-outline"
+                    v-model="player_search"></v-text-field>
+                <v-virtual-scroll :items="players_list" height="330">
                     <template v-slot:default="{ item }">
                         <v-list-item :title="item.name" density="compact">
                             <template v-slot:append>
@@ -56,8 +61,6 @@
                         </v-list-item>
                     </template>
                 </v-virtual-scroll>
-                <v-text-field label="Filter" density="compact" prepend-icon="mdi-account-search-outline"
-                    v-model="player_search"></v-text-field>
             </v-col>
             <v-col cols="4">
                 <Pie :data="pie_data" :options="pie_options" class="pa-5"></Pie>
@@ -86,6 +89,7 @@
 <script lang="ts">
 import Server from '@/interfaces/ServerInterface';
 import { PropType } from 'vue';
+import { clipboard } from 'electron';
 
 import {
     Chart as ChartJS,
@@ -120,7 +124,7 @@ export default {
             },
             player_search: '',
             restart_in: 0,
-            intervalId: 0 as NodeJS.Timeout | number,
+            intervalId: 0 as NodeJS.Timeout | number
         }
     },
     components: {
@@ -200,9 +204,13 @@ export default {
     watch: {
         server: function () {
             this.pingServer();
+            clipboard.writeText(this.server.ServerPassword)
         }
     },
     methods: {
+        copyToClipboard(text:string) {
+            clipboard.writeText(text)
+        },
         pingServer() {
             this.ping = 0;
             promise.probe(this.server.IpAddress).then((res) => {
