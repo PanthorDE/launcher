@@ -94,8 +94,6 @@ import {
 
 import { Pie } from 'vue-chartjs'
 
-import { ipcRenderer } from 'electron/renderer';
-
 import { promise } from "ping";
 
 ChartJS.register(ArcElement);
