@@ -192,7 +192,7 @@
         </v-row>
         <v-dialog transition="dialog-top-transition" width="400" v-model="show_login_dialog" persistent>
           <v-card>
-            <v-toolbar color="red-lighten-1" title="Login" class="text-center pe-5"></v-toolbar>
+            <v-toolbar color="red" title="Login" class="text-center pe-5"></v-toolbar>
             <v-card-text class="mb-2">
               <v-text-field v-model="settings.auth_token" class="mb-2" clearable label="Auth-Token"></v-text-field>
               <v-btn block color="success" size="large" type="submit" variant="elevated" @click="login">
@@ -205,13 +205,14 @@
       <v-container :fluid="true" v-if="first_run_dialog">
         <v-dialog transition="dialog-top-transition" width="800" v-model="first_run_dialog" persistent>
           <v-card>
-            <v-toolbar color="red-lighten-1" title="Willkommen im Panthor Launcher!" class="text-center"></v-toolbar>
+            <v-toolbar color="red" title="Willkommen im Panthor Launcher!" class="text-center"></v-toolbar>
             <v-card-text>
               <div class="pa-5 text-center">
                 <span class="text-h6">Um die Panthor Mod zu installieren muss der Launcher den Pfad zu einer Arma 3
                   Installation finden.</span>
                 <br>
-                <span class="text-h8">Folge Ordner wurden automatisch erkannt, bitte wähle den richtigen aus.</span>
+                <br>
+                <span class="text-h8">Folgede Ordner wurden automatisch erkannt, bitte wähle den richtigen aus:</span>
 
                 <v-radio-group label="Arma 3 Pfad" v-model="first_run_selected_path" class="mt-8"
                   v-if="possible_a3_paths.length > 0">
@@ -220,13 +221,13 @@
                 <br>
                 <span class="text-h8">Falls der richtige Pfad nicht in der Liste ist überspringe diesen Schritt.</span>
               </div>
-              <v-alert type="warning" title="Keine validen Pfade gefunden"
+              <v-alert type="warning" title="Keine validen Pfade gefunden" v-if="possible_a3_paths.length === 0"
                 text="Leider ist Arma auf deinem PC nicht an einer üblichen Stelle installiert oder du hast es manuell verschoben. Bitte überspringe diesen Schritt."></v-alert>
-
             </v-card-text>
-            <v-card-actions class="justify-center">
-              <v-btn color="warning" flat prepend-icon="mdi-debug-step-over" @click="firstRunSkip">Überspringen</v-btn>
-              <v-btn color="success" flat prepend-icon="mdi-content-save-cog" @click="firstRunSave"
+            <v-card-actions class="justify-center mb-2">
+              <v-btn color="warning" flat prepend-icon="mdi-debug-step-over" @click="firstRunSkip"
+                size="large">Überspringen</v-btn>
+              <v-btn color="success" flat prepend-icon="mdi-content-save-cog" @click="firstRunSave" size="large"
                 v-if="possible_a3_paths.length > 0">Speichern</v-btn>
             </v-card-actions>
           </v-card>
@@ -305,6 +306,10 @@ export default defineComponent({
         {
           key: '\\SOFTWARE\\WOW6432Node\\bohemia interactive studio\\ArmA 3',
           index: 0
+        },
+        {
+          key: '\\SOFTWARE\\WOW6432Node\\bohemia interactive\\arma 3',
+          index: 1
         }
       ]
     }
@@ -487,7 +492,7 @@ export default defineComponent({
               this.logged_in = true
               this.user.name = response.data.name
               this.loadAPIData()
-            }, 2000)
+            }, 1000)
           } else {
             this.settings.auth_token = ''
             this.logged_in = false
@@ -535,3 +540,10 @@ export default defineComponent({
 })
 
 </script>
+
+<style lang="css">
+* {
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}</style>

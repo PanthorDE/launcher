@@ -1,11 +1,18 @@
 {
-  "name": "launcher",
+  "name": "Panthor",
   "version": "2.0.0",
   "main": "dist-electron/main/index.js",
-  "description": "Really simple Electron + Vue + Vite boilerplate.",
+  "description": "Panthor Launcher",
   "author": "Kaibu",
   "license": "MIT",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PanthorDE/launcher.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PanthorDE/launcher/issues"
+  },
   "keywords": [
     "electron",
     "rollup",
