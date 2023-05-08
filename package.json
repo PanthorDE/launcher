@@ -40,8 +40,10 @@
   "dependencies": {
     "@mdi/font": "7.0.96",
     "@types/ping": "^0.4.1",
+    "@types/winreg": "^1.2.32",
     "axios": "^1.4.0",
     "chart.js": "^4.3.0",
+    "electron-store": "^8.1.0",
     "hasha": "^5.2.2",
     "humanize-duration-ts": "^2.1.1",
     "install": "^0.13.0",
@@ -51,6 +53,7 @@
     "vue-chartjs": "^5.2.0",
     "vue-router": "4",
     "vuetify": "^3.2.1",
-    "webfontloader": "^1.6.28"
+    "webfontloader": "^1.6.28",
+    "winreg": "^1.2.4"
   }
 }

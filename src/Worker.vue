@@ -28,20 +28,20 @@ export default defineComponent({
       mod: {} as Mod,
       hashlist: [] as ModFile[],
       worker_status: {} as WorkerStatus,
-      a3folder: "O:\\Steam\\steamapps\\common\\Arma 3\\",
+      arma_path: "O:\\Steam\\steamapps\\common\\Arma 3\\",
       to_download: new Array<string>()
-
     }
   },
   methods: {
     updateMod(mod_id: number) {
       Promise.all(this.getMod(mod_id)).then((results) => {
+        console.log(results)
         let diff_files = this.listDiff()
         this.deleteFiles(diff_files[0])
 
       })
     },
-    verifyMod(mod_id: number, quick: boolean = false, download: boolean = true) {
+    verifyMod(mod_id: number, quick: boolean = false, download: boolean = false) {
       this.worker_status.message = "Lade Modinformationen"
       this.worker_status.status = 1
       this.updateWorkerStatus();
@@ -125,7 +125,7 @@ export default defineComponent({
       let size_done = 0
 
       to_download.forEach((file) => {
-        let stream = createWriteStream(join(this.a3folder, file.RelativPath))
+        let stream = createWriteStream(join(this.arma_path, file.RelativPath))
 
         let streamed_chunkslength = 0
 
@@ -153,12 +153,12 @@ export default defineComponent({
             this.updateWorkerStatus()
           });
         }).on('error', (err) => {
-          unlink(join(this.a3folder, file.RelativPath), () => { });
+          unlink(join(this.arma_path, file.RelativPath), () => { });
         })
       })
     },
     listDiff() {
-      let files = this.getFileList(join(this.a3folder, this.mod.Directories))
+      let files = this.getFileList(join(this.arma_path, this.mod.Directories))
 
       let additional_files = files.filter(x => !this.hashlist_files.includes(x));
       let missing_files = this.hashlist_files.filter(x => !files.includes(x));
@@ -168,14 +168,14 @@ export default defineComponent({
     deleteFiles(files: Array<string>) {
       files.forEach((file) => {
         try {
-          unlinkSync(join(this.a3folder, file))
+          unlinkSync(join(this.arma_path, file))
         } catch (err) {
           console.log(err)
         }
       })
     },
     hashFiles(quick: boolean = false) {
-      let file_list = this.getFileList(join(this.a3folder, this.mod.Directories))
+      let file_list = this.getFileList(join(this.arma_path, this.mod.Directories))
       let files: Array<string> = [];
 
       this.worker_status.fileop_files_done = 0
@@ -188,7 +188,7 @@ export default defineComponent({
       let start_time = Date.now()
 
       file_list.forEach((file) => {
-        total_size = total_size + statSync(join(this.a3folder, file)).size
+        total_size = total_size + statSync(join(this.arma_path, file)).size
       })
 
       file_list.forEach((file) => {
@@ -202,7 +202,7 @@ export default defineComponent({
           return
         }
 
-        let hash = hasha.fromFileSync(join(this.a3folder, file), { algorithm: 'md5' })
+        let hash = hasha.fromFileSync(join(this.arma_path, file), { algorithm: 'md5' })
 
         this.hashlist.forEach((hashlist_file) => {
           if (hashlist_file.RelativPath == file) {
@@ -212,7 +212,7 @@ export default defineComponent({
           }
         })
 
-        size_done = size_done + statSync(join(this.a3folder, file)).size
+        size_done = size_done + statSync(join(this.arma_path, file)).size
       })
 
       return files
@@ -225,7 +225,7 @@ export default defineComponent({
         if (item.isDirectory()) {
           files = files.concat(this.getFileList(join(dirName, item.name)));
         } else {
-          files.push(join(dirName.replace(this.a3folder, ''), item.name));
+          files.push(join(dirName.replace(this.arma_path, ''), item.name));
         }
       }
 
@@ -263,6 +263,9 @@ export default defineComponent({
     })
     ipcRenderer.on('mod:verify', (_event, mod_id: number) => {
       this.verifyMod(mod_id)
+    })
+    ipcRenderer.on('settings:changedArmaPath', (_event, path: string) => {
+      this.arma_path = path
     })
   },
 });

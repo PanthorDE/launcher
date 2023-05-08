@@ -37,7 +37,8 @@
                         </tr>
                         <tr>
                             <td>Passwort</td>
-                            <td class="text-right" @click="copyToClipboard(server.ServerPassword)">{{ server.ServerPassword }}</td>
+                            <td class="text-right" @click="copyToClipboard(server.ServerPassword)">{{ server.ServerPassword
+                            }}</td>
                         </tr>
                         <tr>
                             <td>Stand</td>
@@ -48,10 +49,14 @@
                         </tr>
                     </tbody>
                 </v-table>
+                <v-card class="mt-2" v-if="server.Description !== null && server.Description != ''">
+                    <v-card-subtitle>Beschreibung</v-card-subtitle>
+                    <v-card-text>{{ server.Description }}</v-card-text>
+                </v-card>
             </v-col>
             <v-col cols="4">
                 <v-text-field label="Filter" density="compact" prepend-icon="mdi-account-search-outline"
-                    v-model="player_search"></v-text-field>
+                    v-model="player_search" clearable></v-text-field>
                 <v-virtual-scroll :items="players_list" height="330">
                     <template v-slot:default="{ item }">
                         <v-list-item :title="item.name" density="compact">
@@ -63,7 +68,7 @@
                 </v-virtual-scroll>
             </v-col>
             <v-col cols="4">
-                <Pie :data="pie_data" :options="pie_options" class="pa-5"></Pie>
+                <Pie :data="pie_data" :options="pie_options" class="pt-5"></Pie>
             </v-col>
         </v-row>
         <v-divider thickness="6" class="mt-2"></v-divider>
@@ -93,14 +98,16 @@ import { clipboard } from 'electron';
 
 import {
     Chart as ChartJS,
-    ArcElement
+    ArcElement,
+    Tooltip,
+    Legend
 } from 'chart.js'
 
 import { Pie } from 'vue-chartjs'
 
 import { promise } from "ping";
 
-ChartJS.register(ArcElement);
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface IPlayerWithType {
     name: string,
@@ -110,16 +117,27 @@ interface IPlayerWithType {
 
 export default {
     name: "ModCard",
+    emits: ["load-api-data"],
     data() {
         return {
             ping: 0,
             pie_options: {
                 responsive: true,
-                legend: {
-                    display: true
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            color: '#fff',
+                            boxHeight: 20
+                        }
+                    }
+                },
+                animation: {
+                    animateScale: true
                 },
                 tooltips: {
-                    enabled: true
+                    displayColors: false
                 }
             },
             player_search: '',
@@ -133,6 +151,19 @@ export default {
     computed: {
         players_list: function () {
             let list: IPlayerWithType[] = []
+
+            if (this.server.Id != 1) {
+                this.server.Players.forEach((name: string) => {
+                    let player = <IPlayerWithType>{};
+                    player.name = name
+                    player.color = '#660080'
+                    player.icon = 'mdi-account'
+
+                    list.push(player)
+                });
+
+                return list
+            }
 
             this.server.Side.Civs.forEach((name: string) => {
                 let player = <IPlayerWithType>{};
@@ -171,10 +202,20 @@ export default {
             });
 
             if (this.player_search != '') {
-                return list.filter((player: IPlayerWithType) => {
+                list = list.filter((player: IPlayerWithType) => {
                     return player.name.toLowerCase().includes(this.player_search.toLowerCase())
                 })
             }
+
+            list.sort((a: IPlayerWithType, b: IPlayerWithType) => {
+                if (a.name < b.name) {
+                    return -1;
+                }
+                if (a.name > b.name) {
+                    return 1;
+                }
+                return 0;
+            })
 
             return list
         },
@@ -187,14 +228,14 @@ export default {
                         '#004D99',
                         '#008000',
                         '#800000'
-                    ],
-                    labels: [
-                        'Zivilisten',
-                        'Polizei',
-                        'Medics',
-                        'RAC'
                     ]
                 }]
+                , labels: [
+                    'Zivilisten',
+                    'Polizei',
+                    'Medics',
+                    'RAC'
+                ]
             }
         }
     },
@@ -202,13 +243,13 @@ export default {
         server: { type: Object as PropType<Server>, required: true }
     },
     watch: {
-        server: function () {
+        'server.server.updated_at.date': function () {
             this.pingServer();
             clipboard.writeText(this.server.ServerPassword)
         }
     },
     methods: {
-        copyToClipboard(text:string) {
+        copyToClipboard(text: string) {
             clipboard.writeText(text)
         },
         pingServer() {
@@ -230,6 +271,7 @@ export default {
         }
     },
     mounted() {
+        this.updateTimeUntilNextTarget();
         this.intervalId = setInterval(this.updateTimeUntilNextTarget, 1000);
         this.pingServer();
     },

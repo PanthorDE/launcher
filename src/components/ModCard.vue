@@ -1,6 +1,11 @@
 <template>
     <v-card flat>
         <v-img height="300" :src="mod.ImageUrl" cover>
+            <v-btn color="white" flat icon="mdi-folder-open" rounded="sm" class="float-right mt-2 mr-2" size="small"
+                @click="requestFolderOpen">
+                <v-icon icon="mdi-folder-open"></v-icon>
+                <v-tooltip activator="parent" location="bottom">Ordner öffnen</v-tooltip>
+            </v-btn>
         </v-img>
         <v-row justify="center" class="mt-2">
             <v-card-title class="text-center">{{ mod.Name }}</v-card-title>
@@ -12,14 +17,13 @@
             <v-divider :thickness="6" color="black"></v-divider>
         </v-row>
         <v-row justify="center" class="mt-3 mb-1">
-            <v-col cols="auto" v-if="false">
-                <v-btn prepend-icon="mdi-folder-alert-outline" color="warning">
-                    <template v-slot:prepend>
-                        <v-icon color="red"></v-icon>
-                    </template>
-                    Kein Pfad gesetzt
+            <v-col cols="auto" v-if="arma_path === ''">
+                <v-btn prepend-icon="mdi-folder-open" color="warning" @click="$emit('choose-armapath')">
+                    Arma 3 Pfad setzen
                 </v-btn>
             </v-col>
+        </v-row>
+        <v-row justify="center" class="mt-3 mb-1" v-if="arma_path !== ''">
             <v-col cols="auto">
                 <v-btn color="success" flat prepend-icon="mdi-download">
                     Download
@@ -40,21 +44,25 @@
 </template>
   
 <script lang="ts">
-import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
 import { ipcRenderer } from 'electron'
 
 import Mod from '@/interfaces/ModInterface'
 import { PropType } from 'vue'
+import { join } from 'node:path'
 
 export default {
     name: "ModCard",
+    emits: ["choose-armapath"],
     props: {
-        mod: { type: Object as PropType<Mod>, required: true }
+        mod: { type: Object as PropType<Mod>, required: true },
+        arma_path: { type: String, required: true }
     },
     methods: {
         checkMod() {
             ipcRenderer.send('mod:verify', this.mod.Id)
+        },
+        requestFolderOpen() {
+            ipcRenderer.send('mod:openFolder', join(this.arma_path, this.mod.Directories))
         }
     },
 }  

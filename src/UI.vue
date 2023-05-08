@@ -1,6 +1,6 @@
 <template>
   <v-app id="panthor-launcher">
-    <v-app-bar class="px-3" color="black" flat density="comfortable">
+    <v-app-bar class="px-3" color="black" flat density="comfortable" v-if="!first_run_dialog">
       <v-img src="@/assets/Panthor_Header_Logo_Line.png"></v-img>
 
       <v-spacer></v-spacer>
@@ -12,6 +12,11 @@
       </v-tabs>
       <v-spacer></v-spacer>
 
+      <v-chip color="white" v-if="logged_in">
+        <span class="me-2">{{ user.name }}</span>
+        <v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32" :image="user.player.avatar_medium"
+          v-if="user.player"></v-avatar>
+      </v-chip>
       <v-btn :loading="loading_api_data" @click="loadAPIData" icon>
         <v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32"><v-tooltip text="Login"
             location="bottom"></v-tooltip><v-icon icon="mdi-refresh"></v-icon></v-avatar>
@@ -19,16 +24,28 @@
           <v-progress-circular indeterminate></v-progress-circular>
         </template>
       </v-btn>
-      <v-btn icon><v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32"><v-tooltip text="Login"
-            location="bottom"></v-tooltip><v-icon icon="mdi-login-variant"></v-icon></v-avatar></v-btn>
+      <v-btn :loading="requesting_login" icon @click="loginOrOut" v-if="!logged_in"><v-avatar class="hidden-sm-and-down"
+          color="red-lighten-1" size="32"><v-tooltip text="Login" location="bottom" activator="parent"></v-tooltip><v-icon
+            icon="mdi-login-variant"></v-icon></v-avatar>
+        <template v-slot:loader>
+          <v-progress-circular indeterminate></v-progress-circular>
+        </template>
+      </v-btn>
+      <v-btn :loading="requesting_login" icon @click="loginOrOut" v-if="logged_in"><v-avatar class="hidden-sm-and-down"
+          color="red-lighten-1" size="32"><v-tooltip text="Logout" location="bottom"
+            activator="parent"></v-tooltip><v-icon icon="mdi-logout-variant"></v-icon></v-avatar>
+        <template v-slot:loader>
+          <v-progress-circular indeterminate></v-progress-circular>
+        </template>
+      </v-btn>
 
     </v-app-bar>
 
     <v-main>
-      <v-container :fluid="true">
+      <v-container :fluid="true" v-if="!first_run_dialog">
         <v-row>
           <v-col cols="3">
-            <v-card flat v-for="server in api_data.servers" @click="tab = 1">
+            <v-card flat v-for="server in api_data.servers" @click="tab = 1" class="mb-3">
               <v-card-title> {{ server.Servername }} <v-progress-circular
                   :model-value="server.Playercount / notZero(server.Slots) * 100" color="red-lighten-1" :size="70"
                   :width="8" class="float-right">{{ Math.round(server.Playercount / notZero(server.Slots) * 100)
@@ -36,7 +53,7 @@
   server.Playercount }} / {{ server.Slots
   }}</span></v-card-title>
             </v-card>
-            <v-card flat v-for="teamspeak in api_data.teamspeaks" class="mt-3">
+            <v-card flat v-for="teamspeak in api_data.teamspeaks">
               <v-card-title> Teamspeak <v-progress-circular
                   :model-value="(teamspeak.Usercount / notZero(teamspeak.Slots)) * 100" color="red-lighten-1" :size="70"
                   :width="8" class="float-right">{{ Math.round((teamspeak.Usercount / notZero(teamspeak.Slots)) * 100)
@@ -72,7 +89,7 @@
                 <v-col cols="auto" v-if="worker_status.fileop_time_remaining > 0" class="pt-0">
                   <v-chip class="ma-2" color="success">
                     <v-icon start icon="mdi-clock-end"></v-icon>
-                    {{ duration_humanizer.humanize(worker_status.fileop_time_remaining) }}
+                    {{ duration_humanizer.humanize(Math.ceil(worker_status.fileop_time_remaining)) }}
                   </v-chip>
                 </v-col>
               </v-row>
@@ -81,7 +98,8 @@
           <v-col cols="9">
             <v-window v-model="tab">
               <v-window-item :value="0">
-                <mod-window :mods="api_data.mods"></mod-window>
+                <mod-window :mods="api_data.mods" :arma_path="settings.arma_path"
+                  @choose-armapath="chooseArmaPath"></mod-window>
               </v-window-item>
               <v-window-item :value="1">
                 <server-window :servers="api_data.servers" @load-api-data="loadAPIData"></server-window>
@@ -89,9 +107,130 @@
               <v-window-item :value="2">
                 <changelog-window :changelogs="api_data.changelogs"></changelog-window>
               </v-window-item>
+              <v-window-item :value="4">
+                <v-row>
+                  <v-col cols="12">
+                    <v-card>
+                      <v-card-title>Launcher Einstellungen</v-card-title>
+                      <v-card-text class="pb-0">
+                        <v-row>
+                          <v-col cols="10">
+                            <v-text-field label="Arma 3 Pfad" prepend-icon="mdi-folder-sync" variant="outlined"
+                              v-model="settings.arma_path" readonly placeholder="Leer" density="compact"
+                              block></v-text-field>
+                          </v-col>
+                          <v-col cols="2">
+                            <v-btn @click="chooseArmaPath" icon="mdi-folder-open" color="red" block rounded="sm"
+                              size="small">
+                              <v-icon icon="mdi-folder-open"></v-icon>
+                              <v-tooltip activator="parent" location="top">Arma 3 Pfad auswählen</v-tooltip>
+                            </v-btn>
+                          </v-col>
+                        </v-row>
+                      </v-card-text>
+                      <v-card-text>
+                        <v-btn prepend-icon="mdi-upload" disabled color="success">
+                          Letzten RPT hochladen
+                        </v-btn>
+                        <v-btn prepend-icon="mdi-folder-open" color="success" class="ms-2" @click="openMissionCache">
+                          MPMission Cache öffnen
+                        </v-btn>
+                        <v-btn prepend-icon="mdi-cog-play" color="success" class="ms-2" @click="validateA3">
+                          Arma 3 via Steam überprüfen
+                        </v-btn>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col cols="12">
+                    <v-card>
+                      <v-card-title>Arma Einstellungen</v-card-title>
+                      <v-card-text class="pb-0">
+                        <v-row>
+                          <v-col cols="6">
+                            <v-card-subtitle>Start beschleunigen</v-card-subtitle>
+                            <v-switch v-model="settings.noSplash" hide-details inset label="Splashscreen überspringen"
+                              color="red-lighten-1"></v-switch>
+                            <v-switch v-model="settings.skipIntro" hide-details inset label="Intro überspringen"
+                              color="red-lighten-1"></v-switch>
+                            <v-card-subtitle>Performance</v-card-subtitle>
+                            <v-switch v-model="settings.enableHT" hide-details inset label="Hyperthreading aktivieren"
+                              color="red-lighten-1"></v-switch>
+                            <v-switch v-model="settings.setThreadCharacteristics" hide-details inset
+                              label="Windows Gaming Optimierung" color="red-lighten-1"></v-switch>
+                          </v-col>
+                          <v-col cols="6">
+                            <v-card-subtitle>Verschiedenes</v-card-subtitle>
+                            <v-switch v-model="settings.windowed" hide-details inset label="Fenstermodus"
+                              color="red-lighten-1"></v-switch>
+                            <v-switch v-model="settings.noPause" hide-details inset
+                              label="Spiel nicht durch Tab pausieren" color="red-lighten-1"></v-switch>
+                            <v-switch v-model="settings.noPauseAudio" hide-details inset
+                              label="Audio nicht durch Tab pausieren" color="red-lighten-1"></v-switch>
+                            <v-card-subtitle>Debug</v-card-subtitle>
+                            <v-switch v-model="settings.showScriptErrors" hide-details inset label="Skriptfehler anzeigen"
+                              color="red-lighten-1"></v-switch>
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col cols="12">
+                            <v-text-field label="Weitere Startparameter" prepend-icon="mdi-powershell" variant="outlined"
+                              v-model="settings.command_line" placeholder="-debug" block></v-text-field>
+                          </v-col>
+                        </v-row>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-window-item>
+              <v-window-item :value="5">
+                <faq-window></faq-window>
+              </v-window-item>
             </v-window>
           </v-col>
         </v-row>
+        <v-dialog transition="dialog-top-transition" width="400" v-model="show_login_dialog" persistent>
+          <v-card>
+            <v-toolbar color="red-lighten-1" title="Login" class="text-center pe-5"></v-toolbar>
+            <v-card-text class="mb-2">
+              <v-text-field v-model="settings.auth_token" class="mb-2" clearable label="Auth-Token"></v-text-field>
+              <v-btn block color="success" size="large" type="submit" variant="elevated" @click="login">
+                Login <v-progress-circular v-if="requesting_login" indeterminate size="24"></v-progress-circular>
+              </v-btn>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
+      </v-container>
+      <v-container :fluid="true" v-if="first_run_dialog">
+        <v-dialog transition="dialog-top-transition" width="800" v-model="first_run_dialog" persistent>
+          <v-card>
+            <v-toolbar color="red-lighten-1" title="Willkommen im Panthor Launcher!" class="text-center"></v-toolbar>
+            <v-card-text>
+              <div class="pa-5 text-center">
+                <span class="text-h6">Um die Panthor Mod zu installieren muss der Launcher den Pfad zu einer Arma 3
+                  Installation finden.</span>
+                <br>
+                <span class="text-h8">Folge Ordner wurden automatisch erkannt, bitte wähle den richtigen aus.</span>
+
+                <v-radio-group label="Arma 3 Pfad" v-model="first_run_selected_path" class="mt-8"
+                  v-if="possible_a3_paths.length > 0">
+                  <v-radio :label="path" :value="i" v-for="(path, i) in possible_a3_paths"></v-radio>
+                </v-radio-group>
+                <br>
+                <span class="text-h8">Falls der richtige Pfad nicht in der Liste ist überspringe diesen Schritt.</span>
+              </div>
+              <v-alert type="warning" title="Keine validen Pfade gefunden"
+                text="Leider ist Arma auf deinem PC nicht an einer üblichen Stelle installiert oder du hast es manuell verschoben. Bitte überspringe diesen Schritt."></v-alert>
+
+            </v-card-text>
+            <v-card-actions class="justify-center">
+              <v-btn color="warning" flat prepend-icon="mdi-debug-step-over" @click="firstRunSkip">Überspringen</v-btn>
+              <v-btn color="success" flat prepend-icon="mdi-content-save-cog" @click="firstRunSave"
+                v-if="possible_a3_paths.length > 0">Speichern</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-container>
     </v-main>
   </v-app>
@@ -102,8 +241,11 @@ import { ipcRenderer } from 'electron';
 import ModWindow from '@/components/ModWindow.vue'
 import ChangelogWindow from '@/components/ChangelogWindow.vue'
 import ServerWindow from '@/components/ServerWindow.vue'
+import FaqWindow from '@/components/FaqWindow.vue'
 import { PropType, defineComponent } from 'vue'
 import axios from 'axios';
+import Store from 'electron-store';
+import Winreg from 'winreg';
 
 import { HumanizeDurationLanguage, HumanizeDuration } from 'humanize-duration-ts/dist'
 import Server from '@/interfaces/ServerInterface';
@@ -111,6 +253,10 @@ import Mod from '@/interfaces/ModInterface';
 import Changelog from '@/interfaces/ChangelogInterface';
 import Teamspeak from './interfaces/TeamspeakInterface';
 import WorkerStatus from './interfaces/WorkerStatusInterface';
+import SettingsStore, { defaultSettings } from './interfaces/SettingsStoreInterface';
+import { existsSync } from 'node:fs';
+import { throwStatement } from '@babel/types';
+import User from './interfaces/UserInterface';
 
 const langService: HumanizeDurationLanguage = new HumanizeDurationLanguage()
 const duration_humanizer = new HumanizeDuration(langService)
@@ -135,11 +281,32 @@ export default defineComponent({
       },
       tab: 0,
       logged_in: false,
+      show_login_dialog: false,
+      requesting_login: false,
+      user: {} as User,
       worker_status: {
         status: 0,
       } as WorkerStatus,
       duration_humanizer: duration_humanizer,
-      loading_api_data: false
+      loading_api_data: false,
+      settings: defaultSettings as SettingsStore,
+      first_run_dialog: false,
+      first_run_selected_path: 0,
+      possible_a3_paths: [] as Array<string>,
+      a3_registry_keys: [
+        {
+          key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 107410',
+          index: 3
+        },
+        {
+          key: '\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 107410',
+          index: 3
+        },
+        {
+          key: '\\SOFTWARE\\WOW6432Node\\bohemia interactive studio\\ArmA 3',
+          index: 0
+        }
+      ]
     }
   },
   methods: {
@@ -173,14 +340,25 @@ export default defineComponent({
     getMods() {
       let promises = [];
 
-      promises.push(
-        axios.get('https://api.panthor.de/v1/mods')
-          .then((response) => {
-            this.api_data.mods = response.data.data
-          })
-          .catch((error) => {
-            console.log(error);
-          }))
+      if (this.logged_in) {
+        promises.push(
+          axios.get('https://api.panthor.de/v1/mods/' + this.settings.auth_token)
+            .then((response) => {
+              this.api_data.mods = response.data.data
+            })
+            .catch((error) => {
+              console.log(error);
+            }))
+      } else {
+        promises.push(
+          axios.get('https://api.panthor.de/v1/mods')
+            .then((response) => {
+              this.api_data.mods = response.data.data
+            })
+            .catch((error) => {
+              console.log(error);
+            }))
+      }
       promises.push(
         axios.get('https://api.panthor.de/v1/servers')
           .then((response) => {
@@ -206,6 +384,17 @@ export default defineComponent({
             console.log(error);
           }))
 
+      if (this.logged_in) {
+        promises.push(
+          axios.get('https://api.panthor.de/v1/player/' + this.settings.auth_token)
+            .then((response) => {
+              this.user.player = response.data.data[0]
+            })
+            .catch((error) => {
+              console.log(error);
+            }))
+      }
+
       Promise.all(promises).then((results) => {
         this.loading_api_data = false
       })
@@ -216,7 +405,103 @@ export default defineComponent({
       } else {
         return input
       }
-    }
+    },
+    loadSettings() {
+      let store = new Store<SettingsStore>({
+        defaults: defaultSettings
+      });
+
+      this.settings = store.store
+
+      ipcRenderer.on("settings:openArmaSelect:result", (event, data) => {
+        this.settings.arma_path = data
+      })
+
+      if (this.settings.first_run) {
+        this.launch_first_run()
+      }
+
+      if (this.settings.auth_token) {
+        this.login()
+      }
+    },
+    chooseArmaPath() {
+      ipcRenderer.send("settings:openArmaSelect", {})
+    },
+    openMissionCache() {
+      ipcRenderer.send("settings:openMissionCache", {})
+    },
+    validateA3() {
+      ipcRenderer.send("settings:validateA3", {})
+    },
+    launch_first_run() {
+      this.first_run_dialog = true
+
+      this.a3_registry_keys.forEach((cur) => {
+        let regKey = new Winreg({
+          hive: Winreg.HKLM,
+          key: cur.key
+        })
+
+        regKey.keyExists((err, exists) => {
+          if (err) throw err
+          if (exists) {
+            regKey.values((err, items) => {
+              if (err) throw err
+              if (existsSync(items[cur.index].value + '\\arma3.exe')) {
+                this.possible_a3_paths.push(items[cur.index].value)
+              }
+            })
+          }
+        })
+      })
+
+      console.log(this.possible_a3_paths)
+    },
+    firstRunSave() {
+      this.settings.first_run = false
+      this.first_run_dialog = false
+      this.settings.arma_path = this.possible_a3_paths[this.first_run_selected_path]
+    },
+    firstRunSkip() {
+      this.settings.first_run = false
+      this.first_run_dialog = false
+    },
+    loginOrOut() {
+      if (this.logged_in) {
+        this.logged_in = false
+        this.settings.auth_token = ''
+        this.user = {} as User
+        this.loadAPIData()
+      } else {
+        this.show_login_dialog = true
+      }
+    },
+    login() {
+      this.requesting_login = true
+      axios.get('https://api.panthor.de/v1/player/validate/' + this.settings.auth_token)
+        .then((response) => {
+          if (response.data.status === 'Success') {
+            setTimeout(() => {
+              this.requesting_login = false
+              this.logged_in = true
+              this.user.name = response.data.name
+              this.loadAPIData()
+            }, 2000)
+          } else {
+            this.settings.auth_token = ''
+            this.logged_in = false
+          }
+        })
+        .catch((error) => {
+          this.logged_in = false
+          this.requesting_login = false
+          console.log(error);
+        })
+        .finally(() => {
+          this.show_login_dialog = false
+        })
+    },
   },
   watch: {
     'worker_status.fileop_progress'(newVal, oldVal) {
@@ -224,15 +509,29 @@ export default defineComponent({
       ipcRenderer.send('winprogress-change', {
         progress: this.worker_status.fileop_progress
       })
-    }
+    },
+    settings: {
+      handler: function (val, oldVal) {
+        let store = new Store<SettingsStore>({
+          defaults: defaultSettings
+        });
+
+        store.store = val
+
+        ipcRenderer.send('settings:changedArmaPath', this.settings.arma_path)
+      },
+      deep: true
+    },
   },
   mounted() {
-    this.loadAPIData()
+    this.loadSettings();
     ipcRenderer.on('worker_status:update', (_event, message: string) => {
       this.worker_status = JSON.parse(message)
     })
+
+    this.loadAPIData()
   },
-  components: { ModWindow, ChangelogWindow, ServerWindow }
+  components: { ModWindow, ChangelogWindow, ServerWindow, FaqWindow }
 })
 
 </script>
