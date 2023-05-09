@@ -48,6 +48,7 @@
     "@mdi/font": "7.0.96",
     "@types/ping": "^0.4.1",
     "@types/winreg": "^1.2.32",
+    "async": "^3.2.4",
     "axios": "^1.4.0",
     "chart.js": "^4.3.0",
     "electron-store": "^8.1.0",

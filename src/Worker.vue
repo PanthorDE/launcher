@@ -28,8 +28,11 @@ export default defineComponent({
       mod: {} as Mod,
       hashlist: [] as ModFile[],
       worker_status: {} as WorkerStatus,
-      arma_path: "O:\\Steam\\steamapps\\common\\Arma 3\\",
-      to_download: new Array<string>()
+      arma_path: "",
+      to_download: new Array<string>(),
+      last_update: Date.now(),
+      cancel_fileop: false,
+      last_status: -1
     }
   },
   methods: {
@@ -41,7 +44,7 @@ export default defineComponent({
 
       })
     },
-    verifyMod(mod_id: number, quick: boolean = false, download: boolean = false) {
+    verifyMod(mod_id: number, quick: boolean = true, download: boolean = true) {
       this.worker_status.message = "Lade Modinformationen"
       this.worker_status.status = 1
       this.updateWorkerStatus();
@@ -63,8 +66,16 @@ export default defineComponent({
         this.worker_status.status = 3
         this.updateWorkerStatus();
         let hash_result = this.hashFiles(quick)
-        this.deleteFiles(hash_result)
         toDownload = toDownload.concat(hash_result)
+
+        if (toDownload.length === 0) {
+          this.worker_status.message = "Verifizierung abgeschlossen"
+          this.worker_status.status = 1
+          this.updateWorkerStatus();  
+          return
+        }
+
+        console.log(toDownload)
 
         let toDownloadHashlist = [] as ModFile[]
 
@@ -78,8 +89,6 @@ export default defineComponent({
             toDownload.splice(index, 1)
           }
         })
-
-        console.log(toDownload)
 
         this.resetWorkerStatus();
 
@@ -122,14 +131,23 @@ export default defineComponent({
         total_size += file.Size
       })
 
-      let size_done = 0
+      this.downloadFileRecursive(to_download, 0, () => {
+        this.worker_status.message = "Download abgeschlossen"
+        this.worker_status.status = 7
+        this.updateWorkerStatus()
+      }, 0, total_size)
+    },
+    downloadFileRecursive(to_download: Array<ModFile>, index: number, callback: Function, size_done: number = 0, total_size: number = 0, last_speed_calc: number = Date.now(), last_speed_size_done: number = 0) {
+      let request_download = new Promise((resolve, reject) => {
+        let file = to_download[index]
 
-      to_download.forEach((file) => {
         let stream = createWriteStream(join(this.arma_path, file.RelativPath))
 
         let streamed_chunkslength = 0
 
-        let request = http.get(this.mod.DownloadUrl + file.RelativPath, (response) => {
+        console.log("Downloading " + file.FileName + " (" + file.Size + " bytes")
+
+        http.get(this.mod.DownloadUrl + file.RelativPath, (response) => {
           response.pipe(stream);
 
           stream.on("finish", () => {
@@ -138,14 +156,17 @@ export default defineComponent({
             size_done += file.Size
             this.worker_status.fileop_files_done++
             this.updateWorkerStatus()
+            resolve("Download Completed");
           })
 
           response.on("data", (chunk) => {
             streamed_chunkslength += chunk.length;
-            //console.log(file.FileName)
-            //console.log(streamed_chunkslength)
-            //console.log("Downloading " + (100.0 * streamed_chunkslength / stream_length).toFixed(2) + "% " + (streamed_chunkslength / 1048576).toFixed(2) + " mb\r" + ".<br/> Total size: " + total_progress.toFixed(2) + " mb");
-            this.worker_status.fileop_speed = (streamed_chunkslength + size_done) / total_size
+
+            if (last_speed_calc + 1000 < Date.now()) {
+              this.worker_status.fileop_speed = Math.round(((size_done + streamed_chunkslength) - last_speed_size_done) / ((Date.now() - last_speed_calc) / 1000))
+              last_speed_calc = Date.now()
+              last_speed_size_done = size_done + streamed_chunkslength
+            }
 
             this.worker_status.fileop_progress = (size_done + streamed_chunkslength) / total_size * 100
             this.worker_status.message = "Download läuft"
@@ -153,14 +174,27 @@ export default defineComponent({
             this.updateWorkerStatus()
           });
         }).on('error', (err) => {
+          console.log("Download Error: " + err.message);
           unlink(join(this.arma_path, file.RelativPath), () => { });
+          reject(err);
         })
       })
+
+      request_download.then((response) => {
+        if (index == to_download.length - 1) {
+          callback()
+        } else {
+          this.downloadFileRecursive(to_download, index + 1, callback, size_done, total_size, last_speed_calc, last_speed_size_done)
+        }
+      }).catch((error) => {
+        console.log(error);
+      });
     },
     listDiff() {
       let files = this.getFileList(join(this.arma_path, this.mod.Directories))
 
       let additional_files = files.filter(x => !this.hashlist_files.includes(x));
+
       let missing_files = this.hashlist_files.filter(x => !files.includes(x));
 
       return [additional_files, missing_files]
@@ -232,6 +266,11 @@ export default defineComponent({
       return files;
     },
     updateWorkerStatus() {
+      if (this.last_update + 100 > Date.now() && this.worker_status.status === this.last_status) {
+        return
+      }
+      this.last_update = Date.now()
+      this.last_status = this.worker_status.status
       ipcRenderer.send('worker_status:update', JSON.stringify(this.worker_status))
     },
     resetWorkerStatus() {
@@ -259,13 +298,17 @@ export default defineComponent({
   },
   mounted() {
     ipcRenderer.on('mod:update', (_event, mod_id: number) => {
-      this.updateMod(mod_id)
+      if(this.arma_path !== '') {
+        this.updateMod(mod_id)
+      }
     })
     ipcRenderer.on('mod:verify', (_event, mod_id: number) => {
-      this.verifyMod(mod_id)
+      if(this.arma_path !== '') {
+        this.verifyMod(mod_id)
+      }
     })
     ipcRenderer.on('settings:changedArmaPath', (_event, path: string) => {
-      this.arma_path = path
+      this.arma_path = path + "\\"
     })
   },
 });

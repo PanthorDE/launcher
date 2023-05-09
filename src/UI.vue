@@ -190,7 +190,7 @@
             </v-window>
           </v-col>
         </v-row>
-        <v-dialog transition="dialog-top-transition" width="400" v-model="show_login_dialog" persistent>
+        <v-dialog transition="dialog-top-transition" width="400" v-model="show_login_dialog">
           <v-card>
             <v-toolbar color="red" title="Login" class="text-center pe-5"></v-toolbar>
             <v-card-text class="mb-2">
@@ -546,4 +546,12 @@ export default defineComponent({
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
-}</style>
+}
+
+html {
+  overflow-y: auto !important;
+}
+
+
+
+</style>
