@@ -12,11 +12,15 @@
       </v-tabs>
       <v-spacer></v-spacer>
 
-      <v-chip color="white" v-if="logged_in">
-        <span class="me-2">{{ user.name }}</span>
+      <v-chip color="white" v-if="requesting_login || logged_in">
+        <span class="me-2"><span v-if="requesting_login && !logged_in"><v-progress-linear indeterminate style="width: 60px;"></v-progress-linear></span><span v-else>{{ user.name }}</span></span>
         <v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32" :image="user.player.avatar_medium"
-          v-if="user.player"></v-avatar>
-      </v-chip>
+          v-if="user.player"><v-icon v-if="requesting_login && !logged_in"
+            icon="mdi-login-variant"></v-icon></v-avatar>
+          <v-avatar class="hidden-sm-and-down" v-if="requesting_login && !logged_in"
+          color="red-lighten-1" size="32"><v-icon
+            icon="mdi-help-circle-outline"></v-icon></v-avatar>
+      </v-chip>      
       <v-btn :loading="loading_api_data" @click="loadAPIData" icon>
         <v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32"><v-tooltip text="Login"
             location="bottom"></v-tooltip><v-icon icon="mdi-refresh"></v-icon></v-avatar>
@@ -45,7 +49,7 @@
       <v-container :fluid="true" v-if="!first_run_dialog">
         <v-row>
           <v-col cols="3">
-            <v-card flat v-for="server in api_data.servers" @click="tab = 1" class="mb-3">
+            <v-card flat v-for="(server, i) in api_data.servers" @click="openServer(i)" class="mb-3">
               <v-card-title> {{ server.Servername }} <v-progress-circular
                   :model-value="server.Playercount / notZero(server.Slots) * 100" color="red-lighten-1" :size="70"
                   :width="8" class="float-right">{{ Math.round(server.Playercount / notZero(server.Slots) * 100)
@@ -53,61 +57,71 @@
   server.Playercount }} / {{ server.Slots
   }}</span></v-card-title>
             </v-card>
-            <v-card flat v-for="teamspeak in api_data.teamspeaks">
+            <v-card flat v-for="teamspeak in api_data.teamspeaks"
+              @click="openURL(`ts3server://${teamspeak.Ip}?port=${teamspeak.Port}`)">
               <v-card-title> Teamspeak <v-progress-circular
                   :model-value="(teamspeak.Usercount / notZero(teamspeak.Slots)) * 100" color="red-lighten-1" :size="70"
                   :width="8" class="float-right">{{ Math.round((teamspeak.Usercount / notZero(teamspeak.Slots)) * 100)
                   }}%</v-progress-circular><br><span class="text-h5" style="font-size: 18px !important;">Online: {{
   teamspeak.Usercount }} / {{ teamspeak.Slots }}</span></v-card-title>
             </v-card>
-            <v-card flat min-height="100" class="mt-3" v-if="worker_status.status !== 0" @click="tab = 0">
+            <v-card flat min-height="100" class="mt-3" v-if="worker_status.status !== 0" @click="tab = 0;">
               <v-card-title><v-icon icon="mdi-download-network-outline" size="small" class="float-right"></v-icon>
                 Download Status</v-card-title>
               <v-row class="mt-0 mx-auto ps-5 pe-5">
                 <v-card-text class="text-center">{{ worker_status.message }}</v-card-text>
-                <v-progress-linear rounded striped v-model="worker_status.fileop_progress" color="red-lighten-1"
-                  :height="16" :stream="worker_status.fileop_progress != 0"
-                  :indeterminate="worker_status.fileop_progress == 0">
-                  <strong v-if="worker_status.fileop_progress > 0">{{ Math.ceil(worker_status.fileop_progress)
-                  }}%</strong>
-                  <strong v-if="worker_status.fileop_progress == 0">Verbindungsaufbau</strong>
+                <v-progress-linear rounded striped v-model=" worker_status.fileop_progress " color="red-lighten-1"
+                  :height=" 16 " :stream=" worker_status.fileop_progress != 0 "
+                  :indeterminate=" worker_status.fileop_progress == 0 ">
+                  <strong v-if=" worker_status.fileop_progress > 0 ">{{ Math.ceil(worker_status.fileop_progress)
+                    }}%</strong>
+                  <strong v-if=" worker_status.fileop_progress == 0 ">Verbindungsaufbau</strong>
                 </v-progress-linear>
               </v-row>
               <v-row class="text-center justify-center mb-0 mt-5 pt-3">
-                <v-col cols="auto" v-if="worker_status.fileop_speed > 0" class="pt-0">
+                <v-col cols="auto" v-if=" worker_status.fileop_speed > 0 " class="pt-0">
                   <v-chip class="ma-2" color="success">
                     <v-icon start icon="mdi-speedometer-slow"></v-icon>
-                    {{ humanFileSize(worker_status.fileop_speed) }}
+                    {{ humanFileSize(worker_status.fileop_speed, true, 2, true) }}
                   </v-chip>
                 </v-col>
-                <v-col cols="auto" v-if="worker_status.fileop_files_remaining > 0" class="pt-0">
+                <v-col cols="auto" v-if=" worker_status.fileop_files_remaining > 0 " class="pt-0">
                   <v-chip class="ma-2" color="success">
                     <v-icon start icon="mdi-file-multiple"></v-icon>
                     {{ worker_status.fileop_files_done }} / {{ worker_status.fileop_files_remaining }}
                   </v-chip>
                 </v-col>
-                <v-col cols="auto" v-if="worker_status.fileop_time_remaining > 0" class="pt-0">
+                <v-col cols="auto" v-if=" worker_status.fileop_size_remaining > 0 && worker_status.fileop_size_done > 0 "
+                  class="pt-0">
+                  <v-chip class="ma-2" color="success">
+                    <v-icon start icon="mdi-harddisk"></v-icon>
+                    {{ humanFileSize(worker_status.fileop_size_done, true, 1) }} / {{
+                    humanFileSize(worker_status.fileop_size_remaining, true, 1) }}
+                  </v-chip>
+                </v-col>
+                <v-col cols="auto" v-if=" worker_status.fileop_time_remaining > 0 " class="pt-0">
                   <v-chip class="ma-2" color="success">
                     <v-icon start icon="mdi-clock-end"></v-icon>
-                    {{ duration_humanizer.humanize(Math.ceil(worker_status.fileop_time_remaining)) }}
+                    {{ duration_humanizer.humanize(Math.ceil(worker_status.fileop_time_remaining), {round: true}) }}
                   </v-chip>
                 </v-col>
               </v-row>
             </v-card>
           </v-col>
           <v-col cols="9">
-            <v-window v-model="tab">
-              <v-window-item :value="0">
-                <mod-window :mods="api_data.mods" :arma_path="settings.arma_path"
-                  @choose-armapath="chooseArmaPath"></mod-window>
+            <v-window v-model=" tab ">
+              <v-window-item :value=" 0 ">
+                <mod-window :mods=" api_data.mods " :arma_path=" settings.arma_path "
+                  @choose-armapath=" chooseArmaPath "></mod-window>
               </v-window-item>
-              <v-window-item :value="1">
-                <server-window :servers="api_data.servers" @load-api-data="loadAPIData"></server-window>
+              <v-window-item :value=" 1 ">
+                <server-window :servers=" api_data.servers " @load-api-data=" loadAPIData "
+                  :default_tab=" server_window_default_tab " ref="serverWindowRef"></server-window>
               </v-window-item>
-              <v-window-item :value="2">
-                <changelog-window :changelogs="api_data.changelogs"></changelog-window>
+              <v-window-item :value=" 2 ">
+                <changelog-window :changelogs=" api_data.changelogs "></changelog-window>
               </v-window-item>
-              <v-window-item :value="4">
+              <v-window-item :value=" 4 ">
                 <v-row>
                   <v-col cols="12">
                     <v-card>
@@ -116,11 +130,11 @@
                         <v-row>
                           <v-col cols="10">
                             <v-text-field label="Arma 3 Pfad" prepend-icon="mdi-folder-sync" variant="outlined"
-                              v-model="settings.arma_path" readonly placeholder="Leer" density="compact"
+                              v-model=" settings.arma_path " readonly placeholder="Leer" density="compact"
                               block></v-text-field>
                           </v-col>
                           <v-col cols="2">
-                            <v-btn @click="chooseArmaPath" icon="mdi-folder-open" color="red" block rounded="sm"
+                            <v-btn @click=" chooseArmaPath " icon="mdi-folder-open" color="red" block rounded="sm"
                               size="small">
                               <v-icon icon="mdi-folder-open"></v-icon>
                               <v-tooltip activator="parent" location="top">Arma 3 Pfad auswählen</v-tooltip>
@@ -132,10 +146,10 @@
                         <v-btn prepend-icon="mdi-upload" disabled color="success">
                           Letzten RPT hochladen
                         </v-btn>
-                        <v-btn prepend-icon="mdi-folder-open" color="success" class="ms-2" @click="openMissionCache">
+                        <v-btn prepend-icon="mdi-folder-open" color="success" class="ms-2" @click=" openMissionCache ">
                           MPMission Cache öffnen
                         </v-btn>
-                        <v-btn prepend-icon="mdi-cog-play" color="success" class="ms-2" @click="validateA3">
+                        <v-btn prepend-icon="mdi-cog-play" color="success" class="ms-2" @click=" validateA3 ">
                           Arma 3 via Steam überprüfen
                         </v-btn>
                       </v-card-text>
@@ -150,33 +164,33 @@
                         <v-row>
                           <v-col cols="6">
                             <v-card-subtitle>Start beschleunigen</v-card-subtitle>
-                            <v-switch v-model="settings.noSplash" hide-details inset label="Splashscreen überspringen"
+                            <v-switch v-model=" settings.noSplash " hide-details inset label="Splashscreen überspringen"
                               color="red-lighten-1"></v-switch>
-                            <v-switch v-model="settings.skipIntro" hide-details inset label="Intro überspringen"
+                            <v-switch v-model=" settings.skipIntro " hide-details inset label="Intro überspringen"
                               color="red-lighten-1"></v-switch>
                             <v-card-subtitle>Performance</v-card-subtitle>
-                            <v-switch v-model="settings.enableHT" hide-details inset label="Hyperthreading aktivieren"
+                            <v-switch v-model=" settings.enableHT " hide-details inset label="Hyperthreading aktivieren"
                               color="red-lighten-1"></v-switch>
-                            <v-switch v-model="settings.setThreadCharacteristics" hide-details inset
+                            <v-switch v-model=" settings.setThreadCharacteristics " hide-details inset
                               label="Windows Gaming Optimierung" color="red-lighten-1"></v-switch>
                           </v-col>
                           <v-col cols="6">
                             <v-card-subtitle>Verschiedenes</v-card-subtitle>
-                            <v-switch v-model="settings.windowed" hide-details inset label="Fenstermodus"
+                            <v-switch v-model=" settings.windowed " hide-details inset label="Fenstermodus"
                               color="red-lighten-1"></v-switch>
-                            <v-switch v-model="settings.noPause" hide-details inset
+                            <v-switch v-model=" settings.noPause " hide-details inset
                               label="Spiel nicht durch Tab pausieren" color="red-lighten-1"></v-switch>
-                            <v-switch v-model="settings.noPauseAudio" hide-details inset
+                            <v-switch v-model=" settings.noPauseAudio " hide-details inset
                               label="Audio nicht durch Tab pausieren" color="red-lighten-1"></v-switch>
                             <v-card-subtitle>Debug</v-card-subtitle>
-                            <v-switch v-model="settings.showScriptErrors" hide-details inset label="Skriptfehler anzeigen"
-                              color="red-lighten-1"></v-switch>
+                            <v-switch v-model=" settings.showScriptErrors " hide-details inset
+                              label="Skriptfehler anzeigen" color="red-lighten-1"></v-switch>
                           </v-col>
                         </v-row>
                         <v-row>
                           <v-col cols="12">
                             <v-text-field label="Weitere Startparameter" prepend-icon="mdi-powershell" variant="outlined"
-                              v-model="settings.command_line" placeholder="-debug" block></v-text-field>
+                              v-model=" settings.command_line " placeholder="-debug" block></v-text-field>
                           </v-col>
                         </v-row>
                       </v-card-text>
@@ -184,26 +198,26 @@
                   </v-col>
                 </v-row>
               </v-window-item>
-              <v-window-item :value="5">
+              <v-window-item :value=" 5 ">
                 <faq-window></faq-window>
               </v-window-item>
             </v-window>
           </v-col>
         </v-row>
-        <v-dialog transition="dialog-top-transition" width="400" v-model="show_login_dialog">
+        <v-dialog transition="dialog-top-transition" width="400" v-model=" show_login_dialog ">
           <v-card>
             <v-toolbar color="red" title="Login" class="text-center pe-5"></v-toolbar>
             <v-card-text class="mb-2">
-              <v-text-field v-model="settings.auth_token" class="mb-2" clearable label="Auth-Token"></v-text-field>
-              <v-btn block color="success" size="large" type="submit" variant="elevated" @click="login">
-                Login <v-progress-circular v-if="requesting_login" indeterminate size="24"></v-progress-circular>
+              <v-text-field v-model=" settings.auth_token " class="mb-2" clearable label="Auth-Token"></v-text-field>
+              <v-btn block color="success" size="large" type="submit" variant="elevated" @click=" login ">
+                Login <v-progress-circular v-if=" requesting_login " indeterminate size="24"></v-progress-circular>
               </v-btn>
             </v-card-text>
           </v-card>
         </v-dialog>
       </v-container>
-      <v-container :fluid="true" v-if="first_run_dialog">
-        <v-dialog transition="dialog-top-transition" width="800" v-model="first_run_dialog" persistent>
+      <v-container :fluid=" true " v-if=" first_run_dialog ">
+        <v-dialog transition="dialog-top-transition" width="800" v-model=" first_run_dialog " persistent>
           <v-card>
             <v-toolbar color="red" title="Willkommen im Panthor Launcher!" class="text-center"></v-toolbar>
             <v-card-text>
@@ -214,21 +228,22 @@
                 <br>
                 <span class="text-h8">Folgede Ordner wurden automatisch erkannt, bitte wähle den richtigen aus:</span>
 
-                <v-radio-group label="Arma 3 Pfad" v-model="first_run_selected_path" class="mt-8"
-                  v-if="possible_a3_paths.length > 0">
-                  <v-radio :label="path" :value="i" v-for="(path, i) in possible_a3_paths"></v-radio>
+                <v-radio-group label="Arma 3 Pfad" v-model=" first_run_selected_path " class="mt-8"
+                  v-if=" possible_a3_paths.length > 0 ">
+                  <v-radio :label=" path " :value=" i "
+                    v-for="(        path, i        ) in         possible_a3_paths        "></v-radio>
                 </v-radio-group>
                 <br>
                 <span class="text-h8">Falls der richtige Pfad nicht in der Liste ist überspringe diesen Schritt.</span>
               </div>
-              <v-alert type="warning" title="Keine validen Pfade gefunden" v-if="possible_a3_paths.length === 0"
+              <v-alert type="warning" title="Keine validen Pfade gefunden" v-if=" possible_a3_paths.length === 0 "
                 text="Leider ist Arma auf deinem PC nicht an einer üblichen Stelle installiert oder du hast es manuell verschoben. Bitte überspringe diesen Schritt."></v-alert>
             </v-card-text>
             <v-card-actions class="justify-center mb-2">
-              <v-btn color="warning" flat prepend-icon="mdi-debug-step-over" @click="firstRunSkip"
+              <v-btn color="warning" flat prepend-icon="mdi-debug-step-over" @click=" firstRunSkip "
                 size="large">Überspringen</v-btn>
-              <v-btn color="success" flat prepend-icon="mdi-content-save-cog" @click="firstRunSave" size="large"
-                v-if="possible_a3_paths.length > 0">Speichern</v-btn>
+              <v-btn color="success" flat prepend-icon="mdi-content-save-cog" @click=" firstRunSave " size="large"
+                v-if=" possible_a3_paths.length > 0 ">Speichern</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -238,12 +253,12 @@
 </template>
 
 <script lang="ts">
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, shell } from 'electron';
 import ModWindow from '@/components/ModWindow.vue'
 import ChangelogWindow from '@/components/ChangelogWindow.vue'
 import ServerWindow from '@/components/ServerWindow.vue'
 import FaqWindow from '@/components/FaqWindow.vue'
-import { PropType, defineComponent } from 'vue'
+import { PropType, defineComponent, ref } from 'vue'
 import axios from 'axios';
 import Store from 'electron-store';
 import Winreg from 'winreg';
@@ -254,10 +269,9 @@ import Mod from '@/interfaces/ModInterface';
 import Changelog from '@/interfaces/ChangelogInterface';
 import Teamspeak from './interfaces/TeamspeakInterface';
 import WorkerStatus from './interfaces/WorkerStatusInterface';
+import User from './interfaces/UserInterface';
 import SettingsStore, { defaultSettings } from './interfaces/SettingsStoreInterface';
 import { existsSync } from 'node:fs';
-import { throwStatement } from '@babel/types';
-import User from './interfaces/UserInterface';
 
 const langService: HumanizeDurationLanguage = new HumanizeDurationLanguage()
 const duration_humanizer = new HumanizeDuration(langService)
@@ -294,6 +308,7 @@ export default defineComponent({
       first_run_dialog: false,
       first_run_selected_path: 0,
       possible_a3_paths: [] as Array<string>,
+      server_window_default_tab: 0,
       a3_registry_keys: [
         {
           key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 107410',
@@ -315,7 +330,7 @@ export default defineComponent({
     }
   },
   methods: {
-    humanFileSize(bytes: number, si = false, dp = 1) {
+    humanFileSize(bytes: number, si = true, dp = 1, speed = false) {
       const thresh = si ? 1000 : 1024;
 
       if (Math.abs(bytes) < thresh) {
@@ -334,7 +349,10 @@ export default defineComponent({
       } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
 
 
-      return bytes.toFixed(dp) + ' ' + units[u] + "/s";
+      if (speed) {
+        return bytes.toFixed(dp) + ' ' + units[u] + "/s";
+      }
+      return bytes.toFixed(dp) + ' ' + units[u];
     },
     loadAPIData() {
       if (!this.loading_api_data) {
@@ -439,6 +457,9 @@ export default defineComponent({
     validateA3() {
       ipcRenderer.send("settings:validateA3", {})
     },
+    openURL(url: string) {
+      shell.openExternal(url)
+    },
     launch_first_run() {
       this.first_run_dialog = true
 
@@ -462,6 +483,14 @@ export default defineComponent({
       })
 
       console.log(this.possible_a3_paths)
+    },
+    openServer(index: number = 0) {
+      this.server_window_default_tab = index
+      this.tab = 1
+      let serverWindowRef = this.$refs.serverWindowRef as typeof ServerWindow
+      if (serverWindowRef !== undefined) {
+        serverWindowRef.setTab(index)
+      }
     },
     firstRunSave() {
       this.settings.first_run = false
@@ -496,6 +525,7 @@ export default defineComponent({
           } else {
             this.settings.auth_token = ''
             this.logged_in = false
+            this.requesting_login = false
           }
         })
         .catch((error) => {
@@ -551,7 +581,4 @@ export default defineComponent({
 html {
   overflow-y: auto !important;
 }
-
-
-
 </style>

@@ -5,7 +5,6 @@ export default interface Teamspeak {
     Name: string,
     Ip: string,
     Slots: number,
-    IpAddress: string,
     Port: number,
     OS: string,
     Banner: string,

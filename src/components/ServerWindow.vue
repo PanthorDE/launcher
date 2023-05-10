@@ -19,15 +19,21 @@ export default {
     name: "ServerWindow",
     emits: ["load-api-data"],
     props: {
-        servers: { type: Array<Server>, required: true }
+        servers: { type: Array<Server>, required: true },
+        default_tab: { type: Number, default: 0 }
     },
     data() {
         return {
             tab: 0
         }
     },
+    mounted() {
+        this.tab = this.default_tab
+    },
     methods: {
-
+        setTab(tab: number) {
+            this.tab = tab
+        }
     },
     computed: {
         scroll_height: () => { return (window.innerHeight - 100) + "px" },

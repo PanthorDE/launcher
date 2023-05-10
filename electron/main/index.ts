@@ -128,7 +128,7 @@ async function createWindow() {
   })
 
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('https:')) shell.openExternal(url)
+    if (url.startsWith('https:') || url.startsWith('ts3server:')) shell.openExternal(url)
     return { action: 'deny' }
   })
   // win.webContents.on('will-navigate', (event, url) => { }) #344

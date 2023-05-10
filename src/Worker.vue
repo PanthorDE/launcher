@@ -19,6 +19,8 @@ import Mod from './interfaces/ModInterface';
 import ModFile from './interfaces/ModFileInterface';
 import WorkerStatus from './interfaces/WorkerStatusInterface';
 import hasha from 'hasha';
+import Store from 'electron-store';
+import SettingsStore from './interfaces/SettingsStoreInterface';
 
 export default defineComponent({
   name: "Worker",
@@ -71,7 +73,7 @@ export default defineComponent({
         if (toDownload.length === 0) {
           this.worker_status.message = "Verifizierung abgeschlossen"
           this.worker_status.status = 1
-          this.updateWorkerStatus();  
+          this.updateWorkerStatus();
           return
         }
 
@@ -119,6 +121,9 @@ export default defineComponent({
 
       return promises
     },
+    downloadFinished() {
+      this.resetWorkerStatus()
+    },
     downloadFiles(to_download: Array<ModFile>) {
       let total_size = 0
       this.worker_status.message = "Download startet"
@@ -131,11 +136,7 @@ export default defineComponent({
         total_size += file.Size
       })
 
-      this.downloadFileRecursive(to_download, 0, () => {
-        this.worker_status.message = "Download abgeschlossen"
-        this.worker_status.status = 7
-        this.updateWorkerStatus()
-      }, 0, total_size)
+      this.downloadFileRecursive(to_download, 0, this.downloadFinished, 0, total_size)
     },
     downloadFileRecursive(to_download: Array<ModFile>, index: number, callback: Function, size_done: number = 0, total_size: number = 0, last_speed_calc: number = Date.now(), last_speed_size_done: number = 0) {
       let request_download = new Promise((resolve, reject) => {
@@ -164,11 +165,14 @@ export default defineComponent({
 
             if (last_speed_calc + 1000 < Date.now()) {
               this.worker_status.fileop_speed = Math.round(((size_done + streamed_chunkslength) - last_speed_size_done) / ((Date.now() - last_speed_calc) / 1000))
+              this.worker_status.fileop_time_remaining = Math.round(((total_size - size_done) / this.worker_status.fileop_speed) * 1000)
               last_speed_calc = Date.now()
               last_speed_size_done = size_done + streamed_chunkslength
             }
 
             this.worker_status.fileop_progress = (size_done + streamed_chunkslength) / total_size * 100
+            this.worker_status.fileop_size_done = (size_done + streamed_chunkslength)
+            this.worker_status.fileop_size_remaining = total_size
             this.worker_status.message = "Download läuft"
             this.worker_status.status = 6
             this.updateWorkerStatus()
@@ -230,6 +234,8 @@ export default defineComponent({
         this.worker_status.fileop_progress = size_done / total_size * 100
         this.worker_status.fileop_speed = Math.round(size_done / ((Date.now() - start_time) / 1000))
         this.worker_status.fileop_time_remaining = Math.round(((total_size - size_done) / this.worker_status.fileop_speed) * 1000)
+        this.worker_status.fileop_size_done = size_done
+        this.worker_status.fileop_size_remaining = total_size
         this.updateWorkerStatus();
 
         if (quick && !file.includes('.bisign')) {
@@ -280,9 +286,18 @@ export default defineComponent({
       this.worker_status.fileop_files_done = 0
       this.worker_status.fileop_files_remaining = 0
       this.worker_status.fileop_time_remaining = 0
+      this.worker_status.fileop_size_done = 0
+      this.worker_status.fileop_size_remaining = 0
       this.worker_status.status = 0
 
       this.updateWorkerStatus()
+    },
+    reloadArmaPath() {
+      let store = new Store<SettingsStore>({
+        defaults: {} as SettingsStore
+      });
+      this.arma_path = store.get('arma_path')
+      console.log(this.arma_path)
     }
   },
   computed: {
@@ -298,18 +313,20 @@ export default defineComponent({
   },
   mounted() {
     ipcRenderer.on('mod:update', (_event, mod_id: number) => {
-      if(this.arma_path !== '') {
+      if (this.arma_path !== '') {
         this.updateMod(mod_id)
       }
     })
     ipcRenderer.on('mod:verify', (_event, mod_id: number) => {
-      if(this.arma_path !== '') {
+      if (this.arma_path !== '') {
         this.verifyMod(mod_id)
       }
     })
     ipcRenderer.on('settings:changedArmaPath', (_event, path: string) => {
-      this.arma_path = path + "\\"
+      this.reloadArmaPath()
     })
+
+    this.reloadArmaPath()
   },
 });
 </script>
