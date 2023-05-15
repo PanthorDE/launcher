@@ -103,7 +103,7 @@ export default defineComponent({
       let promises = [];
 
       promises.push(
-        axios.get('https://api.panthor.de/v1/mod/' + mod_id)
+        axios.get('https://api.panthor.de/v2/mod/' + mod_id)
           .then((response) => {
             this.mod = response.data.data[0]
           })
@@ -111,7 +111,7 @@ export default defineComponent({
             console.log(error);
           }))
       promises.push(
-        axios.get('https://api.panthor.de/v1/mod/hashlist/' + mod_id)
+        axios.get('https://api.panthor.de/v2/mod/hashlist/' + mod_id)
           .then((response) => {
             this.hashlist = response.data.data
           })
@@ -148,7 +148,7 @@ export default defineComponent({
 
         console.log("Downloading " + file.FileName + " (" + file.Size + " bytes")
 
-        http.get(this.mod.DownloadUrl + file.RelativPath, (response) => {
+        http.get(this.mod.files + file.RelativPath, (response) => {
           response.pipe(stream);
 
           stream.on("finish", () => {
@@ -195,7 +195,7 @@ export default defineComponent({
       });
     },
     listDiff() {
-      let files = this.getFileList(join(this.arma_path, this.mod.Directories))
+      let files = this.getFileList(join(this.arma_path, this.mod.dir))
 
       let additional_files = files.filter(x => !this.hashlist_files.includes(x));
 
@@ -213,7 +213,7 @@ export default defineComponent({
       })
     },
     hashFiles(quick: boolean = false) {
-      let file_list = this.getFileList(join(this.arma_path, this.mod.Directories))
+      let file_list = this.getFileList(join(this.arma_path, this.mod.dir))
       let files: Array<string> = [];
 
       this.worker_status.fileop_files_done = 0

@@ -1,6 +1,6 @@
 <template>
     <v-card flat>
-        <v-img height="300" :src="mod.ImageUrl" cover>
+        <v-img height="300" :src="mod.img" cover>
             <v-btn color="white" flat icon="mdi-folder-open" rounded="sm" class="float-right mt-2 mr-2" size="small"
                 @click="requestFolderOpen">
                 <v-icon icon="mdi-folder-open"></v-icon>
@@ -8,10 +8,10 @@
             </v-btn>
         </v-img>
         <v-row justify="center" class="mt-2">
-            <v-card-title class="text-center">{{ mod.Name }}</v-card-title>
+            <v-card-title class="text-center">{{ mod.name }}</v-card-title>
         </v-row>
         <v-row justify="center" class="mb-3">
-            <v-card-subtitle class="text-center">{{ mod.Description }}</v-card-subtitle>
+            <v-card-subtitle class="text-center">{{ mod.desc }}</v-card-subtitle>
         </v-row>
         <v-row>
             <v-divider :thickness="6" color="black"></v-divider>
@@ -59,10 +59,10 @@ export default {
     },
     methods: {
         checkMod() {
-            ipcRenderer.send('mod:verify', this.mod.Id)
+            ipcRenderer.send('mod:verify', this.mod.id)
         },
         requestFolderOpen() {
-            ipcRenderer.send('mod:openFolder', join(this.arma_path, this.mod.Directories))
+            ipcRenderer.send('mod:openFolder', join(this.arma_path, this.mod.dir))
         }
     },
 }  

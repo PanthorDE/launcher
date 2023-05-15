@@ -50,20 +50,20 @@
         <v-row>
           <v-col cols="3">
             <v-card flat v-for="(server, i) in api_data.servers" @click="openServer(i)" class="mb-3">
-              <v-card-title> {{ server.Servername }} <v-progress-circular
-                  :model-value="server.Playercount / notZero(server.Slots) * 100" color="red-lighten-1" :size="70"
-                  :width="8" class="float-right">{{ Math.round(server.Playercount / notZero(server.Slots) * 100)
+              <v-card-title> {{ server.name }} <v-progress-circular
+                  :model-value="server.players.length / notZero(server.slots) * 100" color="red-lighten-1" :size="70"
+                  :width="8" class="float-right">{{ Math.round(server.players.length / notZero(server.slots) * 100)
                   }}%</v-progress-circular><br><span class="text-h5" style="font-size: 18px !important;">Online: {{
-  server.Playercount }} / {{ server.Slots
+  server.players.length }} / {{ server.slots
   }}</span></v-card-title>
             </v-card>
             <v-card flat v-for="teamspeak in api_data.teamspeaks"
-              @click="openURL(`ts3server://${teamspeak.Ip}?port=${teamspeak.Port}`)">
+              @click="openURL(`ts3server://${teamspeak.ip}?port=${teamspeak.port}`)">
               <v-card-title> Teamspeak <v-progress-circular
-                  :model-value="(teamspeak.Usercount / notZero(teamspeak.Slots)) * 100" color="red-lighten-1" :size="70"
-                  :width="8" class="float-right">{{ Math.round((teamspeak.Usercount / notZero(teamspeak.Slots)) * 100)
+                  :model-value="(teamspeak.users.length / notZero(teamspeak.slots)) * 100" color="red-lighten-1" :size="70"
+                  :width="8" class="float-right">{{ Math.round((teamspeak.users.length / notZero(teamspeak.slots)) * 100)
                   }}%</v-progress-circular><br><span class="text-h5" style="font-size: 18px !important;">Online: {{
-  teamspeak.Usercount }} / {{ teamspeak.Slots }}</span></v-card-title>
+  teamspeak.users.length }} / {{ teamspeak.slots }}</span></v-card-title>
             </v-card>
             <v-card flat min-height="100" class="mt-3" v-if="worker_status.status !== 0" @click="tab = 0;">
               <v-card-title><v-icon icon="mdi-download-network-outline" size="small" class="float-right"></v-icon>
@@ -365,7 +365,7 @@ export default defineComponent({
 
       if (this.logged_in) {
         promises.push(
-          axios.get('https://api.panthor.de/v1/mods/' + this.settings.auth_token)
+          axios.get('https://api.panthor.de/v2/mods/' + this.settings.auth_token)
             .then((response) => {
               this.api_data.mods = response.data.data
             })
@@ -374,7 +374,7 @@ export default defineComponent({
             }))
       } else {
         promises.push(
-          axios.get('https://api.panthor.de/v1/mods')
+          axios.get('https://api.panthor.de/v2/mods')
             .then((response) => {
               this.api_data.mods = response.data.data
             })
@@ -383,7 +383,7 @@ export default defineComponent({
             }))
       }
       promises.push(
-        axios.get('https://api.panthor.de/v1/servers')
+        axios.get('https://api.panthor.de/v2/servers')
           .then((response) => {
             this.api_data.servers = response.data.data
           })
@@ -391,7 +391,7 @@ export default defineComponent({
             console.log(error);
           }))
       promises.push(
-        axios.get('https://api.panthor.de/v1/changelog')
+        axios.get('https://api.panthor.de/v2/changelogs')
           .then((response) => {
             this.api_data.changelogs = response.data.data
           })
@@ -399,7 +399,7 @@ export default defineComponent({
             console.log(error);
           }))
       promises.push(
-        axios.get('https://api.panthor.de/v1/teamspeaks')
+        axios.get('https://api.panthor.de/v2/teamspeaks')
           .then((response) => {
             this.api_data.teamspeaks = response.data.data
           })
@@ -409,7 +409,7 @@ export default defineComponent({
 
       if (this.logged_in) {
         promises.push(
-          axios.get('https://api.panthor.de/v1/player/' + this.settings.auth_token)
+          axios.get('https://api.panthor.de/v2/player/' + this.settings.auth_token)
             .then((response) => {
               this.user.player = response.data.data[0]
             })

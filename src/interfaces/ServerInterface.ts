@@ -1,32 +1,27 @@
 import APIDate from "./APIDateInterface"
 
 export interface Side {
-    Civs: Array<string>,
-    Medics: Array<string>,
-    Cops: Array<string>,
-    RAC: Array<string>
+    civ: Array<string>,
+    medic: Array<string>,
+    cop: Array<string>,
+    rac: Array<string>
 }
 
 export default interface Server {
-    Id: number,
-    ModId: number,
-    appId: number,
+    id: number,
+    mod_id: number,
+    appid: number,
     online: number,
-    Servername: string,
-    Description: string,
-    IpAddress: string,
-    Port: number,
-    ServerPassword: string,
-    Gamemode: number,
-    StartParameters: string,
-    Slots: number,
-    Update_Mods: number,
-    Playercount: number,
-    Civilians: number,
-    Medics: number,
-    Cops: number,
-    Adac: number,
-    Players: Array<string>,
-    Side: Side,
+    name: string,
+    desc: string,
+    ip: string,
+    port: number,
+    password: string,
+    gamemode: number,
+    params: string,
+    slots: number,
+    update_mods: number,
+    players: Array<string>,
+    sides: Side,
     updated_at: APIDate
 }

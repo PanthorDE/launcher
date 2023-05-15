@@ -1,11 +1,11 @@
 export default interface Mod {
-    Id: number,
-    Name: string,
-    appId: number,
-    DownloadUrl: string,
-    IsActive: number,
-    Description: string,
-    ImageUrl: string,
-    HasGameFiles: number,
-    Directories: string
+    id: number,
+    name: string,
+    appid: number,
+    files: string,
+    active: boolean,
+    desc: string,
+    img: string,
+    has_files: boolean,
+    dir: string
 }

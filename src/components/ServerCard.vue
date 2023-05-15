@@ -29,15 +29,15 @@
                         </tr>
                         <tr>
                             <td>IP:Port</td>
-                            <td class="text-right">{{ server.IpAddress }}:{{ server.Port }}</td>
+                            <td class="text-right">{{ server.ip }}:{{ server.port }}</td>
                         </tr>
                         <tr>
                             <td>Mods</td>
-                            <td class="text-right">{{ server.StartParameters }}</td>
+                            <td class="text-right">{{ server.params }}</td>
                         </tr>
                         <tr>
                             <td>Passwort</td>
-                            <td class="text-right" @click="copyToClipboard(server.ServerPassword)">{{ server.ServerPassword
+                            <td class="text-right" @click="copyToClipboard(server.password)">{{ server.password
                             }}</td>
                         </tr>
                         <tr>
@@ -49,9 +49,9 @@
                         </tr>
                     </tbody>
                 </v-table>
-                <v-card class="mt-2" v-if="server.Description !== null && server.Description != ''">
+                <v-card class="mt-2" v-if="server.desc !== null && server.desc != ''">
                     <v-card-subtitle>Beschreibung</v-card-subtitle>
-                    <v-card-text>{{ server.Description }}</v-card-text>
+                    <v-card-text>{{ server.desc }}</v-card-text>
                 </v-card>
             </v-col>
             <v-col cols="4">
@@ -152,8 +152,8 @@ export default {
         players_list: function () {
             let list: IPlayerWithType[] = []
 
-            if (this.server.Id != 1) {
-                this.server.Players.forEach((name: string) => {
+            if (this.server.gamemode != 1) {
+                this.server.players.forEach((name: string) => {
                     let player = <IPlayerWithType>{};
                     player.name = name
                     player.color = '#660080'
@@ -165,7 +165,7 @@ export default {
                 return list
             }
 
-            this.server.Side.Civs.forEach((name: string) => {
+            this.server.sides.civ.forEach((name: string) => {
                 let player = <IPlayerWithType>{};
                 player.name = name
                 player.color = '#660080'
@@ -174,7 +174,7 @@ export default {
                 list.push(player)
             });
 
-            this.server.Side.Medics.forEach((name: string) => {
+            this.server.sides.medic.forEach((name: string) => {
                 let player = <IPlayerWithType>{};
                 player.name = name
                 player.color = '#008000'
@@ -183,7 +183,7 @@ export default {
                 list.push(player)
             });
 
-            this.server.Side.Cops.forEach((name: string) => {
+            this.server.sides.cop.forEach((name: string) => {
                 let player = <IPlayerWithType>{};
                 player.name = name
                 player.color = '#004D99'
@@ -192,7 +192,7 @@ export default {
                 list.push(player)
             });
 
-            this.server.Side.RAC.forEach((name: string) => {
+            this.server.sides.rac.forEach((name: string) => {
                 let player = <IPlayerWithType>{};
                 player.name = name
                 player.color = '#800000'
@@ -222,7 +222,7 @@ export default {
         pie_data: function () {
             return {
                 datasets: [{
-                    data: [this.server.Civilians, this.server.Cops, this.server.Medics, this.server.Adac],
+                    data: [this.server.sides.civ.length, this.server.sides.cop.length, this.server.sides.medic.length, this.server.sides.rac.length],
                     backgroundColor: [
                         '#660080',
                         '#004D99',
@@ -245,7 +245,7 @@ export default {
     watch: {
         'server.server.updated_at.date': function () {
             this.pingServer();
-            clipboard.writeText(this.server.ServerPassword)
+            clipboard.writeText(this.server.password)
         }
     },
     methods: {
@@ -254,7 +254,7 @@ export default {
         },
         pingServer() {
             this.ping = 0;
-            promise.probe(this.server.IpAddress).then((res) => {
+            promise.probe(this.server.ip).then((res) => {
                 setTimeout(() => {
                     this.ping = parseInt(res.avg)
                 }, 1000);
