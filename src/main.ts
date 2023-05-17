@@ -5,32 +5,31 @@
  */
 
 // Components
-import App from '@/App.vue'
-import UI from '@/UI.vue'
-import Worker from '@/Worker.vue'
+import App from '@/App.vue';
+import UI from '@/UI.vue';
+import Worker from '@/Worker.vue';
 
 // Composables
 import { createApp } from 'vue';
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router';
 
 // Plugins
-import { registerPlugins } from '@/plugins'
+import { registerPlugins } from '@/plugins';
 
 const routes = [
-    { path: '/', component: UI },
-    { path: '/worker', component: Worker }
-]
+  { path: '/', component: UI },
+  { path: '/worker', component: Worker },
+];
 
 const router = createRouter({
-    history: createWebHashHistory(),
-    routes,
-})
+  history: createWebHashHistory(),
+  routes,
+});
 
-const app = createApp(App)
+const app = createApp(App);
 
-registerPlugins(app)
+registerPlugins(app);
 
-app.use(router)
+app.use(router);
 
-app.mount('#app')
-
+app.mount('#app');
