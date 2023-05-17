@@ -1,7 +1,7 @@
 <template>
     <v-tabs centered color="red" v-model="tab">
         <v-tab v-for="(server, index) in servers" :key="index" :value="index">
-            {{ server.Servername }}
+            {{ server.name }}
         </v-tab>
     </v-tabs>
     <v-row>
