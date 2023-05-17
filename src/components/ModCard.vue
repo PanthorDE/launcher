@@ -23,7 +23,7 @@
                 </v-btn>
             </v-col>
         </v-row>
-        <v-row justify="center" class="mt-3 mb-1" v-if="arma_path !== ''">
+        <v-row justify="center" class="my-3" v-if="arma_path !== ''">
             <v-col cols="auto">
                 <v-btn color="success" flat prepend-icon="mdi-download">
                     Download
