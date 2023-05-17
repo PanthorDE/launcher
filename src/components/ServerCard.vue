@@ -2,17 +2,13 @@
     <v-card flat>
         <v-row class="pt-3 pb-0">
             <v-col cols="4" class="pt-0 pb-0">
-                <v-card-title>
-                    Daten
-                </v-card-title>
+                <v-card-title>Daten</v-card-title>
             </v-col>
             <v-col cols="4" class="pt-0 pb-0">
-                <v-card-title>
-                    Spieler
-                </v-card-title>
+                <v-card-title>Spieler</v-card-title>
             </v-col>
             <v-col cols="4" class="pt-0 pb-0 text-right">
-                <v-chip append-icon="mdi-clock-alert-outline" class="mt-3 me-3">
+                <v-chip prepend-icon="mdi-clock-alert-outline" class="mt-3 me-3">
                     Restart in {{ new Date(restart_in).toISOString().substr(11, 8) }}
                 </v-chip>
             </v-col>
@@ -37,26 +33,34 @@
                         </tr>
                         <tr>
                             <td>Passwort</td>
-                            <td class="text-right" @click="copyToClipboard(server.password)">{{ server.password
-                            }}</td>
+                            <td class="text-right" @click="copyToClipboard(server.password)">
+                                {{ server.password}}
+                            </td>
                         </tr>
                         <tr>
                             <td>Stand</td>
-                            <td class="text-right">{{ new Date(server.updated_at.date).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            }) }}</td>
+                            <td class="text-right">
+                                {{ new Date(server.updated_at.date).toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit'}) 
+                                }}
+                            </td>
                         </tr>
                     </tbody>
                 </v-table>
-                <v-card class="mt-2" v-if="server.desc !== null && server.desc != ''">
-                    <v-card-subtitle>Beschreibung</v-card-subtitle>
+                <v-card class="ps-4" v-if="server.desc !== null && server.desc != ''" flat>
+                    <v-card-subtitle class="ps-3">Beschreibung</v-card-subtitle>
                     <v-card-text>{{ server.desc }}</v-card-text>
                 </v-card>
             </v-col>
             <v-col cols="4">
-                <v-text-field label="Filter" density="compact" prepend-icon="mdi-account-search-outline"
-                    v-model="player_search" clearable></v-text-field>
+                <v-text-field 
+                    label="Suchen" 
+                    density="compact" 
+                    prepend-icon="mdi-account-search-outline"
+                    v-model="player_search" 
+                    clearable>
+                </v-text-field>
                 <v-virtual-scroll :items="players_list" height="330">
                     <template v-slot:default="{ item }">
                         <v-list-item :title="item.name" density="compact">
@@ -72,20 +76,19 @@
             </v-col>
         </v-row>
         <v-divider thickness="6" class="mt-2"></v-divider>
-        <v-row justify="end" class="mt-2 mb-0 me-2">
-            <v-col cols="6" class="text-right pt-3  pb-0">
+        <v-row justify="end" align="center" class="px-4 py-4">
+            <v-col cols="4" class="text-right pt-3 pb-0">
                 <v-select label="Arma Profil auswählen" density="comfortable" persistent-hint hint="Arma Profil" single-line
                     placeholder="Arma Profil" variant="outlined" rounded="lg"
                     :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"></v-select>
             </v-col>
-        </v-row>
-        <v-row justify="end" class="mt-0 mb-2 me-2">
+            <v-col cols="2"></v-col>
             <v-col cols="3" class="text-right pt-2">
-                <v-btn color="red-lighten-1" block size="large" class="mt-1" prepend-icon="mdi-reload"
+                <v-btn color="red-lighten-1" block size="large" prepend-icon="mdi-reload"
                     @click="$emit('load-api-data')">Aktualsieren</v-btn>
             </v-col>
             <v-col cols="3" class="text-right pt-2">
-                <v-btn color="success" block size="large" class="mt-1" prepend-icon="mdi-connection">Joinen</v-btn>
+                <v-btn color="success" block size="large" prepend-icon="mdi-connection">Joinen</v-btn>
             </v-col>
         </v-row>
     </v-card>
@@ -154,51 +157,46 @@ export default {
 
             if (this.server.gamemode != 1) {
                 this.server.players.forEach((name: string) => {
-                    let player = <IPlayerWithType>{};
-                    player.name = name
-                    player.color = '#660080'
-                    player.icon = 'mdi-account'
-
-                    list.push(player)
+                    list.push({
+                        name,
+                        color: '#660080',
+                        icon: 'mdi-account'
+                    })
                 });
 
-                return list
+                return list;
             }
 
             this.server.sides.civ.forEach((name: string) => {
-                let player = <IPlayerWithType>{};
-                player.name = name
-                player.color = '#660080'
-                player.icon = 'mdi-passport'
-
-                list.push(player)
+                list.push({
+                    name,
+                    color: '#660080',
+                    icon: 'mdi-passport'
+                });
             });
 
             this.server.sides.medic.forEach((name: string) => {
-                let player = <IPlayerWithType>{};
-                player.name = name
-                player.color = '#008000'
-                player.icon = 'mdi-hospital'
-
-                list.push(player)
+                list.push({
+                    name,
+                    color: '#008000',
+                    icon: 'mdi-hospital'
+                });
             });
 
             this.server.sides.cop.forEach((name: string) => {
-                let player = <IPlayerWithType>{};
-                player.name = name
-                player.color = '#004D99'
-                player.icon = 'mdi-police-badge'
-
-                list.push(player)
+                list.push({
+                    name,
+                    color: '#004D99',
+                    icon: 'mdi-police-badge'
+                });
             });
 
             this.server.sides.rac.forEach((name: string) => {
-                let player = <IPlayerWithType>{};
-                player.name = name
-                player.color = '#800000'
-                player.icon = 'mdi-car-wrench'
-
-                list.push(player)
+                list.push({
+                    name,
+                    color: '#800000',
+                    icon: 'mdi-car-wrench'
+                });
             });
 
             if (this.player_search != '') {
@@ -215,9 +213,9 @@ export default {
                     return 1;
                 }
                 return 0;
-            })
+            });
 
-            return list
+            return list;
         },
         pie_data: function () {
             return {
@@ -229,8 +227,8 @@ export default {
                         '#008000',
                         '#800000'
                     ]
-                }]
-                , labels: [
+                }], 
+                labels: [
                     'Zivilisten',
                     'Polizei',
                     'Medics',
