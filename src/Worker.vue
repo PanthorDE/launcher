@@ -8,16 +8,16 @@
 
 <script lang="ts">
 import { ipcRenderer } from 'electron';
-import { PropType, defineComponent } from 'vue';
+import { defineComponent } from 'vue';
 
 import { readdirSync, unlinkSync, createWriteStream, unlink, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 import http from 'node:http';
-import axios from 'axios';
 import Mod from './interfaces/ModInterface';
 import ModFile from './interfaces/ModFileInterface';
 import WorkerStatus from './interfaces/WorkerStatusInterface';
+import { PanthorApiService } from './services/PanthorApi.service';
 import hasha from 'hasha';
 import Store from 'electron-store';
 import SettingsStore from './interfaces/SettingsStoreInterface';
@@ -99,30 +99,14 @@ export default defineComponent({
       });
     },
     getMod(mod_id: number) {
-      let promises = [];
-
-      promises.push(
-        axios
-          .get('https://api.panthor.de/v2/mod/' + mod_id)
-          .then((response) => {
-            this.mod = response.data.data[0];
-          })
-          .catch((error) => {
-            console.log(error);
-          })
-      );
-      promises.push(
-        axios
-          .get('https://api.panthor.de/v2/mod/hashlist/' + mod_id)
-          .then((response) => {
-            this.hashlist = response.data.data;
-          })
-          .catch((error) => {
-            console.log(error);
-          })
-      );
-
-      return promises;
+      return [
+        PanthorApiService.getMod(mod_id)
+          .then((mod) => (this.mod = mod))
+          .catch(console.error),
+        PanthorApiService.getModHashlist(mod_id)
+          .then((hashlist) => (this.hashlist = hashlist))
+          .catch(console.error),
+      ];
     },
     downloadFinished() {
       this.resetWorkerStatus();

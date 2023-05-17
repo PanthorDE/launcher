@@ -396,6 +396,7 @@ import WorkerStatus from './interfaces/WorkerStatusInterface';
 import User from './interfaces/UserInterface';
 import SettingsStore, { defaultSettings } from './interfaces/SettingsStoreInterface';
 import { existsSync } from 'node:fs';
+import { PanthorApiService } from './services/PanthorApi.service';
 
 const langService: HumanizeDurationLanguage = new HumanizeDurationLanguage();
 const duration_humanizer = new HumanizeDuration(langService);
@@ -477,72 +478,37 @@ export default defineComponent({
       }
     },
     getMods() {
-      let promises = [];
+      let promises: Promise<unknown>[] = [];
 
-      if (this.logged_in) {
-        promises.push(
-          axios
-            .get('https://api.panthor.de/v2/mods/' + this.settings.auth_token)
-            .then((response) => {
-              this.api_data.mods = response.data.data;
-            })
-            .catch((error) => {
-              console.log(error);
-            })
-        );
-      } else {
-        promises.push(
-          axios
-            .get('https://api.panthor.de/v2/mods')
-            .then((response) => {
-              this.api_data.mods = response.data.data;
-            })
-            .catch((error) => {
-              console.log(error);
-            })
-        );
-      }
       promises.push(
-        axios
-          .get('https://api.panthor.de/v2/servers')
-          .then((response) => {
-            this.api_data.servers = response.data.data;
-          })
-          .catch((error) => {
-            console.log(error);
-          })
+        PanthorApiService.getMods(this.logged_in ? this.settings.auth_token : undefined)
+          .then((mods) => (this.api_data.mods = mods))
+          .catch(console.error)
       );
+
       promises.push(
-        axios
-          .get('https://api.panthor.de/v2/changelogs')
-          .then((response) => {
-            this.api_data.changelogs = response.data.data;
-          })
-          .catch((error) => {
-            console.log(error);
-          })
+        PanthorApiService.getServers()
+          .then((servers) => (this.api_data.servers = servers))
+          .catch(console.error)
       );
+
       promises.push(
-        axios
-          .get('https://api.panthor.de/v2/teamspeaks')
-          .then((response) => {
-            this.api_data.teamspeaks = response.data.data;
-          })
-          .catch((error) => {
-            console.log(error);
-          })
+        PanthorApiService.getChangelogs()
+          .then((changelogs) => (this.api_data.changelogs = changelogs))
+          .catch(console.error)
+      );
+
+      promises.push(
+        PanthorApiService.getTeamspeaks()
+          .then((teamspeaks) => (this.api_data.teamspeaks = teamspeaks))
+          .catch(console.error)
       );
 
       if (this.logged_in) {
         promises.push(
-          axios
-            .get('https://api.panthor.de/v2/player/' + this.settings.auth_token)
-            .then((response) => {
-              this.user.player = response.data.data[0];
-            })
-            .catch((error) => {
-              console.log(error);
-            })
+          PanthorApiService.getProfile(this.settings.auth_token)
+            .then((profile) => (this.user.player = profile))
+            .catch(console.error)
         );
       }
 
@@ -641,14 +607,13 @@ export default defineComponent({
     },
     login() {
       this.requesting_login = true;
-      axios
-        .get('https://api.panthor.de/v1/player/validate/' + this.settings.auth_token)
+      PanthorApiService.validateAuthToken(this.settings.auth_token)
         .then((response) => {
-          if (response.data.status === 'Success') {
+          if (response.status === 'Success') {
             setTimeout(() => {
               this.requesting_login = false;
               this.logged_in = true;
-              this.user.name = response.data.name;
+              this.user.name = response.name;
               this.loadAPIData();
             }, 1000);
           } else {
@@ -660,7 +625,7 @@ export default defineComponent({
         .catch((error) => {
           this.logged_in = false;
           this.requesting_login = false;
-          console.log(error);
+          console.error(error);
         })
         .finally(() => {
           this.show_login_dialog = false;
