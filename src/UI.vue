@@ -153,6 +153,7 @@
           </v-col>
           <v-col cols="9">
             <v-window v-model="tab">
+              <!-- Mods -->
               <v-window-item :value="0">
                 <mod-window
                   :mods="api_data.mods"
@@ -160,6 +161,8 @@
                   @choose-armapath="chooseArmaPath"
                 ></mod-window>
               </v-window-item>
+
+              <!-- Servers -->
               <v-window-item :value="1">
                 <server-window
                   :servers="api_data.servers"
@@ -168,9 +171,17 @@
                   ref="serverWindowRef"
                 ></server-window>
               </v-window-item>
+
+              <!-- Changelogs -->
               <v-window-item :value="2">
                 <changelog-window :changelogs="api_data.changelogs"></changelog-window>
               </v-window-item>
+
+              <v-window-item :value="3">
+                <h1>TFAR</h1>
+              </v-window-item>
+
+              <!-- Settings -->
               <v-window-item :value="4">
                 <v-row>
                   <v-col cols="12">
@@ -224,68 +235,78 @@
                       <v-card-text class="pb-0">
                         <v-row>
                           <v-col cols="6">
-                            <v-card-subtitle>Start beschleunigen</v-card-subtitle>
-                            <v-switch
-                              v-model="settings.noSplash"
-                              hide-details
-                              inset
-                              label="Splashscreen überspringen"
-                              color="red-lighten-1"
-                            ></v-switch>
-                            <v-switch
-                              v-model="settings.skipIntro"
-                              hide-details
-                              inset
-                              label="Intro überspringen"
-                              color="red-lighten-1"
-                            ></v-switch>
-                            <v-card-subtitle>Performance</v-card-subtitle>
-                            <v-switch
-                              v-model="settings.enableHT"
-                              hide-details
-                              inset
-                              label="Hyperthreading aktivieren"
-                              color="red-lighten-1"
-                            ></v-switch>
-                            <v-switch
-                              v-model="settings.setThreadCharacteristics"
-                              hide-details
-                              inset
-                              label="Windows Gaming Optimierung"
-                              color="red-lighten-1"
-                            ></v-switch>
+                            <v-card-subtitle class="ps-0">Start beschleunigen</v-card-subtitle>
+                            <v-card-text class="px-0 py-0">
+                              <v-switch
+                                v-model="settings.noSplash"
+                                hide-details
+                                inset
+                                label="Splashscreen überspringen"
+                                color="red-lighten-1"
+                              ></v-switch>
+                              <v-switch
+                                v-model="settings.skipIntro"
+                                hide-details
+                                inset
+                                label="Intro überspringen"
+                                color="red-lighten-1"
+                              ></v-switch>
+                            </v-card-text>
+
+                            <v-card-subtitle class="ps-0">Performance</v-card-subtitle>
+                            <v-card-text class="px-0 py-0">
+                              <v-switch
+                                v-model="settings.enableHT"
+                                hide-details
+                                inset
+                                label="Hyperthreading aktivieren"
+                                color="red-lighten-1"
+                              ></v-switch>
+                              <v-switch
+                                v-model="settings.setThreadCharacteristics"
+                                hide-details
+                                inset
+                                label="Windows Gaming Optimierung"
+                                color="red-lighten-1"
+                              ></v-switch>
+                            </v-card-text>
                           </v-col>
                           <v-col cols="6">
-                            <v-card-subtitle>Verschiedenes</v-card-subtitle>
-                            <v-switch
-                              v-model="settings.windowed"
-                              hide-details
-                              inset
-                              label="Fenstermodus"
-                              color="red-lighten-1"
-                            ></v-switch>
-                            <v-switch
-                              v-model="settings.noPause"
-                              hide-details
-                              inset
-                              label="Spiel nicht durch Tab pausieren"
-                              color="red-lighten-1"
-                            ></v-switch>
-                            <v-switch
-                              v-model="settings.noPauseAudio"
-                              hide-details
-                              inset
-                              label="Audio nicht durch Tab pausieren"
-                              color="red-lighten-1"
-                            ></v-switch>
-                            <v-card-subtitle>Debug</v-card-subtitle>
-                            <v-switch
-                              v-model="settings.showScriptErrors"
-                              hide-details
-                              inset
-                              label="Skriptfehler anzeigen"
-                              color="red-lighten-1"
-                            ></v-switch>
+                            <v-card-subtitle class="ps-0">Verschiedenes</v-card-subtitle>
+                            <v-card-text class="px-0 py-0">
+                              <v-switch
+                                v-model="settings.windowed"
+                                hide-details
+                                inset
+                                label="Fenstermodus"
+                                color="red-lighten-1"
+                              ></v-switch>
+                              <v-switch
+                                v-model="settings.noPause"
+                                hide-details
+                                inset
+                                label="Spiel nicht durch Tab pausieren"
+                                color="red-lighten-1"
+                              ></v-switch>
+                              <v-switch
+                                v-model="settings.noPauseAudio"
+                                hide-details
+                                inset
+                                label="Audio nicht durch Tab pausieren"
+                                color="red-lighten-1"
+                              ></v-switch>
+                            </v-card-text>
+
+                            <v-card-subtitle class="ps-0">Debug</v-card-subtitle>
+                            <v-card-text class="px-0 py-0">
+                              <v-switch
+                                v-model="settings.showScriptErrors"
+                                hide-details
+                                inset
+                                label="Skriptfehler anzeigen"
+                                color="red-lighten-1"
+                              ></v-switch>
+                            </v-card-text>
                           </v-col>
                         </v-row>
                         <v-row>
@@ -305,6 +326,8 @@
                   </v-col>
                 </v-row>
               </v-window-item>
+
+              <!-- FAQ -->
               <v-window-item :value="5">
                 <faq-window></faq-window>
               </v-window-item>
@@ -382,8 +405,7 @@ import ModWindow from '@/components/ModWindow.vue';
 import ChangelogWindow from '@/components/ChangelogWindow.vue';
 import ServerWindow from '@/components/ServerWindow.vue';
 import FaqWindow from '@/components/FaqWindow.vue';
-import { PropType, defineComponent, ref } from 'vue';
-import axios from 'axios';
+import { defineComponent, ref } from 'vue';
 import Store from 'electron-store';
 import Winreg from 'winreg';
 
