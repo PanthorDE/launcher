@@ -60,9 +60,11 @@
         <v-text-field
           label="Suchen"
           density="compact"
-          prepend-icon="mdi-account-search-outline"
+          variant="solo-filled"
+          prepend-inner-icon="mdi-account-search-outline"
           v-model="player_search"
           clearable
+          flat
         >
         </v-text-field>
         <v-virtual-scroll :items="players_list" height="330">

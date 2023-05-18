@@ -192,24 +192,18 @@
                           <v-col cols="10">
                             <v-text-field
                               label="Arma 3 Pfad"
-                              prepend-icon="mdi-folder-sync"
-                              variant="outlined"
+                              prepend-inner-icon="mdi-folder-sync"
+                              variant="solo-filled"
                               v-model="settings.arma_path"
                               readonly
                               placeholder="Leer"
-                              density="compact"
+                              density="comfortable"
                               block
+                              flat
                             ></v-text-field>
                           </v-col>
                           <v-col cols="2">
-                            <v-btn
-                              @click="chooseArmaPath"
-                              icon="mdi-folder-open"
-                              color="red"
-                              block
-                              rounded="sm"
-                              size="small"
-                            >
+                            <v-btn @click="chooseArmaPath" icon="mdi-folder-open" color="red" block rounded="sm">
                               <v-icon icon="mdi-folder-open"></v-icon>
                               <v-tooltip activator="parent" location="top">Arma 3 Pfad auswählen</v-tooltip>
                             </v-btn>
@@ -313,11 +307,13 @@
                           <v-col cols="12">
                             <v-text-field
                               label="Weitere Startparameter"
-                              prepend-icon="mdi-powershell"
-                              variant="outlined"
+                              prepend-inner-icon="mdi-powershell"
+                              variant="solo-filled"
+                              density="comfortable"
                               v-model="settings.command_line"
                               placeholder="-debug"
                               block
+                              flat
                             ></v-text-field>
                           </v-col>
                         </v-row>
@@ -338,7 +334,14 @@
           <v-card>
             <v-toolbar color="red" title="Login" class="text-center pe-5"></v-toolbar>
             <v-card-text class="mb-2">
-              <v-text-field v-model="settings.auth_token" class="mb-2" clearable label="Auth-Token"></v-text-field>
+              <v-text-field
+                v-model="settings.auth_token"
+                class="mb-2"
+                variant="solo-filled"
+                flat
+                clearable
+                label="Auth-Token"
+              ></v-text-field>
               <v-btn block color="success" size="large" type="submit" variant="elevated" @click="login">
                 Login <v-progress-circular v-if="requesting_login" indeterminate size="24"></v-progress-circular>
               </v-btn>
