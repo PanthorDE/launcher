@@ -81,26 +81,25 @@
     </v-row>
     <v-divider thickness="6" class="mt-2"></v-divider>
     <v-row justify="end" align="center" class="px-4 py-4">
-      <v-col cols="4" class="text-right pt-3 pb-0">
+      <v-col cols="4">
         <v-select
-          label="Arma Profil auswählen"
+          label="Arma Profil"
+          placeholder="Arma Profil wählen"
           density="comfortable"
-          persistent-hint
-          hint="Arma Profil"
           single-line
-          placeholder="Arma Profil"
-          variant="outlined"
-          rounded="lg"
+          variant="solo-filled"
+          flat
+          hide-details
           :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
         ></v-select>
       </v-col>
       <v-col cols="2"></v-col>
-      <v-col cols="3" class="text-right pt-2">
+      <v-col cols="3">
         <v-btn color="red-lighten-1" block size="large" prepend-icon="mdi-reload" @click="$emit('load-api-data')"
           >Aktualsieren</v-btn
         >
       </v-col>
-      <v-col cols="3" class="text-right pt-2">
+      <v-col cols="3">
         <v-btn color="success" block size="large" prepend-icon="mdi-connection">Joinen</v-btn>
       </v-col>
     </v-row>
