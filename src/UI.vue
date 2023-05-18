@@ -13,36 +13,49 @@
       <v-spacer></v-spacer>
 
       <v-chip color="white" v-if="requesting_login || logged_in">
-        <span class="me-2"><span v-if="requesting_login && !logged_in"><v-progress-linear indeterminate style="width: 60px;"></v-progress-linear></span><span v-else>{{ user.name }}</span></span>
-        <v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32" :image="user.player.avatar_medium"
-          v-if="user.player"><v-icon v-if="requesting_login && !logged_in"
-            icon="mdi-login-variant"></v-icon></v-avatar>
-          <v-avatar class="hidden-sm-and-down" v-if="requesting_login && !logged_in"
-          color="red-lighten-1" size="32"><v-icon
-            icon="mdi-help-circle-outline"></v-icon></v-avatar>
-      </v-chip>      
+        <span class="me-2"
+          ><span v-if="requesting_login && !logged_in"
+            ><v-progress-linear indeterminate style="width: 60px"></v-progress-linear></span
+          ><span v-else>{{ user.name }}</span></span
+        >
+        <v-avatar
+          class="hidden-sm-and-down"
+          color="red-lighten-1"
+          size="32"
+          :image="user.player.avatar_medium"
+          v-if="user.player"
+          ><v-icon v-if="requesting_login && !logged_in" icon="mdi-login-variant"></v-icon
+        ></v-avatar>
+        <v-avatar class="hidden-sm-and-down" v-if="requesting_login && !logged_in" color="red-lighten-1" size="32"
+          ><v-icon icon="mdi-help-circle-outline"></v-icon
+        ></v-avatar>
+      </v-chip>
       <v-btn :loading="loading_api_data" @click="loadAPIData" icon>
-        <v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32"><v-tooltip text="Login"
-            location="bottom"></v-tooltip><v-icon icon="mdi-refresh"></v-icon></v-avatar>
+        <v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32"
+          ><v-tooltip text="Login" location="bottom"></v-tooltip><v-icon icon="mdi-refresh"></v-icon
+        ></v-avatar>
         <template v-slot:loader>
           <v-progress-circular indeterminate></v-progress-circular>
         </template>
       </v-btn>
-      <v-btn :loading="requesting_login" icon @click="loginOrOut" v-if="!logged_in"><v-avatar class="hidden-sm-and-down"
-          color="red-lighten-1" size="32"><v-tooltip text="Login" location="bottom" activator="parent"></v-tooltip><v-icon
-            icon="mdi-login-variant"></v-icon></v-avatar>
+      <v-btn :loading="requesting_login" icon @click="loginOrOut" v-if="!logged_in"
+        ><v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32"
+          ><v-tooltip text="Login" location="bottom" activator="parent"></v-tooltip
+          ><v-icon icon="mdi-login-variant"></v-icon
+        ></v-avatar>
         <template v-slot:loader>
           <v-progress-circular indeterminate></v-progress-circular>
         </template>
       </v-btn>
-      <v-btn :loading="requesting_login" icon @click="loginOrOut" v-if="logged_in"><v-avatar class="hidden-sm-and-down"
-          color="red-lighten-1" size="32"><v-tooltip text="Logout" location="bottom"
-            activator="parent"></v-tooltip><v-icon icon="mdi-logout-variant"></v-icon></v-avatar>
+      <v-btn :loading="requesting_login" icon @click="loginOrOut" v-if="logged_in"
+        ><v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32"
+          ><v-tooltip text="Logout" location="bottom" activator="parent"></v-tooltip
+          ><v-icon icon="mdi-logout-variant"></v-icon
+        ></v-avatar>
         <template v-slot:loader>
           <v-progress-circular indeterminate></v-progress-circular>
         </template>
       </v-btn>
-
     </v-app-bar>
 
     <v-main>
@@ -50,78 +63,126 @@
         <v-row>
           <v-col cols="3">
             <v-card flat v-for="(server, i) in api_data.servers" @click="openServer(i)" class="mb-3">
-              <v-card-title> {{ server.name }} <v-progress-circular
-                  :model-value="server.players.length / notZero(server.slots) * 100" color="red-lighten-1" :size="70"
-                  :width="8" class="float-right">{{ Math.round(server.players.length / notZero(server.slots) * 100)
-                  }}%</v-progress-circular><br><span class="text-h5" style="font-size: 18px !important;">Online: {{
-  server.players.length }} / {{ server.slots
-  }}</span></v-card-title>
+              <v-card-title>
+                {{ server.name }}
+                <v-progress-circular
+                  :model-value="(server.players.length / notZero(server.slots)) * 100"
+                  color="red-lighten-1"
+                  :size="70"
+                  :width="8"
+                  class="float-right"
+                  >{{ Math.round((server.players.length / notZero(server.slots)) * 100) }}%</v-progress-circular
+                ><br /><span class="text-h5" style="font-size: 18px !important"
+                  >Online: {{ server.players.length }} / {{ server.slots }}</span
+                ></v-card-title
+              >
             </v-card>
-            <v-card flat v-for="teamspeak in api_data.teamspeaks"
-              @click="openURL(`ts3server://${teamspeak.ip}?port=${teamspeak.port}`)">
-              <v-card-title> Teamspeak <v-progress-circular
-                  :model-value="(teamspeak.users.length / notZero(teamspeak.slots)) * 100" color="red-lighten-1" :size="70"
-                  :width="8" class="float-right">{{ Math.round((teamspeak.users.length / notZero(teamspeak.slots)) * 100)
-                  }}%</v-progress-circular><br><span class="text-h5" style="font-size: 18px !important;">Online: {{
-  teamspeak.users.length }} / {{ teamspeak.slots }}</span></v-card-title>
+            <v-card
+              flat
+              v-for="teamspeak in api_data.teamspeaks"
+              @click="openURL(`ts3server://${teamspeak.ip}?port=${teamspeak.port}`)"
+            >
+              <v-card-title>
+                Teamspeak
+                <v-progress-circular
+                  :model-value="(teamspeak.users.length / notZero(teamspeak.slots)) * 100"
+                  color="red-lighten-1"
+                  :size="70"
+                  :width="8"
+                  class="float-right"
+                  >{{ Math.round((teamspeak.users.length / notZero(teamspeak.slots)) * 100) }}%</v-progress-circular
+                ><br /><span class="text-h5" style="font-size: 18px !important"
+                  >Online: {{ teamspeak.users.length }} / {{ teamspeak.slots }}</span
+                ></v-card-title
+              >
             </v-card>
-            <v-card flat min-height="100" class="mt-3" v-if="worker_status.status !== 0" @click="tab = 0;">
-              <v-card-title><v-icon icon="mdi-download-network-outline" size="small" class="float-right"></v-icon>
-                Download Status</v-card-title>
+            <v-card flat min-height="100" class="mt-3" v-if="worker_status.status !== 0" @click="tab = 0">
+              <v-card-title
+                ><v-icon icon="mdi-download-network-outline" size="small" class="float-right"></v-icon> Download
+                Status</v-card-title
+              >
               <v-row class="mt-0 mx-auto ps-5 pe-5">
                 <v-card-text class="text-center">{{ worker_status.message }}</v-card-text>
-                <v-progress-linear rounded striped v-model=" worker_status.fileop_progress " color="red-lighten-1"
-                  :height=" 16 " :stream=" worker_status.fileop_progress != 0 "
-                  :indeterminate=" worker_status.fileop_progress == 0 ">
-                  <strong v-if=" worker_status.fileop_progress > 0 ">{{ Math.ceil(worker_status.fileop_progress)
-                    }}%</strong>
-                  <strong v-if=" worker_status.fileop_progress == 0 ">Verbindungsaufbau</strong>
+                <v-progress-linear
+                  rounded
+                  striped
+                  v-model="worker_status.fileop_progress"
+                  color="red-lighten-1"
+                  :height="16"
+                  :stream="worker_status.fileop_progress != 0"
+                  :indeterminate="worker_status.fileop_progress == 0"
+                >
+                  <strong v-if="worker_status.fileop_progress > 0"
+                    >{{ Math.ceil(worker_status.fileop_progress) }}%</strong
+                  >
+                  <strong v-if="worker_status.fileop_progress == 0">Verbindungsaufbau</strong>
                 </v-progress-linear>
               </v-row>
               <v-row class="text-center justify-center mb-0 mt-5 pt-3">
-                <v-col cols="auto" v-if=" worker_status.fileop_speed > 0 " class="pt-0">
+                <v-col cols="auto" v-if="worker_status.fileop_speed > 0" class="pt-0">
                   <v-chip class="ma-2" color="success">
                     <v-icon start icon="mdi-speedometer-slow"></v-icon>
                     {{ humanFileSize(worker_status.fileop_speed, true, 2, true) }}
                   </v-chip>
                 </v-col>
-                <v-col cols="auto" v-if=" worker_status.fileop_files_remaining > 0 " class="pt-0">
+                <v-col cols="auto" v-if="worker_status.fileop_files_remaining > 0" class="pt-0">
                   <v-chip class="ma-2" color="success">
                     <v-icon start icon="mdi-file-multiple"></v-icon>
                     {{ worker_status.fileop_files_done }} / {{ worker_status.fileop_files_remaining }}
                   </v-chip>
                 </v-col>
-                <v-col cols="auto" v-if=" worker_status.fileop_size_remaining > 0 && worker_status.fileop_size_done > 0 "
-                  class="pt-0">
+                <v-col
+                  cols="auto"
+                  v-if="worker_status.fileop_size_remaining > 0 && worker_status.fileop_size_done > 0"
+                  class="pt-0"
+                >
                   <v-chip class="ma-2" color="success">
                     <v-icon start icon="mdi-harddisk"></v-icon>
-                    {{ humanFileSize(worker_status.fileop_size_done, true, 1) }} / {{
-                    humanFileSize(worker_status.fileop_size_remaining, true, 1) }}
+                    {{ humanFileSize(worker_status.fileop_size_done, true, 1) }} /
+                    {{ humanFileSize(worker_status.fileop_size_remaining, true, 1) }}
                   </v-chip>
                 </v-col>
-                <v-col cols="auto" v-if=" worker_status.fileop_time_remaining > 0 " class="pt-0">
+                <v-col cols="auto" v-if="worker_status.fileop_time_remaining > 0" class="pt-0">
                   <v-chip class="ma-2" color="success">
                     <v-icon start icon="mdi-clock-end"></v-icon>
-                    {{ duration_humanizer.humanize(Math.ceil(worker_status.fileop_time_remaining), {round: true}) }}
+                    {{ duration_humanizer.humanize(Math.ceil(worker_status.fileop_time_remaining), { round: true }) }}
                   </v-chip>
                 </v-col>
               </v-row>
             </v-card>
           </v-col>
           <v-col cols="9">
-            <v-window v-model=" tab ">
-              <v-window-item :value=" 0 ">
-                <mod-window :mods=" api_data.mods " :arma_path=" settings.arma_path "
-                  @choose-armapath=" chooseArmaPath "></mod-window>
+            <v-window v-model="tab">
+              <!-- Mods -->
+              <v-window-item :value="0">
+                <mod-window
+                  :mods="api_data.mods"
+                  :arma_path="settings.arma_path"
+                  @choose-armapath="chooseArmaPath"
+                ></mod-window>
               </v-window-item>
-              <v-window-item :value=" 1 ">
-                <server-window :servers=" api_data.servers " @load-api-data=" loadAPIData "
-                  :default_tab=" server_window_default_tab " ref="serverWindowRef"></server-window>
+
+              <!-- Servers -->
+              <v-window-item :value="1">
+                <server-window
+                  :servers="api_data.servers"
+                  @load-api-data="loadAPIData"
+                  :default_tab="server_window_default_tab"
+                  ref="serverWindowRef"
+                ></server-window>
               </v-window-item>
-              <v-window-item :value=" 2 ">
-                <changelog-window :changelogs=" api_data.changelogs "></changelog-window>
+
+              <!-- Changelogs -->
+              <v-window-item :value="2">
+                <changelog-window :changelogs="api_data.changelogs"></changelog-window>
               </v-window-item>
-              <v-window-item :value=" 4 ">
+
+              <v-window-item :value="3">
+                <h1>TFAR</h1>
+              </v-window-item>
+
+              <!-- Settings -->
+              <v-window-item :value="4">
                 <v-row>
                   <v-col cols="12">
                     <v-card>
@@ -129,13 +190,20 @@
                       <v-card-text class="pb-0">
                         <v-row>
                           <v-col cols="10">
-                            <v-text-field label="Arma 3 Pfad" prepend-icon="mdi-folder-sync" variant="outlined"
-                              v-model=" settings.arma_path " readonly placeholder="Leer" density="compact"
-                              block></v-text-field>
+                            <v-text-field
+                              label="Arma 3 Pfad"
+                              prepend-inner-icon="mdi-folder-sync"
+                              variant="solo-filled"
+                              v-model="settings.arma_path"
+                              readonly
+                              placeholder="Leer"
+                              density="comfortable"
+                              block
+                              flat
+                            ></v-text-field>
                           </v-col>
                           <v-col cols="2">
-                            <v-btn @click=" chooseArmaPath " icon="mdi-folder-open" color="red" block rounded="sm"
-                              size="small">
+                            <v-btn @click="chooseArmaPath" icon="mdi-folder-open" color="red" block rounded="sm">
                               <v-icon icon="mdi-folder-open"></v-icon>
                               <v-tooltip activator="parent" location="top">Arma 3 Pfad auswählen</v-tooltip>
                             </v-btn>
@@ -143,13 +211,11 @@
                         </v-row>
                       </v-card-text>
                       <v-card-text>
-                        <v-btn prepend-icon="mdi-upload" disabled color="success">
-                          Letzten RPT hochladen
-                        </v-btn>
-                        <v-btn prepend-icon="mdi-folder-open" color="success" class="ms-2" @click=" openMissionCache ">
+                        <v-btn prepend-icon="mdi-upload" disabled color="success"> Letzten RPT hochladen </v-btn>
+                        <v-btn prepend-icon="mdi-folder-open" color="success" class="ms-2" @click="openMissionCache">
                           MPMission Cache öffnen
                         </v-btn>
-                        <v-btn prepend-icon="mdi-cog-play" color="success" class="ms-2" @click=" validateA3 ">
+                        <v-btn prepend-icon="mdi-cog-play" color="success" class="ms-2" @click="validateA3">
                           Arma 3 via Steam überprüfen
                         </v-btn>
                       </v-card-text>
@@ -163,34 +229,92 @@
                       <v-card-text class="pb-0">
                         <v-row>
                           <v-col cols="6">
-                            <v-card-subtitle>Start beschleunigen</v-card-subtitle>
-                            <v-switch v-model=" settings.noSplash " hide-details inset label="Splashscreen überspringen"
-                              color="red-lighten-1"></v-switch>
-                            <v-switch v-model=" settings.skipIntro " hide-details inset label="Intro überspringen"
-                              color="red-lighten-1"></v-switch>
-                            <v-card-subtitle>Performance</v-card-subtitle>
-                            <v-switch v-model=" settings.enableHT " hide-details inset label="Hyperthreading aktivieren"
-                              color="red-lighten-1"></v-switch>
-                            <v-switch v-model=" settings.setThreadCharacteristics " hide-details inset
-                              label="Windows Gaming Optimierung" color="red-lighten-1"></v-switch>
+                            <v-card-subtitle class="ps-0">Start beschleunigen</v-card-subtitle>
+                            <v-card-text class="px-0 py-0">
+                              <v-switch
+                                v-model="settings.noSplash"
+                                hide-details
+                                inset
+                                label="Splashscreen überspringen"
+                                color="red-lighten-1"
+                              ></v-switch>
+                              <v-switch
+                                v-model="settings.skipIntro"
+                                hide-details
+                                inset
+                                label="Intro überspringen"
+                                color="red-lighten-1"
+                              ></v-switch>
+                            </v-card-text>
+
+                            <v-card-subtitle class="ps-0">Performance</v-card-subtitle>
+                            <v-card-text class="px-0 py-0">
+                              <v-switch
+                                v-model="settings.enableHT"
+                                hide-details
+                                inset
+                                label="Hyperthreading aktivieren"
+                                color="red-lighten-1"
+                              ></v-switch>
+                              <v-switch
+                                v-model="settings.setThreadCharacteristics"
+                                hide-details
+                                inset
+                                label="Windows Gaming Optimierung"
+                                color="red-lighten-1"
+                              ></v-switch>
+                            </v-card-text>
                           </v-col>
                           <v-col cols="6">
-                            <v-card-subtitle>Verschiedenes</v-card-subtitle>
-                            <v-switch v-model=" settings.windowed " hide-details inset label="Fenstermodus"
-                              color="red-lighten-1"></v-switch>
-                            <v-switch v-model=" settings.noPause " hide-details inset
-                              label="Spiel nicht durch Tab pausieren" color="red-lighten-1"></v-switch>
-                            <v-switch v-model=" settings.noPauseAudio " hide-details inset
-                              label="Audio nicht durch Tab pausieren" color="red-lighten-1"></v-switch>
-                            <v-card-subtitle>Debug</v-card-subtitle>
-                            <v-switch v-model=" settings.showScriptErrors " hide-details inset
-                              label="Skriptfehler anzeigen" color="red-lighten-1"></v-switch>
+                            <v-card-subtitle class="ps-0">Verschiedenes</v-card-subtitle>
+                            <v-card-text class="px-0 py-0">
+                              <v-switch
+                                v-model="settings.windowed"
+                                hide-details
+                                inset
+                                label="Fenstermodus"
+                                color="red-lighten-1"
+                              ></v-switch>
+                              <v-switch
+                                v-model="settings.noPause"
+                                hide-details
+                                inset
+                                label="Spiel nicht durch Tab pausieren"
+                                color="red-lighten-1"
+                              ></v-switch>
+                              <v-switch
+                                v-model="settings.noPauseAudio"
+                                hide-details
+                                inset
+                                label="Audio nicht durch Tab pausieren"
+                                color="red-lighten-1"
+                              ></v-switch>
+                            </v-card-text>
+
+                            <v-card-subtitle class="ps-0">Debug</v-card-subtitle>
+                            <v-card-text class="px-0 py-0">
+                              <v-switch
+                                v-model="settings.showScriptErrors"
+                                hide-details
+                                inset
+                                label="Skriptfehler anzeigen"
+                                color="red-lighten-1"
+                              ></v-switch>
+                            </v-card-text>
                           </v-col>
                         </v-row>
                         <v-row>
                           <v-col cols="12">
-                            <v-text-field label="Weitere Startparameter" prepend-icon="mdi-powershell" variant="outlined"
-                              v-model=" settings.command_line " placeholder="-debug" block></v-text-field>
+                            <v-text-field
+                              label="Weitere Startparameter"
+                              prepend-inner-icon="mdi-powershell"
+                              variant="solo-filled"
+                              density="comfortable"
+                              v-model="settings.command_line"
+                              placeholder="-debug"
+                              block
+                              flat
+                            ></v-text-field>
                           </v-col>
                         </v-row>
                       </v-card-text>
@@ -198,52 +322,78 @@
                   </v-col>
                 </v-row>
               </v-window-item>
-              <v-window-item :value=" 5 ">
+
+              <!-- FAQ -->
+              <v-window-item :value="5">
                 <faq-window></faq-window>
               </v-window-item>
             </v-window>
           </v-col>
         </v-row>
-        <v-dialog transition="dialog-top-transition" width="400" v-model=" show_login_dialog ">
+        <v-dialog transition="dialog-top-transition" width="400" v-model="show_login_dialog">
           <v-card>
             <v-toolbar color="red" title="Login" class="text-center pe-5"></v-toolbar>
             <v-card-text class="mb-2">
-              <v-text-field v-model=" settings.auth_token " class="mb-2" clearable label="Auth-Token"></v-text-field>
-              <v-btn block color="success" size="large" type="submit" variant="elevated" @click=" login ">
-                Login <v-progress-circular v-if=" requesting_login " indeterminate size="24"></v-progress-circular>
+              <v-text-field
+                v-model="settings.auth_token"
+                class="mb-2"
+                variant="solo-filled"
+                flat
+                clearable
+                label="Auth-Token"
+              ></v-text-field>
+              <v-btn block color="success" size="large" type="submit" variant="elevated" @click="login">
+                Login <v-progress-circular v-if="requesting_login" indeterminate size="24"></v-progress-circular>
               </v-btn>
             </v-card-text>
           </v-card>
         </v-dialog>
       </v-container>
-      <v-container :fluid=" true " v-if=" first_run_dialog ">
-        <v-dialog transition="dialog-top-transition" width="800" v-model=" first_run_dialog " persistent>
+      <v-container :fluid="true" v-if="first_run_dialog">
+        <v-dialog transition="dialog-top-transition" width="800" v-model="first_run_dialog" persistent>
           <v-card>
             <v-toolbar color="red" title="Willkommen im Panthor Launcher!" class="text-center"></v-toolbar>
             <v-card-text>
               <div class="pa-5 text-center">
-                <span class="text-h6">Um die Panthor Mod zu installieren muss der Launcher den Pfad zu einer Arma 3
-                  Installation finden.</span>
-                <br>
-                <br>
+                <span class="text-h6"
+                  >Um die Panthor Mod zu installieren muss der Launcher den Pfad zu einer Arma 3 Installation
+                  finden.</span
+                >
+                <br />
+                <br />
                 <span class="text-h8">Folgede Ordner wurden automatisch erkannt, bitte wähle den richtigen aus:</span>
 
-                <v-radio-group label="Arma 3 Pfad" v-model=" first_run_selected_path " class="mt-8"
-                  v-if=" possible_a3_paths.length > 0 ">
-                  <v-radio :label=" path " :value=" i "
-                    v-for="(        path, i        ) in         possible_a3_paths        "></v-radio>
+                <v-radio-group
+                  label="Arma 3 Pfad"
+                  v-model="first_run_selected_path"
+                  class="mt-8"
+                  v-if="possible_a3_paths.length > 0"
+                >
+                  <v-radio :label="path" :value="i" v-for="(path, i) in possible_a3_paths"></v-radio>
                 </v-radio-group>
-                <br>
+                <br />
                 <span class="text-h8">Falls der richtige Pfad nicht in der Liste ist überspringe diesen Schritt.</span>
               </div>
-              <v-alert type="warning" title="Keine validen Pfade gefunden" v-if=" possible_a3_paths.length === 0 "
-                text="Leider ist Arma auf deinem PC nicht an einer üblichen Stelle installiert oder du hast es manuell verschoben. Bitte überspringe diesen Schritt."></v-alert>
+              <v-alert
+                type="warning"
+                title="Keine validen Pfade gefunden"
+                v-if="possible_a3_paths.length === 0"
+                text="Leider ist Arma auf deinem PC nicht an einer üblichen Stelle installiert oder du hast es manuell verschoben. Bitte überspringe diesen Schritt."
+              ></v-alert>
             </v-card-text>
             <v-card-actions class="justify-center mb-2">
-              <v-btn color="warning" flat prepend-icon="mdi-debug-step-over" @click=" firstRunSkip "
-                size="large">Überspringen</v-btn>
-              <v-btn color="success" flat prepend-icon="mdi-content-save-cog" @click=" firstRunSave " size="large"
-                v-if=" possible_a3_paths.length > 0 ">Speichern</v-btn>
+              <v-btn color="warning" flat prepend-icon="mdi-debug-step-over" @click="firstRunSkip" size="large"
+                >Überspringen</v-btn
+              >
+              <v-btn
+                color="success"
+                flat
+                prepend-icon="mdi-content-save-cog"
+                @click="firstRunSave"
+                size="large"
+                v-if="possible_a3_paths.length > 0"
+                >Speichern</v-btn
+              >
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -254,16 +404,15 @@
 
 <script lang="ts">
 import { ipcRenderer, shell } from 'electron';
-import ModWindow from '@/components/ModWindow.vue'
-import ChangelogWindow from '@/components/ChangelogWindow.vue'
-import ServerWindow from '@/components/ServerWindow.vue'
-import FaqWindow from '@/components/FaqWindow.vue'
-import { PropType, defineComponent, ref } from 'vue'
-import axios from 'axios';
+import ModWindow from '@/components/ModWindow.vue';
+import ChangelogWindow from '@/components/ChangelogWindow.vue';
+import ServerWindow from '@/components/ServerWindow.vue';
+import FaqWindow from '@/components/FaqWindow.vue';
+import { defineComponent, ref } from 'vue';
 import Store from 'electron-store';
 import Winreg from 'winreg';
 
-import { HumanizeDurationLanguage, HumanizeDuration } from 'humanize-duration-ts/dist'
+import { HumanizeDurationLanguage, HumanizeDuration } from 'humanize-duration-ts/dist';
 import Server from '@/interfaces/ServerInterface';
 import Mod from '@/interfaces/ModInterface';
 import Changelog from '@/interfaces/ChangelogInterface';
@@ -272,27 +421,21 @@ import WorkerStatus from './interfaces/WorkerStatusInterface';
 import User from './interfaces/UserInterface';
 import SettingsStore, { defaultSettings } from './interfaces/SettingsStoreInterface';
 import { existsSync } from 'node:fs';
+import { PanthorApiService } from './services/PanthorApi.service';
 
-const langService: HumanizeDurationLanguage = new HumanizeDurationLanguage()
-const duration_humanizer = new HumanizeDuration(langService)
+const langService: HumanizeDurationLanguage = new HumanizeDurationLanguage();
+const duration_humanizer = new HumanizeDuration(langService);
 
 export default defineComponent({
-  name: "UI",
+  name: 'UI',
   data: () => {
     return {
-      links: [
-        "Mods",
-        "Server",
-        "Changelog",
-        "TFAR",
-        "Settings",
-        "FAQ"
-      ],
+      links: ['Mods', 'Server', 'Changelog', 'TFAR', 'Settings', 'FAQ'],
       api_data: {
         mods: [] as Mod[],
         servers: [] as Server[],
         changelogs: [] as Changelog[],
-        teamspeaks: [] as Teamspeak[]
+        teamspeaks: [] as Teamspeak[],
       },
       tab: 0,
       logged_in: false,
@@ -312,22 +455,22 @@ export default defineComponent({
       a3_registry_keys: [
         {
           key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 107410',
-          index: 3
+          index: 3,
         },
         {
           key: '\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 107410',
-          index: 3
+          index: 3,
         },
         {
           key: '\\SOFTWARE\\WOW6432Node\\bohemia interactive studio\\ArmA 3',
-          index: 0
+          index: 0,
         },
         {
           key: '\\SOFTWARE\\WOW6432Node\\bohemia interactive\\arma 3',
-          index: 1
-        }
-      ]
-    }
+          index: 1,
+        },
+      ],
+    };
   },
   methods: {
     humanFileSize(bytes: number, si = true, dp = 1, speed = false) {
@@ -348,227 +491,202 @@ export default defineComponent({
         ++u;
       } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
 
-
       if (speed) {
-        return bytes.toFixed(dp) + ' ' + units[u] + "/s";
+        return bytes.toFixed(dp) + ' ' + units[u] + '/s';
       }
       return bytes.toFixed(dp) + ' ' + units[u];
     },
     loadAPIData() {
       if (!this.loading_api_data) {
-        this.loading_api_data = true
-        this.getMods()
+        this.loading_api_data = true;
+        this.getMods();
       }
     },
     getMods() {
-      let promises = [];
+      let promises: Promise<unknown>[] = [];
+
+      promises.push(
+        PanthorApiService.getMods(this.logged_in ? this.settings.auth_token : undefined)
+          .then((mods) => (this.api_data.mods = mods))
+          .catch(console.error)
+      );
+
+      promises.push(
+        PanthorApiService.getServers()
+          .then((servers) => (this.api_data.servers = servers))
+          .catch(console.error)
+      );
+
+      promises.push(
+        PanthorApiService.getChangelogs()
+          .then((changelogs) => (this.api_data.changelogs = changelogs))
+          .catch(console.error)
+      );
+
+      promises.push(
+        PanthorApiService.getTeamspeaks()
+          .then((teamspeaks) => (this.api_data.teamspeaks = teamspeaks))
+          .catch(console.error)
+      );
 
       if (this.logged_in) {
         promises.push(
-          axios.get('https://api.panthor.de/v2/mods/' + this.settings.auth_token)
-            .then((response) => {
-              this.api_data.mods = response.data.data
-            })
-            .catch((error) => {
-              console.log(error);
-            }))
-      } else {
-        promises.push(
-          axios.get('https://api.panthor.de/v2/mods')
-            .then((response) => {
-              this.api_data.mods = response.data.data
-            })
-            .catch((error) => {
-              console.log(error);
-            }))
-      }
-      promises.push(
-        axios.get('https://api.panthor.de/v2/servers')
-          .then((response) => {
-            this.api_data.servers = response.data.data
-          })
-          .catch((error) => {
-            console.log(error);
-          }))
-      promises.push(
-        axios.get('https://api.panthor.de/v2/changelogs')
-          .then((response) => {
-            this.api_data.changelogs = response.data.data
-          })
-          .catch((error) => {
-            console.log(error);
-          }))
-      promises.push(
-        axios.get('https://api.panthor.de/v2/teamspeaks')
-          .then((response) => {
-            this.api_data.teamspeaks = response.data.data
-          })
-          .catch((error) => {
-            console.log(error);
-          }))
-
-      if (this.logged_in) {
-        promises.push(
-          axios.get('https://api.panthor.de/v2/player/' + this.settings.auth_token)
-            .then((response) => {
-              this.user.player = response.data.data[0]
-            })
-            .catch((error) => {
-              console.log(error);
-            }))
+          PanthorApiService.getProfile(this.settings.auth_token)
+            .then((profile) => (this.user.player = profile))
+            .catch(console.error)
+        );
       }
 
       Promise.all(promises).then((results) => {
-        this.loading_api_data = false
-      })
+        this.loading_api_data = false;
+      });
     },
     notZero(input: number) {
       if (input === 0) {
-        return 1
+        return 1;
       } else {
-        return input
+        return input;
       }
     },
     loadSettings() {
       let store = new Store<SettingsStore>({
-        defaults: defaultSettings
+        defaults: defaultSettings,
       });
 
-      this.settings = store.store
+      this.settings = store.store;
 
-      ipcRenderer.on("settings:openArmaSelect:result", (event, data) => {
-        this.settings.arma_path = data
-      })
+      ipcRenderer.on('settings:openArmaSelect:result', (event, data) => {
+        this.settings.arma_path = data;
+      });
 
       if (this.settings.first_run) {
-        this.launch_first_run()
+        this.launch_first_run();
       }
 
       if (this.settings.auth_token) {
-        this.login()
+        this.login();
       }
     },
     chooseArmaPath() {
-      ipcRenderer.send("settings:openArmaSelect", {})
+      ipcRenderer.send('settings:openArmaSelect', {});
     },
     openMissionCache() {
-      ipcRenderer.send("settings:openMissionCache", {})
+      ipcRenderer.send('settings:openMissionCache', {});
     },
     validateA3() {
-      ipcRenderer.send("settings:validateA3", {})
+      ipcRenderer.send('settings:validateA3', {});
     },
     openURL(url: string) {
-      shell.openExternal(url)
+      shell.openExternal(url);
     },
     launch_first_run() {
-      this.first_run_dialog = true
+      this.first_run_dialog = true;
 
       this.a3_registry_keys.forEach((cur) => {
         let regKey = new Winreg({
           hive: Winreg.HKLM,
-          key: cur.key
-        })
+          key: cur.key,
+        });
 
         regKey.keyExists((err, exists) => {
-          if (err) throw err
+          if (err) throw err;
           if (exists) {
             regKey.values((err, items) => {
-              if (err) throw err
+              if (err) throw err;
               if (existsSync(items[cur.index].value + '\\arma3.exe')) {
-                this.possible_a3_paths.push(items[cur.index].value)
+                this.possible_a3_paths.push(items[cur.index].value);
               }
-            })
+            });
           }
-        })
-      })
+        });
+      });
 
-      console.log(this.possible_a3_paths)
+      console.log(this.possible_a3_paths);
     },
     openServer(index: number = 0) {
-      this.server_window_default_tab = index
-      this.tab = 1
-      let serverWindowRef = this.$refs.serverWindowRef as typeof ServerWindow
+      this.server_window_default_tab = index;
+      this.tab = 1;
+      let serverWindowRef = this.$refs.serverWindowRef as typeof ServerWindow;
       if (serverWindowRef !== undefined) {
-        serverWindowRef.setTab(index)
+        serverWindowRef.setTab(index);
       }
     },
     firstRunSave() {
-      this.settings.first_run = false
-      this.first_run_dialog = false
-      this.settings.arma_path = this.possible_a3_paths[this.first_run_selected_path]
+      this.settings.first_run = false;
+      this.first_run_dialog = false;
+      this.settings.arma_path = this.possible_a3_paths[this.first_run_selected_path];
     },
     firstRunSkip() {
-      this.settings.first_run = false
-      this.first_run_dialog = false
+      this.settings.first_run = false;
+      this.first_run_dialog = false;
     },
     loginOrOut() {
       if (this.logged_in) {
-        this.logged_in = false
-        this.settings.auth_token = ''
-        this.user = {} as User
-        this.loadAPIData()
+        this.logged_in = false;
+        this.settings.auth_token = '';
+        this.user = {} as User;
+        this.loadAPIData();
       } else {
-        this.show_login_dialog = true
+        this.show_login_dialog = true;
       }
     },
     login() {
-      this.requesting_login = true
-      axios.get('https://api.panthor.de/v1/player/validate/' + this.settings.auth_token)
+      this.requesting_login = true;
+      PanthorApiService.validateAuthToken(this.settings.auth_token)
         .then((response) => {
-          if (response.data.status === 'Success') {
+          if (response.status === 'Success') {
             setTimeout(() => {
-              this.requesting_login = false
-              this.logged_in = true
-              this.user.name = response.data.name
-              this.loadAPIData()
-            }, 1000)
+              this.requesting_login = false;
+              this.logged_in = true;
+              this.user.name = response.name;
+              this.loadAPIData();
+            }, 1000);
           } else {
-            this.settings.auth_token = ''
-            this.logged_in = false
-            this.requesting_login = false
+            this.settings.auth_token = '';
+            this.logged_in = false;
+            this.requesting_login = false;
           }
         })
         .catch((error) => {
-          this.logged_in = false
-          this.requesting_login = false
-          console.log(error);
+          this.logged_in = false;
+          this.requesting_login = false;
+          console.error(error);
         })
         .finally(() => {
-          this.show_login_dialog = false
-        })
+          this.show_login_dialog = false;
+        });
     },
   },
   watch: {
     'worker_status.fileop_progress'(newVal, oldVal) {
-      console.log(this.worker_status.fileop_progress)
+      console.log(this.worker_status.fileop_progress);
       ipcRenderer.send('winprogress-change', {
-        progress: this.worker_status.fileop_progress
-      })
+        progress: this.worker_status.fileop_progress,
+      });
     },
     settings: {
       handler: function (val, oldVal) {
         let store = new Store<SettingsStore>({
-          defaults: defaultSettings
+          defaults: defaultSettings,
         });
 
-        store.store = val
+        store.store = val;
 
-        ipcRenderer.send('settings:changedArmaPath', this.settings.arma_path)
+        ipcRenderer.send('settings:changedArmaPath', this.settings.arma_path);
       },
-      deep: true
+      deep: true,
     },
   },
   mounted() {
     this.loadSettings();
     ipcRenderer.on('worker_status:update', (_event, message: string) => {
-      this.worker_status = JSON.parse(message)
-    })
+      this.worker_status = JSON.parse(message);
+    });
 
-    this.loadAPIData()
+    this.loadAPIData();
   },
-  components: { ModWindow, ChangelogWindow, ServerWindow, FaqWindow }
-})
-
+  components: { ModWindow, ChangelogWindow, ServerWindow, FaqWindow },
+});
 </script>
 
 <style lang="css">
