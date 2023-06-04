@@ -92,7 +92,10 @@
           variant="solo-filled"
           flat
           hide-details
-          :items="['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming']"
+          :items="armaProfiles"
+          :model-value="selectedArmaProfile"
+          @update:modelValue="onArmaProfileChange"
+          clearable
         ></v-select>
       </v-col>
       <v-col cols="2"></v-col>
@@ -102,7 +105,9 @@
         >
       </v-col>
       <v-col cols="3">
-        <v-btn color="success" block size="large" prepend-icon="mdi-connection">Joinen</v-btn>
+        <v-btn color="success" block size="large" prepend-icon="mdi-connection" @click="joinServer(server)"
+          >Joinen</v-btn
+        >
       </v-col>
     </v-row>
   </v-card>
@@ -111,13 +116,12 @@
 <script lang="ts">
 import Server from '@/interfaces/ServerInterface';
 import { PropType } from 'vue';
-import { clipboard } from 'electron';
-
+import { clipboard, ipcRenderer } from 'electron';
+import Store from 'electron-store';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-
 import { Pie } from 'vue-chartjs';
-
 import { promise } from 'ping';
+import SettingsStore, { defaultSettings } from '@/interfaces/SettingsStoreInterface';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -133,6 +137,10 @@ export default {
   data() {
     return {
       ping: 0,
+      armaAppId: 107410,
+      selectedArmaProfile: null as string | null,
+      armaProfiles: [] as string[],
+      settings: defaultSettings,
       pie_options: {
         responsive: true,
         plugins: {
@@ -247,12 +255,21 @@ export default {
     server: { type: Object as PropType<Server>, required: true },
   },
   watch: {
+    server: function (current, previous) {
+      this.setPlayerProfileForServer(current);
+    },
     'server.server.updated_at.date': function () {
       this.pingServer();
       clipboard.writeText(this.server.password);
     },
   },
   methods: {
+    loadSettings() {
+      const store = new Store<SettingsStore>({
+        defaults: defaultSettings,
+      });
+      this.settings = store.store;
+    },
     copyToClipboard(text: string) {
       clipboard.writeText(text);
     },
@@ -273,11 +290,53 @@ export default {
 
       this.restart_in = targetTime.getTime() - now.getTime();
     },
+    retrieveArmaProfiles() {
+      ipcRenderer.send('settings:getArmaProfiles', {});
+      ipcRenderer.on('settings:getArmaProfiles:result', (event, profiles: string[]) => {
+        this.armaProfiles = profiles;
+      });
+    },
+    setPlayerProfileForServer(server: Server) {
+      const savedProfiles = this.settings.armaServerProfiles;
+      const savedServerProfile = Object.entries(savedProfiles).find(([key, value]) => key === server.id.toString());
+      this.selectedArmaProfile = savedServerProfile !== undefined ? savedServerProfile[1] : null;
+    },
+    onArmaProfileChange(profile: string | null) {
+      const currentServer = this.$props.server;
+      if (currentServer.appid !== this.armaAppId) return;
+
+      const store = new Store<SettingsStore>({ defaults: defaultSettings });
+      let updatedStore = this.settings;
+      let armaServerProfiles = updatedStore.armaServerProfiles;
+      if (profile) {
+        armaServerProfiles[currentServer.id] = profile;
+      } else {
+        if (Object.keys(armaServerProfiles).includes(currentServer.id.toString())) {
+          delete armaServerProfiles[currentServer.id];
+        }
+      }
+
+      this.selectedArmaProfile = profile;
+      this.settings = updatedStore;
+      store.store = updatedStore;
+    },
+    joinServer(server: Server) {
+      if (server.appid === 107410) {
+        let params = [];
+        if (this.selectedArmaProfile) {
+          params.push('-name=' + this.selectedArmaProfile);
+          alert('JOIN SERVER as ' + this.selectedArmaProfile);
+        } else alert('JOIN SERVER');
+      }
+    },
   },
   mounted() {
+    this.loadSettings();
+    this.setPlayerProfileForServer(this.$props.server);
     this.updateTimeUntilNextTarget();
     this.intervalId = setInterval(this.updateTimeUntilNextTarget, 1000);
     this.pingServer();
+    this.retrieveArmaProfiles();
   },
   beforeUnmount() {
     clearInterval(this.intervalId);

@@ -14,10 +14,7 @@ export class PanthorApiService {
     return new Promise((res, rej) => {
       axios
         .get(this.host + '/v1/player/validate/' + authToken)
-        .then((response) => {
-          console.log(response.data);
-          res(response.data);
-        })
+        .then((response) => res(response.data))
         .catch(rej);
     });
   }

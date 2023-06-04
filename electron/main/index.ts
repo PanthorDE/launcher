@@ -1,8 +1,9 @@
 import { app, BrowserWindow, shell, ipcMain, screen } from 'electron';
+import type { Event } from 'electron';
 import { release } from 'node:os';
 import { dialog } from 'electron';
-import { join } from 'node:path';
-
+import path, { join } from 'node:path';
+import fs from 'fs';
 import Store from 'electron-store';
 
 switch (process.argv[1]) {
@@ -190,6 +191,20 @@ function settingsValidateA3(event: any, message: any) {
   shell.openExternal('steam://validate/107410');
 }
 
+function getArmaProfiles(event: Event, message: any) {
+  const submitResults = function (result: typeof profiles) {
+    win.webContents.send('settings:getArmaProfiles:result', result);
+  };
+  const armaProfiles = app.getPath('documents') + '\\Arma 3 - Other Profiles';
+
+  if (!fs.lstatSync(armaProfiles).isDirectory()) return submitResults([]);
+  const profiles = fs
+    .readdirSync(armaProfiles)
+    .filter((file) => fs.lstatSync(path.join(armaProfiles, file)).isDirectory())
+    .map(decodeURIComponent);
+  submitResults(profiles);
+}
+
 app.on('window-all-closed', () => {
   win = null;
   if (process.platform !== 'darwin') app.quit();
@@ -224,6 +239,7 @@ app.whenReady().then(() => {
   ipcMain.on('settings:openMissionCache', settingsOpenMissionCache);
   ipcMain.on('settings:changedArmaPath', settingsChangedArmaPath);
   ipcMain.on('settings:validateA3', settingsValidateA3);
+  ipcMain.on('settings:getArmaProfiles', getArmaProfiles);
 
   Store.initRenderer();
 });

@@ -1,3 +1,5 @@
+import type Server from './ServerInterface';
+
 export default interface SettingsStore {
   arma_path: string;
   noSplash: boolean;
@@ -11,6 +13,7 @@ export default interface SettingsStore {
   command_line: string;
   first_run: boolean;
   auth_token: string;
+  armaServerProfiles: Record<Server['id'], string>;
 }
 
 export const defaultSettings: SettingsStore = {
@@ -26,4 +29,5 @@ export const defaultSettings: SettingsStore = {
   command_line: '',
   first_run: true,
   auth_token: '',
+  armaServerProfiles: {},
 };
