@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, screen } from 'electron';
 import { release } from 'node:os';
 import { dialog } from 'electron';
 import { join } from 'node:path';
@@ -95,12 +95,14 @@ async function createWorker() {
 }
 
 async function createWindow() {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
   win = new BrowserWindow({
     title: 'Panthor Launcher',
     icon: join(process.env.PUBLIC, 'favicon.ico'),
-    width: 2000,
-    height: 1000,
-    minWidth: 2000,
+    width: Math.round(width * 0.45),
+    height: Math.round(height * 0.5),
+    minWidth: 1500,
     minHeight: 1000,
     webPreferences: {
       nodeIntegration: true,
