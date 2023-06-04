@@ -13,8 +13,11 @@ export class PanthorApiService {
   static validateAuthToken(authToken: string): Promise<AuthTokenValidation> {
     return new Promise((res, rej) => {
       axios
-        .get(this.host + '/v2/player/validate/' + authToken)
-        .then((response) => res(response.data.data[0]))
+        .get(this.host + '/v1/player/validate/' + authToken)
+        .then((response) => {
+          console.log(response.data);
+          res(response.data);
+        })
         .catch(rej);
     });
   }
