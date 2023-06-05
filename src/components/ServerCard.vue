@@ -102,7 +102,9 @@
         >
       </v-col>
       <v-col cols="3">
-        <v-btn color="success" block size="large" prepend-icon="mdi-connection">Joinen</v-btn>
+        <v-btn color="success" block size="large" prepend-icon="mdi-connection" @click="joinServer(server)"
+          >Joinen</v-btn
+        >
       </v-col>
     </v-row>
   </v-card>
@@ -111,13 +113,12 @@
 <script lang="ts">
 import Server from '@/interfaces/ServerInterface';
 import { PropType } from 'vue';
-import { clipboard } from 'electron';
-
+import { clipboard, ipcMain, ipcRenderer } from 'electron';
+import Store from 'electron-store';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-
 import { Pie } from 'vue-chartjs';
-
 import { promise } from 'ping';
+import SettingsStore, { defaultSettings } from '@/interfaces/SettingsStoreInterface';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -272,6 +273,9 @@ export default {
       const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetHour);
 
       this.restart_in = targetTime.getTime() - now.getTime();
+    },
+    joinServer(server: Server) {
+      ipcRenderer.send('process:joinServer', JSON.stringify(server));
     },
   },
   mounted() {
