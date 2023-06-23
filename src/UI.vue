@@ -177,8 +177,9 @@
                 <changelog-window :changelogs="api_data.changelogs"></changelog-window>
               </v-window-item>
 
+              <!-- Tfar -->
               <v-window-item :value="3">
-                <h1>TFAR</h1>
+                <tfar-window></tfar-window>
               </v-window-item>
 
               <!-- Settings -->
@@ -406,6 +407,7 @@
 import { ipcRenderer, shell } from 'electron';
 import ModWindow from '@/components/ModWindow.vue';
 import ChangelogWindow from '@/components/ChangelogWindow.vue';
+import TfarWindow from '@/components/TfarWindow.vue';
 import ServerWindow from '@/components/ServerWindow.vue';
 import FaqWindow from '@/components/FaqWindow.vue';
 import { defineComponent, ref } from 'vue';
@@ -685,7 +687,7 @@ export default defineComponent({
 
     this.loadAPIData();
   },
-  components: { ModWindow, ChangelogWindow, ServerWindow, FaqWindow },
+  components: { ModWindow, ChangelogWindow, TfarWindow, ServerWindow, FaqWindow },
 });
 </script>
 
