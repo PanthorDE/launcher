@@ -6,7 +6,7 @@
   </v-tabs>
   <v-row>
     <v-col cols="12" class="mb-3">
-      <server-card :server="selected_server"></server-card>
+      <server-card :server="selected_server" @load-api-data="$emit('load-api-data')"></server-card>
     </v-col>
   </v-row>
 </template>

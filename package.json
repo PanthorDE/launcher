@@ -29,7 +29,7 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build && electron-builder",
     "preview": "vite preview",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/ electron/"
   },
   "devDependencies": {
     "@babel/types": "^7.21.4",

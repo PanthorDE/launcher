@@ -1,7 +1,7 @@
 <template>
   <v-app id="panthor-launcher">
     <v-app-bar class="px-3" color="black" flat density="comfortable" v-if="!first_run_dialog">
-      <v-img src="@/assets/Panthor_Header_Logo_Line.png"></v-img>
+      <img src="@/assets/Panthor_Header_Logo_Line.png" class="image-left" />
 
       <v-spacer></v-spacer>
 
@@ -10,6 +10,7 @@
           {{ link }}
         </v-tab>
       </v-tabs>
+
       <v-spacer></v-spacer>
 
       <v-chip color="white" v-if="requesting_login || logged_in">
@@ -698,5 +699,11 @@ export default defineComponent({
 
 html {
   overflow-y: auto !important;
+}
+
+.image-left {
+  align-self: flex-start;
+  width: auto;
+  height: 100%;
 }
 </style>
