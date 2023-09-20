@@ -1,15 +1,8 @@
 <template>
   <v-card flat>
     <v-img height="300" :src="mod.img" cover>
-      <v-btn
-        color="white"
-        flat
-        icon="mdi-folder-open"
-        rounded="sm"
-        class="float-right mt-2 mr-2"
-        size="small"
-        @click="requestFolderOpen"
-      >
+      <v-btn color="white" flat icon="mdi-folder-open" rounded="sm" class="float-right mt-2 mr-2" size="small"
+        @click="requestFolderOpen">
         <v-icon icon="mdi-folder-open"></v-icon>
         <v-tooltip activator="parent" location="bottom">Ordner öffnen</v-tooltip>
       </v-btn>
@@ -32,14 +25,16 @@
     </v-row>
     <v-row justify="center" class="my-3" v-if="arma_path !== ''">
       <v-col cols="auto">
-        <v-btn color="success" flat prepend-icon="mdi-download"> Download </v-btn>
+        <v-btn color="success" flat prepend-icon="mdi-download" @click="updateMod"> Download </v-btn>
       </v-col>
       <v-col cols="auto">
-        <v-btn color="warning" flat prepend-icon="mdi-file-cog" @click="checkMod"> Prüfen </v-btn>
+        <v-btn color="warning" flat prepend-icon="mdi-file-cog" @click="verifyMod"> Prüfen </v-btn>
       </v-col>
+      <!--
       <v-col cols="auto">
         <v-btn color="red" flat prepend-icon="mdi-file-certificate-outline"> Bisign </v-btn>
       </v-col>
+      -->
     </v-row>
   </v-card>
 </template>
@@ -59,8 +54,11 @@ export default {
     arma_path: { type: String, required: true },
   },
   methods: {
-    checkMod() {
-      ipcRenderer.send('mod:verify', this.mod.id);
+    verifyMod() {
+      ipcRenderer.send('mod:verify', this.mod.id, true);
+    },
+    updateMod() {
+      ipcRenderer.send('mod:update', this.mod.id);
     },
     requestFolderOpen() {
       ipcRenderer.send('mod:openFolder', join(this.arma_path, this.mod.dir));

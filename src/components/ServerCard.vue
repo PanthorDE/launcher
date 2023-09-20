@@ -101,7 +101,7 @@
       <v-col cols="2"></v-col>
       <v-col cols="3">
         <v-btn color="red-lighten-1" block size="large" prepend-icon="mdi-reload" @click="$emit('load-api-data')"
-          >Aktualsieren</v-btn
+          >Aktualisieren</v-btn
         >
       </v-col>
       <v-col cols="3">

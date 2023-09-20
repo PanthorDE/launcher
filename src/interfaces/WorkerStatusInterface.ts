@@ -1,11 +1,23 @@
+export enum UpdateStatus {
+  UKNOWN = 0,
+  INTACT = 1,
+  HASHING = 2,
+  HASHED_UPDATE_REQUIRED = 3,
+  DOWNLOADING = 4,
+  DOWNLOADED_UPDATE_REQUIRED = 5,
+}
+
+export var StatusTexts = {
+  [UpdateStatus.UKNOWN]: "Status unbekannt",
+  [UpdateStatus.INTACT]: "Mod ist aktuell",
+  [UpdateStatus.HASHING]: "Überprüfung läuft",
+  [UpdateStatus.HASHED_UPDATE_REQUIRED]: "Überpüfung abgeschlossen, Update erforderlich",
+  [UpdateStatus.DOWNLOADING]: "Download läuft",
+  [UpdateStatus.DOWNLOADED_UPDATE_REQUIRED]: "Download unvollständig, Update erforderlich"
+};
+
 export default interface WorkerStatus {
-  //0: Idle
-  //1: Loading Mod-Information
-  //2: Getting Version-Mismatch (Based on Names)
-  //3: Hashing
-  //4:
-  //5: Downloading
-  status: number;
+  status: UpdateStatus;
   message: string;
   fileop_progress: number;
   fileop_speed: number;
@@ -14,4 +26,7 @@ export default interface WorkerStatus {
   fileop_time_remaining: number;
   fileop_size_done: number;
   fileop_size_remaining: number;
+  fileop_files_broken: number;
+  fileop_files_broken_size: number;
 }
+

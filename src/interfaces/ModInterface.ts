@@ -1,3 +1,5 @@
+import WorkerStatus from "./WorkerStatusInterface";
+
 export default interface Mod {
   id: number;
   name: string;
@@ -8,4 +10,5 @@ export default interface Mod {
   img: string;
   has_files: boolean;
   dir: string;
+  worker_status: WorkerStatus;
 }

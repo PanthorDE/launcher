@@ -14,45 +14,30 @@
       <v-spacer></v-spacer>
 
       <v-chip color="white" v-if="requesting_login || logged_in">
-        <span class="me-2"
-          ><span v-if="requesting_login && !logged_in"
-            ><v-progress-linear indeterminate style="width: 60px"></v-progress-linear></span
-          ><span v-else>{{ user.name }}</span></span
-        >
-        <v-avatar
-          class="hidden-sm-and-down"
-          color="red-lighten-1"
-          size="32"
-          :image="user.player.avatar_medium"
-          v-if="user.player"
-          ><v-icon v-if="requesting_login && !logged_in" icon="mdi-login-variant"></v-icon
-        ></v-avatar>
-        <v-avatar class="hidden-sm-and-down" v-if="requesting_login && !logged_in" color="red-lighten-1" size="32"
-          ><v-icon icon="mdi-help-circle-outline"></v-icon
-        ></v-avatar>
+        <span class="me-2"><span v-if="requesting_login && !logged_in"><v-progress-linear indeterminate
+              style="width: 60px"></v-progress-linear></span><span v-else>{{ user.name }}</span></span>
+        <v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32" :image="user.player.avatar_medium"
+          v-if="user.player"><v-icon v-if="requesting_login && !logged_in" icon="mdi-login-variant"></v-icon></v-avatar>
+        <v-avatar class="hidden-sm-and-down" v-if="requesting_login && !logged_in" color="red-lighten-1" size="32"><v-icon
+            icon="mdi-help-circle-outline"></v-icon></v-avatar>
       </v-chip>
       <v-btn :loading="loading_api_data" @click="loadAPIData" icon>
-        <v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32"
-          ><v-tooltip text="Login" location="bottom"></v-tooltip><v-icon icon="mdi-refresh"></v-icon
-        ></v-avatar>
+        <v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32"><v-tooltip text="Login"
+            location="bottom"></v-tooltip><v-icon icon="mdi-refresh"></v-icon></v-avatar>
         <template v-slot:loader>
           <v-progress-circular indeterminate></v-progress-circular>
         </template>
       </v-btn>
-      <v-btn :loading="requesting_login" icon @click="loginOrOut" v-if="!logged_in"
-        ><v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32"
-          ><v-tooltip text="Login" location="bottom" activator="parent"></v-tooltip
-          ><v-icon icon="mdi-login-variant"></v-icon
-        ></v-avatar>
+      <v-btn :loading="requesting_login" icon @click="loginOrOut" v-if="!logged_in"><v-avatar class="hidden-sm-and-down"
+          color="red-lighten-1" size="32"><v-tooltip text="Login" location="bottom" activator="parent"></v-tooltip><v-icon
+            icon="mdi-login-variant"></v-icon></v-avatar>
         <template v-slot:loader>
           <v-progress-circular indeterminate></v-progress-circular>
         </template>
       </v-btn>
-      <v-btn :loading="requesting_login" icon @click="loginOrOut" v-if="logged_in"
-        ><v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32"
-          ><v-tooltip text="Logout" location="bottom" activator="parent"></v-tooltip
-          ><v-icon icon="mdi-logout-variant"></v-icon
-        ></v-avatar>
+      <v-btn :loading="requesting_login" icon @click="loginOrOut" v-if="logged_in"><v-avatar class="hidden-sm-and-down"
+          color="red-lighten-1" size="32"><v-tooltip text="Logout" location="bottom"
+            activator="parent"></v-tooltip><v-icon icon="mdi-logout-variant"></v-icon></v-avatar>
         <template v-slot:loader>
           <v-progress-circular indeterminate></v-progress-circular>
         </template>
@@ -66,111 +51,90 @@
             <v-card flat v-for="(server, i) in api_data.servers" @click="openServer(i)" class="mb-3">
               <v-card-title>
                 {{ server.name }}
-                <v-progress-circular
-                  :model-value="(server.players.length / notZero(server.slots)) * 100"
-                  color="red-lighten-1"
-                  :size="70"
-                  :width="8"
-                  class="float-right"
-                  >{{ Math.round((server.players.length / notZero(server.slots)) * 100) }}%</v-progress-circular
-                ><br /><span class="text-h5" style="font-size: 18px !important"
-                  >Online: {{ server.players.length }} / {{ server.slots }}</span
-                ></v-card-title
-              >
+                <v-progress-circular :model-value="(server.players.length / notZero(server.slots)) * 100"
+                  color="red-lighten-1" :size="70" :width="8" class="float-right">{{ Math.round((server.players.length /
+                    notZero(server.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
+                  style="font-size: 18px !important">Online: {{ server.players.length }} / {{ server.slots
+                  }}</span></v-card-title>
             </v-card>
-            <v-card
-              flat
-              v-for="teamspeak in api_data.teamspeaks"
-              @click="openURL(`ts3server://${teamspeak.ip}?port=${teamspeak.port}`)"
-            >
+            <v-card flat v-for="teamspeak in api_data.teamspeaks"
+              @click="openURL(`ts3server://${teamspeak.ip}?port=${teamspeak.port}`)">
               <v-card-title>
                 Teamspeak
-                <v-progress-circular
-                  :model-value="(teamspeak.users.length / notZero(teamspeak.slots)) * 100"
-                  color="red-lighten-1"
-                  :size="70"
-                  :width="8"
-                  class="float-right"
-                  >{{ Math.round((teamspeak.users.length / notZero(teamspeak.slots)) * 100) }}%</v-progress-circular
-                ><br /><span class="text-h5" style="font-size: 18px !important"
-                  >Online: {{ teamspeak.users.length }} / {{ teamspeak.slots }}</span
-                ></v-card-title
-              >
+                <v-progress-circular :model-value="(teamspeak.users.length / notZero(teamspeak.slots)) * 100"
+                  color="red-lighten-1" :size="70" :width="8" class="float-right">{{ Math.round((teamspeak.users.length /
+                    notZero(teamspeak.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
+                  style="font-size: 18px !important">Online: {{ teamspeak.users.length }} / {{ teamspeak.slots
+                  }}</span></v-card-title>
             </v-card>
-            <v-card flat min-height="100" class="mt-3" v-if="worker_status.status !== 0" @click="tab = 0">
-              <v-card-title
-                ><v-icon icon="mdi-download-network-outline" size="small" class="float-right"></v-icon> Download
-                Status</v-card-title
-              >
-              <v-row class="mt-0 mx-auto ps-5 pe-5">
-                <v-card-text class="text-center">{{ worker_status.message }}</v-card-text>
-                <v-progress-linear
-                  rounded
-                  striped
-                  v-model="worker_status.fileop_progress"
-                  color="red-lighten-1"
-                  :height="16"
-                  :stream="worker_status.fileop_progress != 0"
-                  :indeterminate="worker_status.fileop_progress == 0"
-                >
-                  <strong v-if="worker_status.fileop_progress > 0"
-                    >{{ Math.ceil(worker_status.fileop_progress) }}%</strong
-                  >
-                  <strong v-if="worker_status.fileop_progress == 0">Verbindungsaufbau</strong>
-                </v-progress-linear>
-              </v-row>
-              <v-row class="text-center justify-center mb-0 mt-5 pt-3">
-                <v-col cols="auto" v-if="worker_status.fileop_speed > 0" class="pt-0">
-                  <v-chip class="ma-2" color="success">
-                    <v-icon start icon="mdi-speedometer-slow"></v-icon>
-                    {{ humanFileSize(worker_status.fileop_speed, true, 2, true) }}
-                  </v-chip>
-                </v-col>
-                <v-col cols="auto" v-if="worker_status.fileop_files_remaining > 0" class="pt-0">
-                  <v-chip class="ma-2" color="success">
-                    <v-icon start icon="mdi-file-multiple"></v-icon>
-                    {{ worker_status.fileop_files_done }} / {{ worker_status.fileop_files_remaining }}
-                  </v-chip>
-                </v-col>
-                <v-col
-                  cols="auto"
-                  v-if="worker_status.fileop_size_remaining > 0 && worker_status.fileop_size_done > 0"
-                  class="pt-0"
-                >
-                  <v-chip class="ma-2" color="success">
-                    <v-icon start icon="mdi-harddisk"></v-icon>
-                    {{ humanFileSize(worker_status.fileop_size_done, true, 1) }} /
-                    {{ humanFileSize(worker_status.fileop_size_remaining, true, 1) }}
-                  </v-chip>
-                </v-col>
-                <v-col cols="auto" v-if="worker_status.fileop_time_remaining > 0" class="pt-0">
-                  <v-chip class="ma-2" color="success">
-                    <v-icon start icon="mdi-clock-end"></v-icon>
-                    {{ duration_humanizer.humanize(Math.ceil(worker_status.fileop_time_remaining), { round: true }) }}
-                  </v-chip>
-                </v-col>
-              </v-row>
-            </v-card>
+            <div v-for="mod in api_data.mods">
+              <v-card flat min-height="100" class="mt-3" v-if="mod.worker_status && mod.worker_status.status != 0" @click="tab = 0">
+                <v-card-title><v-icon icon="mdi-download-network-outline" size="small" class="float-right"></v-icon>
+                  {{ mod.name }}</v-card-title>
+                <v-row class="mt-0 mx-auto ps-5 pe-5">
+                  <v-card-text class="text-center">{{ mod.worker_status.message }}</v-card-text>
+                  <v-progress-linear rounded striped v-model="mod.worker_status.fileop_progress" color="red-lighten-1"
+                    :height="16" :stream="mod.worker_status.fileop_progress != 0"
+                    :indeterminate="mod.worker_status.fileop_progress == 0" v-if="mod.worker_status.status === 2 || mod.worker_status.status === 4">
+                    <strong v-if="mod.worker_status.fileop_progress > 0">{{ Math.ceil(mod.worker_status.fileop_progress)
+                    }}%</strong>
+                  </v-progress-linear>
+                </v-row>
+                <v-row class="text-center justify-center mb-0 mt-2 pt-3">
+                  <v-col cols="auto" v-if="mod.worker_status.status === 3 || mod.worker_status.status === 5" class="pt-0">
+                    <v-chip class="ma-2" color="warning">
+                      <v-icon start icon="mdi-file-alert"></v-icon>
+                      {{ mod.worker_status.fileop_files_broken }}
+                    </v-chip>
+                    <v-chip class="ma-2" color="warning">
+                      <v-icon start icon="mdi-file-download"></v-icon>
+                      {{ humanFileSize(mod.worker_status.fileop_files_broken_size) }}
+                    </v-chip>
+                  </v-col>
+                  <v-col cols="auto" v-if="mod.worker_status.fileop_speed > 0" class="pt-0">
+                    <v-chip class="ma-2" color="success">
+                      <v-icon start icon="mdi-speedometer-slow"></v-icon>
+                      {{ humanFileSize(mod.worker_status.fileop_speed, true, 2, true) }}
+                    </v-chip>
+                  </v-col>
+                  <v-col cols="auto" v-if="mod.worker_status.fileop_files_remaining > 0" class="pt-0">
+                    <v-chip class="ma-2" color="success">
+                      <v-icon start icon="mdi-file-multiple"></v-icon>
+                      {{ mod.worker_status.fileop_files_done }} / {{ mod.worker_status.fileop_files_remaining + mod.worker_status.fileop_files_done }}
+                    </v-chip>
+                  </v-col>
+                  <v-col cols="auto"
+                    v-if="mod.worker_status.fileop_size_remaining > 0 && mod.worker_status.fileop_size_done > 0"
+                    class="pt-0">
+                    <v-chip class="ma-2" color="success">
+                      <v-icon start icon="mdi-harddisk"></v-icon>
+                      {{ humanFileSize(mod.worker_status.fileop_size_done, true, 1) }} /
+                      {{ humanFileSize(mod.worker_status.fileop_size_remaining + mod.worker_status.fileop_size_done, true, 1) }}
+                    </v-chip>
+                  </v-col>
+                  <v-col cols="auto" v-if="mod.worker_status.fileop_time_remaining > 0" class="pt-0">
+                    <v-chip class="ma-2" color="success">
+                      <v-icon start icon="mdi-clock-end"></v-icon>
+                      {{ duration_humanizer.humanize(Math.ceil(mod.worker_status.fileop_time_remaining), { round: true })
+                      }}
+                    </v-chip>
+                  </v-col>
+                </v-row>
+              </v-card>
+            </div>
           </v-col>
           <v-col cols="9">
             <v-window v-model="tab">
               <!-- Mods -->
               <v-window-item :value="0">
-                <mod-window
-                  :mods="api_data.mods"
-                  :arma_path="settings.arma_path"
-                  @choose-armapath="chooseArmaPath"
-                ></mod-window>
+                <mod-window :mods="api_data.mods" :arma_path="settings.arma_path"
+                  @choose-armapath="chooseArmaPath"></mod-window>
               </v-window-item>
 
               <!-- Servers -->
               <v-window-item :value="1">
-                <server-window
-                  :servers="api_data.servers"
-                  @load-api-data="loadAPIData"
-                  :default_tab="server_window_default_tab"
-                  ref="serverWindowRef"
-                ></server-window>
+                <server-window :servers="api_data.servers" @load-api-data="loadAPIData"
+                  :default_tab="server_window_default_tab" ref="serverWindowRef"></server-window>
               </v-window-item>
 
               <!-- Changelogs -->
@@ -191,17 +155,9 @@
                       <v-card-text class="pb-0">
                         <v-row>
                           <v-col cols="10">
-                            <v-text-field
-                              label="Arma 3 Pfad"
-                              prepend-inner-icon="mdi-folder-sync"
-                              variant="solo-filled"
-                              v-model="settings.arma_path"
-                              readonly
-                              placeholder="Leer"
-                              density="comfortable"
-                              block
-                              flat
-                            ></v-text-field>
+                            <v-text-field label="Arma 3 Pfad" prepend-inner-icon="mdi-folder-sync" variant="solo-filled"
+                              v-model="settings.arma_path" readonly placeholder="Leer" density="comfortable" block
+                              flat></v-text-field>
                           </v-col>
                           <v-col cols="2">
                             <v-btn @click="chooseArmaPath" icon="mdi-folder-open" color="red" block rounded="sm">
@@ -232,90 +188,43 @@
                           <v-col cols="6">
                             <v-card-subtitle class="ps-0">Start beschleunigen</v-card-subtitle>
                             <v-card-text class="px-0 py-0">
-                              <v-switch
-                                v-model="settings.noSplash"
-                                hide-details
-                                inset
-                                label="Splashscreen überspringen"
-                                color="red-lighten-1"
-                              ></v-switch>
-                              <v-switch
-                                v-model="settings.skipIntro"
-                                hide-details
-                                inset
-                                label="Intro überspringen"
-                                color="red-lighten-1"
-                              ></v-switch>
+                              <v-switch v-model="settings.noSplash" hide-details inset label="Splashscreen überspringen"
+                                color="red-lighten-1"></v-switch>
+                              <v-switch v-model="settings.skipIntro" hide-details inset label="Intro überspringen"
+                                color="red-lighten-1"></v-switch>
                             </v-card-text>
 
                             <v-card-subtitle class="ps-0">Performance</v-card-subtitle>
                             <v-card-text class="px-0 py-0">
-                              <v-switch
-                                v-model="settings.enableHT"
-                                hide-details
-                                inset
-                                label="Hyperthreading aktivieren"
-                                color="red-lighten-1"
-                              ></v-switch>
-                              <v-switch
-                                v-model="settings.setThreadCharacteristics"
-                                hide-details
-                                inset
-                                label="Windows Gaming Optimierung"
-                                color="red-lighten-1"
-                              ></v-switch>
+                              <v-switch v-model="settings.enableHT" hide-details inset label="Hyperthreading aktivieren"
+                                color="red-lighten-1"></v-switch>
+                              <v-switch v-model="settings.setThreadCharacteristics" hide-details inset
+                                label="Windows Gaming Optimierung" color="red-lighten-1"></v-switch>
                             </v-card-text>
                           </v-col>
                           <v-col cols="6">
                             <v-card-subtitle class="ps-0">Verschiedenes</v-card-subtitle>
                             <v-card-text class="px-0 py-0">
-                              <v-switch
-                                v-model="settings.windowed"
-                                hide-details
-                                inset
-                                label="Fenstermodus"
-                                color="red-lighten-1"
-                              ></v-switch>
-                              <v-switch
-                                v-model="settings.noPause"
-                                hide-details
-                                inset
-                                label="Spiel nicht durch Tab pausieren"
-                                color="red-lighten-1"
-                              ></v-switch>
-                              <v-switch
-                                v-model="settings.noPauseAudio"
-                                hide-details
-                                inset
-                                label="Audio nicht durch Tab pausieren"
-                                color="red-lighten-1"
-                              ></v-switch>
+                              <v-switch v-model="settings.windowed" hide-details inset label="Fenstermodus"
+                                color="red-lighten-1"></v-switch>
+                              <v-switch v-model="settings.noPause" hide-details inset
+                                label="Spiel nicht durch Tab pausieren" color="red-lighten-1"></v-switch>
+                              <v-switch v-model="settings.noPauseAudio" hide-details inset
+                                label="Audio nicht durch Tab pausieren" color="red-lighten-1"></v-switch>
                             </v-card-text>
 
                             <v-card-subtitle class="ps-0">Debug</v-card-subtitle>
                             <v-card-text class="px-0 py-0">
-                              <v-switch
-                                v-model="settings.showScriptErrors"
-                                hide-details
-                                inset
-                                label="Skriptfehler anzeigen"
-                                color="red-lighten-1"
-                              ></v-switch>
+                              <v-switch v-model="settings.showScriptErrors" hide-details inset
+                                label="Skriptfehler anzeigen" color="red-lighten-1"></v-switch>
                             </v-card-text>
                           </v-col>
                         </v-row>
                         <v-row>
                           <v-col cols="12">
-                            <v-text-field
-                              label="Weitere Startparameter"
-                              prepend-inner-icon="mdi-powershell"
-                              variant="solo-filled"
-                              density="comfortable"
-                              v-model="settings.command_line"
-                              placeholder="-debug"
-                              block
-                              flat
-                            ></v-text-field>
+                            <v-text-field label="Weitere Startparameter" prepend-inner-icon="mdi-powershell"
+                              variant="solo-filled" density="comfortable" v-model="settings.command_line"
+                              placeholder="-debug" block flat></v-text-field>
                           </v-col>
                         </v-row>
                       </v-card-text>
@@ -335,14 +244,8 @@
           <v-card>
             <v-toolbar color="red" title="Login" class="text-center pe-5"></v-toolbar>
             <v-card-text class="mb-2">
-              <v-text-field
-                v-model="settings.auth_token"
-                class="mb-2"
-                variant="solo-filled"
-                flat
-                clearable
-                label="Auth-Token"
-              ></v-text-field>
+              <v-text-field v-model="settings.auth_token" class="mb-2" variant="solo-filled" flat clearable
+                label="Auth-Token"></v-text-field>
               <v-btn block color="success" size="large" type="submit" variant="elevated" @click="login">
                 Login <v-progress-circular v-if="requesting_login" indeterminate size="24"></v-progress-circular>
               </v-btn>
@@ -356,45 +259,28 @@
             <v-toolbar color="red" title="Willkommen im Panthor Launcher!" class="text-center"></v-toolbar>
             <v-card-text>
               <div class="pa-5 text-center">
-                <span class="text-h6"
-                  >Um die Panthor Mod zu installieren muss der Launcher den Pfad zu einer Arma 3 Installation
-                  finden.</span
-                >
+                <span class="text-h6">Um die Panthor Mod zu installieren muss der Launcher den Pfad zu einer Arma 3
+                  Installation
+                  finden.</span>
                 <br />
                 <br />
                 <span class="text-h8">Folgede Ordner wurden automatisch erkannt, bitte wähle den richtigen aus:</span>
 
-                <v-radio-group
-                  label="Arma 3 Pfad"
-                  v-model="first_run_selected_path"
-                  class="mt-8"
-                  v-if="possible_a3_paths.length > 0"
-                >
+                <v-radio-group label="Arma 3 Pfad" v-model="first_run_selected_path" class="mt-8"
+                  v-if="possible_a3_paths.length > 0">
                   <v-radio :label="path" :value="i" v-for="(path, i) in possible_a3_paths"></v-radio>
                 </v-radio-group>
                 <br />
                 <span class="text-h8">Falls der richtige Pfad nicht in der Liste ist überspringe diesen Schritt.</span>
               </div>
-              <v-alert
-                type="warning"
-                title="Keine validen Pfade gefunden"
-                v-if="possible_a3_paths.length === 0"
-                text="Leider ist Arma auf deinem PC nicht an einer üblichen Stelle installiert oder du hast es manuell verschoben. Bitte überspringe diesen Schritt."
-              ></v-alert>
+              <v-alert type="warning" title="Keine validen Pfade gefunden" v-if="possible_a3_paths.length === 0"
+                text="Leider ist Arma auf deinem PC nicht an einer üblichen Stelle installiert oder du hast es manuell verschoben. Bitte überspringe diesen Schritt."></v-alert>
             </v-card-text>
             <v-card-actions class="justify-center mb-2">
-              <v-btn color="warning" flat prepend-icon="mdi-debug-step-over" @click="firstRunSkip" size="large"
-                >Überspringen</v-btn
-              >
-              <v-btn
-                color="success"
-                flat
-                prepend-icon="mdi-content-save-cog"
-                @click="firstRunSave"
-                size="large"
-                v-if="possible_a3_paths.length > 0"
-                >Speichern</v-btn
-              >
+              <v-btn color="warning" flat prepend-icon="mdi-debug-step-over" @click="firstRunSkip"
+                size="large">Überspringen</v-btn>
+              <v-btn color="success" flat prepend-icon="mdi-content-save-cog" @click="firstRunSave" size="large"
+                v-if="possible_a3_paths.length > 0">Speichern</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -443,9 +329,7 @@ export default defineComponent({
       show_login_dialog: false,
       requesting_login: false,
       user: {} as User,
-      worker_status: {
-        status: 0,
-      } as WorkerStatus,
+      worker_status: [] as WorkerStatus[],
       duration_humanizer: duration_humanizer,
       loading_api_data: false,
       settings: defaultSettings as SettingsStore,
@@ -659,12 +543,14 @@ export default defineComponent({
     },
   },
   watch: {
+    /*
     'worker_status.fileop_progress'(newVal, oldVal) {
       console.log(this.worker_status.fileop_progress);
       ipcRenderer.send('winprogress-change', {
         progress: this.worker_status.fileop_progress,
       });
     },
+    */
     settings: {
       handler: function (val, oldVal) {
         let store = new Store<SettingsStore>({
@@ -677,14 +563,27 @@ export default defineComponent({
       },
       deep: true,
     },
+    'api_data.mods'(newVal, oldVal) {
+      let mod_ids = [] as number[];
+      this.api_data.mods.forEach((mod) => {
+        mod_ids.push(mod.id);
+      });
+
+      ipcRenderer.send('mods:init', mod_ids);
+    },
   },
   mounted() {
     this.loadSettings();
-    ipcRenderer.on('worker_status:update', (_event, message: string) => {
-      this.worker_status = JSON.parse(message);
-    });
-
     this.loadAPIData();
+    ipcRenderer.on('worker:update', (_event, mod_id: number, message: string) => {
+      let worker_status = <WorkerStatus>JSON.parse(message);
+
+      this.api_data.mods.forEach((mod) => {
+        if (mod.id === mod_id) {
+          mod.worker_status = worker_status;
+        }
+      });
+    });
   },
   components: { ModWindow, ChangelogWindow, ServerWindow, FaqWindow },
 });
