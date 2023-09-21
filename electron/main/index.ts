@@ -133,8 +133,8 @@ async function createWindow() {
   // win.webContents.on('will-navigate', (event, url) => { }) #344
 }
 
-app.whenReady().then(createWindow);
 app.whenReady().then(createWorker);
+app.whenReady().then(createWindow);
 
 function modInitMessageToWorker(event: any, mods: any, path: any) {
   worker_win.webContents.send('mods:init', mods, path);
@@ -154,6 +154,10 @@ function modOpenFolder(event: any, message: any) {
 
 function workerStatusUpdateMessageToUI(event: any, mod_id: number, message: string) {
   win.webContents.send('worker:update', mod_id, message);
+}
+
+function workerStatusUpdateRequest(event: any) {
+  worker_win.webContents.send('worker:requestUpdate');
 }
 
 function settingsChangedArmaPath(event: any, message: any) {
@@ -237,6 +241,7 @@ app.whenReady().then(() => {
   ipcMain.on('mod:verify', modVerifyMessageToWorker);
   ipcMain.on('mod:openFolder', modOpenFolder);
   ipcMain.on('worker:update', workerStatusUpdateMessageToUI);
+  ipcMain.on('worker:requestUpdate', workerStatusUpdateRequest);
   ipcMain.on('winprogress-change', (event, arg) => {
     win.setProgressBar(arg.progress / 100);
   });

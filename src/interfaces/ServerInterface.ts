@@ -24,4 +24,5 @@ export default interface Server {
   players: Array<string>;
   sides: Side;
   updated_at: APIDate;
+  mod_ready: boolean;
 }

@@ -93,21 +93,19 @@
           flat
           hide-details
           :items="armaProfiles"
-          :model-value="selectedArmaProfile"
           @update:modelValue="onArmaProfileChange"
           clearable
         ></v-select>
       </v-col>
       <v-col cols="2"></v-col>
       <v-col cols="3">
-        <v-btn color="red-lighten-1" block size="large" prepend-icon="mdi-reload" @click="$emit('load-api-data')"
+        <v-btn color="primary" block size="large" prepend-icon="mdi-reload" @click="$emit('load-api-data')"
           >Aktualisieren</v-btn
         >
       </v-col>
       <v-col cols="3">
-        <v-btn color="success" block size="large" prepend-icon="mdi-connection" @click="joinServer(server)"
-          >Joinen</v-btn
-        >
+        <v-btn color="success" block size="large" prepend-icon="mdi-connection" @click="joinServer(server)" v-if="server.mod_ready">Joinen</v-btn>
+        <v-btn color="warning" block size="large" prepend-icon="mdi-alert-outline" @click="$emit('switch-tab')" v-else>Update</v-btn>
       </v-col>
     </v-row>
   </v-card>
@@ -133,7 +131,7 @@ interface IPlayerWithType {
 
 export default {
   name: 'ModCard',
-  emits: ['load-api-data'],
+  emits: ['load-api-data', 'switch-tab'],
   data() {
     return {
       ping: 0,

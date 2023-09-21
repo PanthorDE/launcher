@@ -16,34 +16,33 @@
       <v-chip color="white" v-if="requesting_login || logged_in">
         <span class="me-2"><span v-if="requesting_login && !logged_in"><v-progress-linear indeterminate
               style="width: 60px"></v-progress-linear></span><span v-else>{{ user.name }}</span></span>
-        <v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32" :image="user.player.avatar_medium"
+        <v-avatar class="hidden-sm-and-down" color="primary" size="32" :image="user.player.avatar_medium"
           v-if="user.player"><v-icon v-if="requesting_login && !logged_in" icon="mdi-login-variant"></v-icon></v-avatar>
-        <v-avatar class="hidden-sm-and-down" v-if="requesting_login && !logged_in" color="red-lighten-1" size="32"><v-icon
+        <v-avatar class="hidden-sm-and-down" v-if="requesting_login && !logged_in" color="primary" size="32"><v-icon
             icon="mdi-help-circle-outline"></v-icon></v-avatar>
       </v-chip>
       <v-btn :loading="loading_api_data" @click="loadAPIData" icon>
-        <v-avatar class="hidden-sm-and-down" color="red-lighten-1" size="32"><v-tooltip text="Login"
+        <v-avatar class="hidden-sm-and-down" color="primary" size="32"><v-tooltip text="Login"
             location="bottom"></v-tooltip><v-icon icon="mdi-refresh"></v-icon></v-avatar>
         <template v-slot:loader>
           <v-progress-circular indeterminate></v-progress-circular>
         </template>
       </v-btn>
       <v-btn :loading="requesting_login" icon @click="loginOrOut" v-if="!logged_in"><v-avatar class="hidden-sm-and-down"
-          color="red-lighten-1" size="32"><v-tooltip text="Login" location="bottom" activator="parent"></v-tooltip><v-icon
+          color="primary" size="32"><v-tooltip text="Login" location="bottom" activator="parent"></v-tooltip><v-icon
             icon="mdi-login-variant"></v-icon></v-avatar>
         <template v-slot:loader>
           <v-progress-circular indeterminate></v-progress-circular>
         </template>
       </v-btn>
       <v-btn :loading="requesting_login" icon @click="loginOrOut" v-if="logged_in"><v-avatar class="hidden-sm-and-down"
-          color="red-lighten-1" size="32"><v-tooltip text="Logout" location="bottom"
+          color="primary" size="32"><v-tooltip text="Logout" location="bottom"
             activator="parent"></v-tooltip><v-icon icon="mdi-logout-variant"></v-icon></v-avatar>
         <template v-slot:loader>
           <v-progress-circular indeterminate></v-progress-circular>
         </template>
       </v-btn>
     </v-app-bar>
-
     <v-main>
       <v-container :fluid="true" v-if="!first_run_dialog">
         <v-row>
@@ -52,7 +51,7 @@
               <v-card-title>
                 {{ server.name }}
                 <v-progress-circular :model-value="(server.players.length / notZero(server.slots)) * 100"
-                  color="red-lighten-1" :size="70" :width="8" class="float-right">{{ Math.round((server.players.length /
+                  color="primary" :size="70" :width="8" class="float-right">{{ Math.round((server.players.length /
                     notZero(server.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
                   style="font-size: 18px !important">Online: {{ server.players.length }} / {{ server.slots
                   }}</span></v-card-title>
@@ -62,18 +61,18 @@
               <v-card-title>
                 Teamspeak
                 <v-progress-circular :model-value="(teamspeak.users.length / notZero(teamspeak.slots)) * 100"
-                  color="red-lighten-1" :size="70" :width="8" class="float-right">{{ Math.round((teamspeak.users.length /
+                  color="primary" :size="70" :width="8" class="float-right">{{ Math.round((teamspeak.users.length /
                     notZero(teamspeak.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
                   style="font-size: 18px !important">Online: {{ teamspeak.users.length }} / {{ teamspeak.slots
                   }}</span></v-card-title>
             </v-card>
             <div v-for="mod in api_data.mods">
-              <v-card flat min-height="100" class="mt-3" v-if="mod.worker_status && mod.worker_status.status != 0" @click="tab = 0">
-                <v-card-title><v-icon icon="mdi-download-network-outline" size="small" class="float-right"></v-icon>
+              <v-card flat min-height="100" class="mt-3" v-if="mod.worker_status && mod.worker_status.status != 0 && mod.worker_status.status != 1" @click="tab = 0">
+                <v-card-title><v-icon icon="mdi-download-network-outline" size="small" class="float-right" :color="mod.worker_status.color"></v-icon>
                   {{ mod.name }}</v-card-title>
                 <v-row class="mt-0 mx-auto ps-5 pe-5">
-                  <v-card-text class="text-center">{{ mod.worker_status.message }}</v-card-text>
-                  <v-progress-linear rounded striped v-model="mod.worker_status.fileop_progress" color="red-lighten-1"
+                  <v-card-text class="text-center"><v-icon :icon="mod.worker_status.icon" class="me-2" :color="mod.worker_status.color"></v-icon> {{ mod.worker_status.message }}</v-card-text>
+                  <v-progress-linear rounded striped v-model="mod.worker_status.fileop_progress" :color="mod.worker_status.color"
                     :height="16" :stream="mod.worker_status.fileop_progress != 0"
                     :indeterminate="mod.worker_status.fileop_progress == 0" v-if="mod.worker_status.status === 2 || mod.worker_status.status === 4">
                     <strong v-if="mod.worker_status.fileop_progress > 0">{{ Math.ceil(mod.worker_status.fileop_progress)
@@ -82,23 +81,23 @@
                 </v-row>
                 <v-row class="text-center justify-center mb-0 mt-2 pt-3">
                   <v-col cols="auto" v-if="mod.worker_status.status === 3 || mod.worker_status.status === 5" class="pt-0">
-                    <v-chip class="ma-2" color="warning">
+                    <v-chip class="ma-2" color="warning" variant="outlined">
                       <v-icon start icon="mdi-file-alert"></v-icon>
                       {{ mod.worker_status.fileop_files_broken }}
                     </v-chip>
-                    <v-chip class="ma-2" color="warning">
+                    <v-chip class="ma-2" color="warning" variant="outlined">
                       <v-icon start icon="mdi-file-download"></v-icon>
                       {{ humanFileSize(mod.worker_status.fileop_files_broken_size) }}
                     </v-chip>
                   </v-col>
                   <v-col cols="auto" v-if="mod.worker_status.fileop_speed > 0" class="pt-0">
-                    <v-chip class="ma-2" color="success">
+                    <v-chip class="ma-2" color="success" variant="outlined">
                       <v-icon start icon="mdi-speedometer-slow"></v-icon>
                       {{ humanFileSize(mod.worker_status.fileop_speed, true, 2, true) }}
                     </v-chip>
                   </v-col>
                   <v-col cols="auto" v-if="mod.worker_status.fileop_files_remaining > 0" class="pt-0">
-                    <v-chip class="ma-2" color="success">
+                    <v-chip class="ma-2" color="success" variant="outlined">
                       <v-icon start icon="mdi-file-multiple"></v-icon>
                       {{ mod.worker_status.fileop_files_done }} / {{ mod.worker_status.fileop_files_remaining + mod.worker_status.fileop_files_done }}
                     </v-chip>
@@ -106,17 +105,16 @@
                   <v-col cols="auto"
                     v-if="mod.worker_status.fileop_size_remaining > 0 && mod.worker_status.fileop_size_done > 0"
                     class="pt-0">
-                    <v-chip class="ma-2" color="success">
+                    <v-chip class="ma-2" color="success" variant="outlined">
                       <v-icon start icon="mdi-harddisk"></v-icon>
                       {{ humanFileSize(mod.worker_status.fileop_size_done, true, 1) }} /
                       {{ humanFileSize(mod.worker_status.fileop_size_remaining + mod.worker_status.fileop_size_done, true, 1) }}
                     </v-chip>
                   </v-col>
                   <v-col cols="auto" v-if="mod.worker_status.fileop_time_remaining > 0" class="pt-0">
-                    <v-chip class="ma-2" color="success">
+                    <v-chip class="ma-2" color="success" variant="outlined">
                       <v-icon start icon="mdi-clock-end"></v-icon>
-                      {{ duration_humanizer.humanize(Math.ceil(mod.worker_status.fileop_time_remaining), { round: true })
-                      }}
+                      {{ duration_humanizer.humanize(Math.ceil(mod.worker_status.fileop_time_remaining), { round: true }) }}
                     </v-chip>
                   </v-col>
                 </v-row>
@@ -128,12 +126,12 @@
               <!-- Mods -->
               <v-window-item :value="0">
                 <mod-window :mods="api_data.mods" :arma_path="settings.arma_path"
-                  @choose-armapath="chooseArmaPath"></mod-window>
+                  @choose-armapath="chooseArmaPath" @open-server="openServer()"></mod-window>
               </v-window-item>
 
               <!-- Servers -->
               <v-window-item :value="1">
-                <server-window :servers="api_data.servers" @load-api-data="loadAPIData"
+                <server-window :servers="api_data.servers" @load-api-data="loadAPIData" @switch-tab="switchTab"
                   :default_tab="server_window_default_tab" ref="serverWindowRef"></server-window>
               </v-window-item>
 
@@ -189,34 +187,34 @@
                             <v-card-subtitle class="ps-0">Start beschleunigen</v-card-subtitle>
                             <v-card-text class="px-0 py-0">
                               <v-switch v-model="settings.noSplash" hide-details inset label="Splashscreen überspringen"
-                                color="red-lighten-1"></v-switch>
+                                color="primary"></v-switch>
                               <v-switch v-model="settings.skipIntro" hide-details inset label="Intro überspringen"
-                                color="red-lighten-1"></v-switch>
+                                color="primary"></v-switch>
                             </v-card-text>
 
                             <v-card-subtitle class="ps-0">Performance</v-card-subtitle>
                             <v-card-text class="px-0 py-0">
                               <v-switch v-model="settings.enableHT" hide-details inset label="Hyperthreading aktivieren"
-                                color="red-lighten-1"></v-switch>
+                                color="primary"></v-switch>
                               <v-switch v-model="settings.setThreadCharacteristics" hide-details inset
-                                label="Windows Gaming Optimierung" color="red-lighten-1"></v-switch>
+                                label="Windows Gaming Optimierung" color="primary"></v-switch>
                             </v-card-text>
                           </v-col>
                           <v-col cols="6">
                             <v-card-subtitle class="ps-0">Verschiedenes</v-card-subtitle>
                             <v-card-text class="px-0 py-0">
                               <v-switch v-model="settings.windowed" hide-details inset label="Fenstermodus"
-                                color="red-lighten-1"></v-switch>
+                                color="primary"></v-switch>
                               <v-switch v-model="settings.noPause" hide-details inset
-                                label="Spiel nicht durch Tab pausieren" color="red-lighten-1"></v-switch>
+                                label="Spiel nicht durch Tab pausieren" color="primary"></v-switch>
                               <v-switch v-model="settings.noPauseAudio" hide-details inset
-                                label="Audio nicht durch Tab pausieren" color="red-lighten-1"></v-switch>
+                                label="Audio nicht durch Tab pausieren" color="primary"></v-switch>
                             </v-card-text>
 
                             <v-card-subtitle class="ps-0">Debug</v-card-subtitle>
                             <v-card-text class="px-0 py-0">
                               <v-switch v-model="settings.showScriptErrors" hide-details inset
-                                label="Skriptfehler anzeigen" color="red-lighten-1"></v-switch>
+                                label="Skriptfehler anzeigen" color="primary"></v-switch>
                             </v-card-text>
                           </v-col>
                         </v-row>
@@ -384,10 +382,10 @@ export default defineComponent({
     loadAPIData() {
       if (!this.loading_api_data) {
         this.loading_api_data = true;
-        this.getMods();
+        this.getAPIData();
       }
     },
-    getMods() {
+    getAPIData() {
       let promises: Promise<unknown>[] = [];
 
       promises.push(
@@ -424,6 +422,7 @@ export default defineComponent({
 
       Promise.all(promises).then((results) => {
         this.loading_api_data = false;
+        this.requestWorkerUpdate();
       });
     },
     notZero(input: number) {
@@ -488,6 +487,9 @@ export default defineComponent({
 
       console.log(this.possible_a3_paths);
     },
+    requestWorkerUpdate() {
+      ipcRenderer.send('worker:requestUpdate');
+    },
     openServer(index: number = 0) {
       this.server_window_default_tab = index;
       this.tab = 1;
@@ -495,6 +497,9 @@ export default defineComponent({
       if (serverWindowRef !== undefined) {
         serverWindowRef.setTab(index);
       }
+    },
+    switchTab(index: number = 0) {
+      this.tab = index;
     },
     firstRunSave() {
       this.settings.first_run = false;
@@ -581,6 +586,16 @@ export default defineComponent({
       this.api_data.mods.forEach((mod) => {
         if (mod.id === mod_id) {
           mod.worker_status = worker_status;
+
+          this.api_data.servers.forEach((server) => {
+            if (server.mod_id === mod_id) {
+              if(worker_status.status === 1) {
+                server.mod_ready = true
+              } else {
+                server.mod_ready = false
+              }
+            }
+          });
         }
       });
     });

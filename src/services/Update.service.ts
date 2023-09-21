@@ -42,6 +42,11 @@ export class UpdateService {
     this.basePath = basePath;
   }
 
+  public init() {
+    this.status = UpdateStatus.UKNOWN;
+    this.setOperationEnded()
+  }
+
   private async loadAPIData(): Promise<unknown> {
     let promises: Promise<unknown>[] = [];
 
@@ -85,6 +90,7 @@ export class UpdateService {
         await this.waitForAllDownloadsToComplete();
 
         if (this.wrongHashes.length === 0) {
+        
           this.status = UpdateStatus.INTACT;
           this.setOperationEnded();
           this.statusChanged.emit('statusChanged', this.status);
@@ -101,6 +107,13 @@ export class UpdateService {
   public async verify(quick: boolean = false): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
       this.loadAPIData().then(async () => {
+        if(!fs.existsSync(join(this.basePath, this.mod.dir))) {
+          this.status = UpdateStatus.NOT_FOUND;
+          this.setOperationEnded();
+          this.statusChanged.emit('statusChanged', this.status);
+          resolve(true)
+        }
+
         this.queue = []
         this.wrongHashes = []
 
@@ -269,11 +282,6 @@ export class UpdateService {
 
     try {
       const success = await this.hashFile(file, quick);
-      if (success) {
-        console.log(`Hash erfolgreich für ${file.FileName}`);
-      } else {
-        console.error(`Download fehlgeschlagen oder MD5-Validierung fehlgeschlagen für ${file.FileName}`);
-      }
     } catch (error) {
       console.error('Fehler beim Herunterladen:', error);
     } finally {

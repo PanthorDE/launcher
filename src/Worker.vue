@@ -27,7 +27,7 @@
 import { ipcRenderer } from 'electron';
 import { UpdateService } from './services/Update.service';
 import { defineComponent } from 'vue';
-import WorkerStatus, { StatusTexts } from './interfaces/WorkerStatusInterface';
+import WorkerStatus, { StatusColors, StatusIcons, StatusTexts } from './interfaces/WorkerStatusInterface';
 
 export default defineComponent({
   name: 'Worker',
@@ -71,6 +71,9 @@ export default defineComponent({
     ipcRenderer.on('settings:changedArmaPath', (_event, path: string) => {
       this.changeArmaPath(path);
     });
+    ipcRenderer.on('worker:requestUpdate', (_event, path: string) => {
+      this.updateWorkerStatus();
+    });
   },
   methods: {
     init(mods: number[]) {
@@ -81,11 +84,13 @@ export default defineComponent({
         this.update_services.splice(0)
         this.mods = mods
         mods.forEach((mod) => {
-          let update_service = new UpdateService(10, mod, this.path)
+          let update_service = new UpdateService(1, mod, this.path)
           update_service.getEventEmitter().on('statusChanged', () => {
             this.updateWorkerStatus();
           })
           this.update_services.push(update_service)
+          update_service.init()
+          update_service.verify(true)
         })
       }
     },
@@ -118,6 +123,8 @@ export default defineComponent({
         worker_status.fileop_files_broken = updater.getWrongHashes()
         worker_status.fileop_files_broken_size = updater.getWrongHashesSize()
         worker_status.message = StatusTexts[updater.getStatus()]
+        worker_status.color = StatusColors[updater.getStatus()]
+        worker_status.icon = StatusIcons[updater.getStatus()]
         
         ipcRenderer.send('worker:update', updater.getModId(), JSON.stringify(worker_status));
 
