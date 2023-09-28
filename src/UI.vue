@@ -36,8 +36,8 @@
         </template>
       </v-btn>
       <v-btn :loading="requesting_login" icon @click="loginOrOut" v-if="logged_in"><v-avatar class="hidden-sm-and-down"
-          color="primary" size="32"><v-tooltip text="Logout" location="bottom"
-            activator="parent"></v-tooltip><v-icon icon="mdi-logout-variant"></v-icon></v-avatar>
+          color="primary" size="32"><v-tooltip text="Logout" location="bottom" activator="parent"></v-tooltip><v-icon
+            icon="mdi-logout-variant"></v-icon></v-avatar>
         <template v-slot:loader>
           <v-progress-circular indeterminate></v-progress-circular>
         </template>
@@ -50,8 +50,8 @@
             <v-card flat v-for="(server, i) in api_data.servers" @click="openServer(i)" class="mb-3">
               <v-card-title>
                 {{ server.name }}
-                <v-progress-circular :model-value="(server.players.length / notZero(server.slots)) * 100"
-                  color="primary" :size="70" :width="8" class="float-right">{{ Math.round((server.players.length /
+                <v-progress-circular :model-value="(server.players.length / notZero(server.slots)) * 100" color="primary"
+                  :size="70" :width="8" class="float-right">{{ Math.round((server.players.length /
                     notZero(server.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
                   style="font-size: 18px !important">Online: {{ server.players.length }} / {{ server.slots
                   }}</span></v-card-title>
@@ -67,14 +67,19 @@
                   }}</span></v-card-title>
             </v-card>
             <div v-for="mod in api_data.mods">
-              <v-card flat min-height="100" class="mt-3" v-if="mod.worker_status && mod.worker_status.status != 0 && mod.worker_status.status != 1" @click="tab = 0">
-                <v-card-title><v-icon icon="mdi-download-network-outline" size="small" class="float-right" :color="mod.worker_status.color"></v-icon>
+              <v-card flat min-height="100" class="mt-3"
+                v-if="mod.worker_status && mod.worker_status.status != 0 && mod.worker_status.status != 1"
+                @click="tab = 0">
+                <v-card-title><v-icon icon="mdi-download-network-outline" size="small" class="float-right"
+                    :color="mod.worker_status.color"></v-icon>
                   {{ mod.name }}</v-card-title>
                 <v-row class="mt-0 mx-auto ps-5 pe-5">
-                  <v-card-text class="text-center"><v-icon :icon="mod.worker_status.icon" class="me-2" :color="mod.worker_status.color"></v-icon> {{ mod.worker_status.message }}</v-card-text>
-                  <v-progress-linear rounded striped v-model="mod.worker_status.fileop_progress" :color="mod.worker_status.color"
-                    :height="16" :stream="mod.worker_status.fileop_progress != 0"
-                    :indeterminate="mod.worker_status.fileop_progress == 0" v-if="mod.worker_status.status === 2 || mod.worker_status.status === 4">
+                  <v-card-text class="text-center"><v-icon :icon="mod.worker_status.icon" class="me-2"
+                      :color="mod.worker_status.color"></v-icon> {{ mod.worker_status.message }}</v-card-text>
+                  <v-progress-linear rounded striped v-model="mod.worker_status.fileop_progress"
+                    :color="mod.worker_status.color" :height="16" :stream="mod.worker_status.fileop_progress != 0"
+                    :indeterminate="mod.worker_status.fileop_progress == 0"
+                    v-if="mod.worker_status.status === 2 || mod.worker_status.status === 4">
                     <strong v-if="mod.worker_status.fileop_progress > 0">{{ Math.ceil(mod.worker_status.fileop_progress)
                     }}%</strong>
                   </v-progress-linear>
@@ -99,7 +104,8 @@
                   <v-col cols="auto" v-if="mod.worker_status.fileop_files_remaining > 0" class="pt-0">
                     <v-chip class="ma-2" color="success" variant="outlined">
                       <v-icon start icon="mdi-file-multiple"></v-icon>
-                      {{ mod.worker_status.fileop_files_done }} / {{ mod.worker_status.fileop_files_remaining + mod.worker_status.fileop_files_done }}
+                      {{ mod.worker_status.fileop_files_done }} / {{ mod.worker_status.fileop_files_remaining +
+                        mod.worker_status.fileop_files_done }}
                     </v-chip>
                   </v-col>
                   <v-col cols="auto"
@@ -108,13 +114,14 @@
                     <v-chip class="ma-2" color="success" variant="outlined">
                       <v-icon start icon="mdi-harddisk"></v-icon>
                       {{ humanFileSize(mod.worker_status.fileop_size_done, true, 1) }} /
-                      {{ humanFileSize(mod.worker_status.fileop_size_remaining + mod.worker_status.fileop_size_done, true, 1) }}
+                      {{ humanFileSize(mod.worker_status.fileop_size_remaining + mod.worker_status.fileop_size_done, true,
+                        1) }}
                     </v-chip>
                   </v-col>
                   <v-col cols="auto" v-if="mod.worker_status.fileop_time_remaining > 0" class="pt-0">
                     <v-chip class="ma-2" color="success" variant="outlined">
                       <v-icon start icon="mdi-clock-end"></v-icon>
-                      {{ duration_humanizer.humanize(Math.ceil(mod.worker_status.fileop_time_remaining), { round: true }) }}
+                      {{ formatTime(Math.ceil(mod.worker_status.fileop_time_remaining)) }}
                     </v-chip>
                   </v-col>
                 </v-row>
@@ -125,8 +132,8 @@
             <v-window v-model="tab">
               <!-- Mods -->
               <v-window-item :value="0">
-                <mod-window :mods="api_data.mods" :arma_path="settings.arma_path"
-                  @choose-armapath="chooseArmaPath" @open-server="openServer()"></mod-window>
+                <mod-window :mods="api_data.mods" :arma_path="settings.arma_path" @choose-armapath="chooseArmaPath"
+                  @open-server="openServer()"></mod-window>
               </v-window-item>
 
               <!-- Servers -->
@@ -432,6 +439,18 @@ export default defineComponent({
         return input;
       }
     },
+    formatTime(seconds: number): string {
+      const hours = Math.floor(seconds / 3600);
+      const remainingSeconds = seconds % 3600;
+      const minutes = Math.floor(remainingSeconds / 60);
+      const remainingSeconds2 = remainingSeconds % 60;
+
+      const formattedHours = hours.toString().padStart(2, '0');
+      const formattedMinutes = minutes.toString().padStart(2, '0');
+      const formattedSeconds = remainingSeconds2.toString().padStart(2, '0');
+
+      return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+    },
     loadSettings() {
       let store = new Store<SettingsStore>({
         defaults: defaultSettings,
@@ -589,7 +608,7 @@ export default defineComponent({
 
           this.api_data.servers.forEach((server) => {
             if (server.mod_id === mod_id) {
-              if(worker_status.status === 1) {
+              if (worker_status.status === 1) {
                 server.mod_ready = true
               } else {
                 server.mod_ready = false

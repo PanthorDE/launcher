@@ -2,6 +2,7 @@ import * as http from 'http';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
 import * as url from 'url';
+import * as util from 'util';
 import ModFile from '@/interfaces/ModFileInterface';
 import Mod from '@/interfaces/ModInterface';
 import { PanthorApiService } from './PanthorApi.service';
@@ -15,6 +16,7 @@ class UpdateEventEmitter extends EventEmitter {
   }
 }
 
+const readFile = util.promisify(fs.readFile);
 
 export class UpdateService {
   private hashlist: Array<ModFile> = [];
@@ -304,10 +306,8 @@ export class UpdateService {
   }
 
   private async hashFile(file: ModFile, quick: boolean): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
+    return new Promise<boolean>(async (resolve, reject) => {
       const fullFilePath = join(this.basePath, file.RelativPath);
-
-      //console.log(this.queue.length, "files remaining")
 
       if (!fs.existsSync(fullFilePath)) {
         this.wrongHashes.push(file);
@@ -315,30 +315,23 @@ export class UpdateService {
       } else {
         const fileSize = fs.statSync(fullFilePath).size;
 
-        
-
         if (fileSize !== file.Size) {
           this.wrongHashes.push(file);
           resolve(true)
         } else {
           if (!quick || file.FileName.includes('.bisign')) {
-
             const hash = crypto.createHash('md5');
+            const fileData = await readFile(fullFilePath);
 
-            const rStream = fs.createReadStream(fullFilePath, { highWaterMark: 256 * 8 * 1024 });
-            rStream.on('data', (data) => {
-              hash.update(data);
-              this.completedSize += data.length;
-              this.calculateSpeed();
-            });
-            rStream.on('end', () => {
-              const hashSum = hash.digest('hex');
+            hash.update(fileData);
 
-              if (hashSum.toUpperCase() !== file.Hash.toUpperCase()) {
-                this.wrongHashes.push(file);
-              }
-              resolve(true)
-            });
+            this.completedSize += file.Size;
+            this.calculateSpeed();
+
+            if (hash.digest('hex').toUpperCase() !== file.Hash.toUpperCase()) {
+              this.wrongHashes.push(file);
+            }
+            resolve(true)
           } else {
             resolve(true)
           }
@@ -355,7 +348,7 @@ export class UpdateService {
         doneSinceLastCalculation / ((Date.now() - this.lastSpeedCalculation) / 1000)
       );
       this.timeRemaining = Math.round(
-        (this.getRemainingSize() / this.lastSpeed) * 1000
+        (this.getRemainingSize() / this.lastSpeed)
       );
       this.lastSpeedCalculation = Date.now();
       this.statusChanged.emit('statusChanged', this.status);
