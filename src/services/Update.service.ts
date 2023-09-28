@@ -78,19 +78,22 @@ export class UpdateService {
 
         this.completedFiles = 0;
         this.completedSize = 0;
+        this.totalFiles = this.wrongHashes.length
 
         this.status = UpdateStatus.DOWNLOADING;
         this.setOperationEnded();
         this.statusChanged.emit('statusChanged', this.status);
 
-        for (let i = 0; i < this.wrongHashes.length; i++) {
-          await this.enqueueFileDownload(this.wrongHashes[i]);
+        const filesToDownload = this.wrongHashes
+        this.wrongHashes = []
+
+        for (let i = 0; i < filesToDownload.length; i++) {
+          await this.enqueueFileDownload(filesToDownload[i]);
         }
 
         await this.waitForAllDownloadsToComplete();
 
         if (this.wrongHashes.length === 0) {
-        
           this.status = UpdateStatus.INTACT;
           this.setOperationEnded();
           this.statusChanged.emit('statusChanged', this.status);
@@ -107,7 +110,7 @@ export class UpdateService {
   public async verify(quick: boolean = false): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
       this.loadAPIData().then(async () => {
-        if(!fs.existsSync(join(this.basePath, this.mod.dir))) {
+        if (!fs.existsSync(join(this.basePath, this.mod.dir))) {
           this.status = UpdateStatus.NOT_FOUND;
           this.setOperationEnded();
           this.statusChanged.emit('statusChanged', this.status);
@@ -119,6 +122,7 @@ export class UpdateService {
 
         this.completedFiles = 0;
         this.completedSize = 0;
+        this.totalFiles = this.hashlist.length
 
         this.status = UpdateStatus.HASHING;
         this.setOperationEnded();
@@ -166,7 +170,6 @@ export class UpdateService {
 
     const file = this.queue.shift()!;
     this.runningThreads++;
-    this.totalFiles++;
 
     try {
       const success = await this.downloadFile(file);
@@ -278,7 +281,6 @@ export class UpdateService {
 
     const file = this.queue.shift()!;
     this.runningThreads++;
-    this.totalFiles++;
 
     try {
       const success = await this.hashFile(file, quick);
@@ -305,11 +307,15 @@ export class UpdateService {
     return new Promise<boolean>((resolve, reject) => {
       const fullFilePath = join(this.basePath, file.RelativPath);
 
+      //console.log(this.queue.length, "files remaining")
+
       if (!fs.existsSync(fullFilePath)) {
         this.wrongHashes.push(file);
         resolve(true)
       } else {
         const fileSize = fs.statSync(fullFilePath).size;
+
+        
 
         if (fileSize !== file.Size) {
           this.wrongHashes.push(file);
@@ -319,7 +325,7 @@ export class UpdateService {
 
             const hash = crypto.createHash('md5');
 
-            const rStream = fs.createReadStream(fullFilePath);
+            const rStream = fs.createReadStream(fullFilePath, { highWaterMark: 256 * 8 * 1024 });
             rStream.on('data', (data) => {
               hash.update(data);
               this.completedSize += data.length;
@@ -349,7 +355,7 @@ export class UpdateService {
         doneSinceLastCalculation / ((Date.now() - this.lastSpeedCalculation) / 1000)
       );
       this.timeRemaining = Math.round(
-        ((this.getRemainingSize() - this.completedSize) / this.lastSpeed) * 1000
+        (this.getRemainingSize() / this.lastSpeed) * 1000
       );
       this.lastSpeedCalculation = Date.now();
       this.statusChanged.emit('statusChanged', this.status);
@@ -412,7 +418,7 @@ export class UpdateService {
 
   public getSizeProgress(): number {
     if (this.getRemainingSize() !== 0) {
-      return this.completedSize / this.getRemainingSize()
+      return this.completedSize / (this.completedSize + this.getRemainingSize())
     } else {
       return 0
     }

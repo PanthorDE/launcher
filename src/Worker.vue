@@ -10,6 +10,7 @@
                 Mod ID: <v-pill>{{ updater.getModId() }}</v-pill><br>
                 Status: <v-pill>{{ updater.getStatus().toString() }}</v-pill><br>
                 Dateiforschritt: <v-pill>{{ updater.getSizeProgress() }}</v-pill><br>
+                Dateien: <v-pill>{{ updater.getCompletedFiles() }}/{{ updater.getCompletedFiles() + updater.getRemainingFiles() }}</v-pill><br>
                 Geschwindigkeit: <v-pill>{{ updater.getSpeed() }}</v-pill><br>
                 Verbleidend: <v-pill>{{ updater.getTimeRemaining() }}</v-pill><br>
                 Fehler: <v-pill>{{ updater.getWrongHashes() }}</v-pill><br>
@@ -84,7 +85,7 @@ export default defineComponent({
         this.update_services.splice(0)
         this.mods = mods
         mods.forEach((mod) => {
-          let update_service = new UpdateService(1, mod, this.path)
+          let update_service = new UpdateService(3, mod, this.path)
           update_service.getEventEmitter().on('statusChanged', () => {
             this.updateWorkerStatus();
           })
