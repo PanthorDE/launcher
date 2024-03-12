@@ -57,15 +57,8 @@
         </v-card>
       </v-col>
       <v-col cols="4">
-        <v-text-field
-          label="Suchen"
-          density="compact"
-          variant="solo-filled"
-          prepend-inner-icon="mdi-account-search-outline"
-          v-model="player_search"
-          clearable
-          flat
-        >
+        <v-text-field label="Suchen" density="compact" variant="solo-filled"
+          prepend-inner-icon="mdi-account-search-outline" v-model="player_search" clearable flat>
         </v-text-field>
         <v-virtual-scroll :items="players_list" height="330">
           <template v-slot:default="{ item }">
@@ -77,35 +70,27 @@
           </template>
         </v-virtual-scroll>
       </v-col>
-      <v-col cols="4">
+      <v-col cols="4" v-if="server.gamemode === 1">
         <Pie :data="pie_data" :options="pie_options" class="pt-5"></Pie>
       </v-col>
     </v-row>
     <v-divider thickness="6" class="mt-2"></v-divider>
     <v-row justify="end" align="center" class="px-4 py-4">
       <v-col cols="4">
-        <v-select
-          label="Arma Profil"
-          placeholder="Arma Profil wählen"
-          density="comfortable"
-          single-line
-          variant="solo-filled"
-          flat
-          hide-details
-          :items="armaProfiles"
-          @update:modelValue="onArmaProfileChange"
-          clearable
-        ></v-select>
+        <v-select label="Arma Profil" placeholder="Arma Profil wählen" density="comfortable" single-line
+          variant="solo-filled" flat hide-details :items="armaProfiles" @update:modelValue="onArmaProfileChange"
+          clearable></v-select>
       </v-col>
       <v-col cols="2"></v-col>
       <v-col cols="3">
-        <v-btn color="primary" block size="large" prepend-icon="mdi-reload" @click="$emit('load-api-data')"
-          >Aktualisieren</v-btn
-        >
+        <v-btn color="primary" block size="large" prepend-icon="mdi-reload"
+          @click="$emit('load-api-data')">Aktualisieren</v-btn>
       </v-col>
       <v-col cols="3">
-        <v-btn color="success" block size="large" prepend-icon="mdi-connection" @click="joinServer(server)" v-if="server.mod_ready">Joinen</v-btn>
-        <v-btn color="warning" block size="large" prepend-icon="mdi-alert-outline" @click="$emit('switch-tab')" v-else>Update</v-btn>
+        <v-btn color="success" block size="large" prepend-icon="mdi-connection" @click="joinServer(server)"
+          v-if="server.mod_ready">Joinen</v-btn>
+        <v-btn color="warning" block size="large" prepend-icon="mdi-alert-outline" @click="$emit('switch-tab')"
+          v-else>Update</v-btn>
       </v-col>
     </v-row>
   </v-card>
@@ -296,8 +281,7 @@ export default {
     },
     setPlayerProfileForServer(server: Server) {
       const savedProfiles = this.settings.armaServerProfiles;
-      const savedServerProfile = Object.entries(savedProfiles).find(([key, value]) => key === server.id.toString());
-      this.selectedArmaProfile = savedServerProfile !== undefined ? savedServerProfile[1] : null;
+      const savedServerProfile = Object.entries(savedProfiles).find(([key, value]) => key === server.id.toString()); this.selectedArmaProfile = savedServerProfile !== undefined ? savedServerProfile[1] : null;
     },
     onArmaProfileChange(profile: string | null) {
       const currentServer = this.$props.server;

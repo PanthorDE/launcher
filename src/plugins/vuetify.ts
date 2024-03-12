@@ -22,6 +22,7 @@ export default createVuetify({
           secondary: '#512DA8',
           success: '#388E3C',
           warning: '#FFA726',
+          black_bg: '#121212',
         },
       },
     },

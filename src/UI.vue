@@ -69,7 +69,7 @@
             <div v-for="mod in api_data.mods">
               <v-card flat min-height="100" class="mt-3"
                 v-if="mod.worker_status && mod.worker_status.status != 0 && mod.worker_status.status != 1"
-                @click="tab = 0">
+                @click="tab = 1">
                 <v-card-title><v-icon icon="mdi-download-network-outline" size="small" class="float-right"
                     :color="mod.worker_status.color"></v-icon>
                   {{ mod.name }}</v-card-title>
@@ -127,32 +127,49 @@
                 </v-row>
               </v-card>
             </div>
+            <v-divider class="border-opacity-75 mt-3 mb-3" color="primary"></v-divider>
+            <div>
+              <v-card flat>
+                <v-card-title>
+                  Panthor unterstützen <v-icon icon="mdi-heart" size="x-large" color="red" class="float-right"></v-icon>
+                </v-card-title>
+                <v-card-text>
+                  Pathor wird durch Panthor+ und Panthor Pro Abos finanziert. Das Abo kann jederzeit beenden und es besteht natürlich keine Verpflichtung uns bei der Finanzierung zu unterstützen.
+                  <br>
+                  <v-btn color="primary" class="mt-3" block prepend-icon="mdi-launch" @click="openURL('https://info.panthor.de/shop')">Zum Shop</v-btn>
+                </v-card-text>
+              </v-card>
+            </div>
           </v-col>
           <v-col cols="9">
             <v-window v-model="tab">
-              <!-- Mods -->
+              <!-- Home -->
               <v-window-item :value="0">
+                <home-window :changelogs="api_data.changelogs" :news="news"></home-window>
+              </v-window-item>
+              <!-- Mods -->
+              <v-window-item :value="1">
                 <mod-window :mods="api_data.mods" :arma_path="settings.arma_path" @choose-armapath="chooseArmaPath"
                   @open-server="openServer()"></mod-window>
               </v-window-item>
 
               <!-- Servers -->
-              <v-window-item :value="1">
-                <server-window :servers="api_data.servers" @load-api-data="loadAPIData" @switch-tab="switchTab"
+              <v-window-item :value="2">
+                <server-window :servers="api_data.servers" @load-api-data="loadAPIData" @switch-tab="switchTab(1)"
                   :default_tab="server_window_default_tab" ref="serverWindowRef"></server-window>
               </v-window-item>
 
               <!-- Changelogs -->
-              <v-window-item :value="2">
+              <v-window-item :value="3">
                 <changelog-window :changelogs="api_data.changelogs"></changelog-window>
               </v-window-item>
 
-              <v-window-item :value="3">
+              <v-window-item :value="4">
                 <h1>TFAR</h1>
               </v-window-item>
 
               <!-- Settings -->
-              <v-window-item :value="4">
+              <v-window-item :value="5">
                 <v-row>
                   <v-col cols="12">
                     <v-card>
@@ -177,7 +194,7 @@
                         <v-btn prepend-icon="mdi-folder-open" color="success" class="ms-2" @click="openMissionCache">
                           MPMission Cache öffnen
                         </v-btn>
-                        <v-btn prepend-icon="mdi-cog-play" color="success" class="ms-2" @click="validateA3">
+                        <v-btn prepend-icon="mdi-steam" color="success" class="ms-2" @click="validateA3">
                           Arma 3 via Steam überprüfen
                         </v-btn>
                       </v-card-text>
@@ -239,7 +256,7 @@
               </v-window-item>
 
               <!-- FAQ -->
-              <v-window-item :value="5">
+              <v-window-item :value="6">
                 <faq-window></faq-window>
               </v-window-item>
             </v-window>
@@ -299,6 +316,7 @@ import { ipcRenderer, shell } from 'electron';
 import ModWindow from '@/components/ModWindow.vue';
 import ChangelogWindow from '@/components/ChangelogWindow.vue';
 import ServerWindow from '@/components/ServerWindow.vue';
+import HomeWindow from '@/components/HomeWindow.vue';
 import FaqWindow from '@/components/FaqWindow.vue';
 import { defineComponent, ref } from 'vue';
 import Store from 'electron-store';
@@ -314,6 +332,7 @@ import User from './interfaces/UserInterface';
 import SettingsStore, { defaultSettings } from './interfaces/SettingsStoreInterface';
 import { existsSync } from 'node:fs';
 import { PanthorApiService } from './services/PanthorApi.service';
+import News from './interfaces/NewsInterface';
 
 const langService: HumanizeDurationLanguage = new HumanizeDurationLanguage();
 const duration_humanizer = new HumanizeDuration(langService);
@@ -322,13 +341,14 @@ export default defineComponent({
   name: 'UI',
   data: () => {
     return {
-      links: ['Mods', 'Server', 'Changelog', 'TFAR', 'Settings', 'FAQ'],
+      links: ['Home', 'Mods', 'Server', 'Changelog', 'TFAR', 'Settings', 'FAQ'],
       api_data: {
         mods: [] as Mod[],
         servers: [] as Server[],
         changelogs: [] as Changelog[],
         teamspeaks: [] as Teamspeak[],
       },
+      news: [] as News[],
       tab: 0,
       logged_in: false,
       show_login_dialog: false,
@@ -391,6 +411,13 @@ export default defineComponent({
         this.loading_api_data = true;
         this.getAPIData();
       }
+    },
+    getNews() {
+      PanthorApiService.getNews()
+        .then((news) => {
+          this.news = news
+        })
+        .catch(console.error);
     },
     getAPIData() {
       let promises: Promise<unknown>[] = [];
@@ -511,7 +538,7 @@ export default defineComponent({
     },
     openServer(index: number = 0) {
       this.server_window_default_tab = index;
-      this.tab = 1;
+      this.tab = 2;
       let serverWindowRef = this.$refs.serverWindowRef as typeof ServerWindow;
       if (serverWindowRef !== undefined) {
         serverWindowRef.setTab(index);
@@ -599,6 +626,7 @@ export default defineComponent({
   mounted() {
     this.loadSettings();
     this.loadAPIData();
+    this.getNews();
     ipcRenderer.on('worker:update', (_event, mod_id: number, message: string) => {
       let worker_status = <WorkerStatus>JSON.parse(message);
 
@@ -619,7 +647,7 @@ export default defineComponent({
       });
     });
   },
-  components: { ModWindow, ChangelogWindow, ServerWindow, FaqWindow },
+  components: { ModWindow, ChangelogWindow, ServerWindow, FaqWindow, HomeWindow },
 });
 </script>
 

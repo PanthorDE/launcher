@@ -5,7 +5,9 @@ import type Mod from '@/interfaces/ModInterface';
 import type Server from '@/interfaces/ServerInterface';
 import type Teamspeak from '@/interfaces/TeamspeakInterface';
 import type { Player } from '@/interfaces/UserInterface';
+import convert from 'xml-js';
 import axios from 'axios';
+import News from '@/interfaces/NewsInterface';
 
 export class PanthorApiService {
   private static host = 'https://api.panthor.de';
@@ -15,6 +17,20 @@ export class PanthorApiService {
       axios
         .get(this.host + '/v1/player/validate/' + authToken)
         .then((response) => res(response.data))
+        .catch(rej);
+    });
+  }
+
+  static getNews(): Promise<News[]> {
+    return new Promise((res, rej) => {
+      axios
+        .get('https://panthor.de/feed/')
+        .then((response) => {
+          let jsonNews = JSON.parse(convert.xml2json(response.data, { compact: true, spaces: 4 }));
+          res(jsonNews.rss.channel.item);
+        }).catch(function (error) {
+          console.log(error);
+        })
         .catch(rej);
     });
   }
