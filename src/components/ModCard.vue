@@ -1,6 +1,6 @@
 <template>
   <v-card flat>
-    <v-img height="300" :src="mod.img" cover>
+    <v-img height="250" :src="mod.img" cover>
       <v-btn color="white" flat icon="mdi-folder-open" rounded="sm" class="float-right mt-2 mr-2" size="small"
         @click="requestFolderOpen">
         <v-icon icon="mdi-folder-open"></v-icon>
@@ -26,10 +26,11 @@
     </v-row>
     <v-row justify="center" class="my-3" v-if="arma_path !== '' && mod.worker_status">
       <v-btn-group density="comfortable" divided>
-        <v-btn color="success" prepend-icon="mdi-launch" :disabled="mod.worker_status.status != 1">Starten</v-btn>
-        <v-btn color="warning" prepend-icon="mdi-server" @click="$emit('open-server')" :disabled="mod.worker_status.status != 1">Server</v-btn>
-        <v-btn color="success" prepend-icon="mdi-download" @click="updateMod" :disabled="!(mod.worker_status.status == 3 || mod.worker_status.status == 5)"><span v-if="mod.worker_status.status == 6">Download</span><span v-else>Update</span></v-btn>
-        <v-btn color="warning" prepend-icon="mdi-file-cog" @click="verifyMod" :disabled="!(mod.worker_status.status != 4 && mod.worker_status.status != 2)"> Prüfen </v-btn>
+        <v-btn color="success" prepend-icon="mdi-launch" v-if="mod.worker_status.status == 1">Starten</v-btn>
+        <v-btn color="success" prepend-icon="mdi-download" @click="updateMod" v-if="(mod.worker_status.status == 3 || mod.worker_status.status == 5 || mod.worker_status.status == 6)"><span v-if="mod.worker_status.status == 6">Download</span><span v-else>Update</span></v-btn>
+        <v-btn color="warning" prepend-icon="mdi-server" @click="$emit('open-server')" v-if="mod.worker_status.status == 1">Server</v-btn>
+        <v-btn color="secondary" prepend-icon="mdi-file-cog" @click="verifyMod" v-if="(mod.worker_status.status != 4 && mod.worker_status.status != 2)">Prüfen</v-btn>
+        <v-btn color="primary" prepend-icon="mdi-stop" @click="stopMod" v-if="mod.worker_status.status == 4 || mod.worker_status.status == 2">Abbruch</v-btn>
       </v-btn-group>
       <!--
       <v-col cols="auto">
@@ -60,6 +61,9 @@ export default {
     },
     updateMod() {
       ipcRenderer.send('mod:update', this.mod.id);
+    },
+    stopMod() {
+      ipcRenderer.send('mod:stop', this.mod.id);
     },
     requestFolderOpen() {
       ipcRenderer.send('mod:openFolder', join(this.arma_path, this.mod.dir));

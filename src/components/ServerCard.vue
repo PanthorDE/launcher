@@ -39,14 +39,14 @@
               </td>
             </tr>
             <tr>
-              <td>Stand</td>
+              <td>Letzte Aktualisierung</td>
               <td class="text-right">
                 {{
-                  new Date(server.updated_at.date).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })
-                }}
+            new Date(server.updated_at.date).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+          }}
               </td>
             </tr>
           </tbody>
@@ -84,7 +84,7 @@
       <v-col cols="2"></v-col>
       <v-col cols="3">
         <v-btn color="primary" block size="large" prepend-icon="mdi-reload"
-          @click="$emit('load-api-data')">Aktualisieren</v-btn>
+          @click="$emit('load-api-data')" :disabled="!reload_allowed">Aktualisieren</v-btn>
       </v-col>
       <v-col cols="3">
         <v-btn color="success" block size="large" prepend-icon="mdi-connection" @click="joinServer(server)"
@@ -236,6 +236,7 @@ export default {
   },
   props: {
     server: { type: Object as PropType<Server>, required: true },
+    reload_allowed: { type: Boolean },
   },
   watch: {
     server: function (current, previous) {

@@ -148,6 +148,10 @@ function modVerifyMessageToWorker(event: any, message: any) {
   worker_win.webContents.send('mod:verify', message);
 }
 
+function modStopMessageToWorker(event: any, message: any) {
+  worker_win.webContents.send('mod:stop', message);
+}
+
 function modOpenFolder(event: any, message: any) {
   shell.openPath(message);
 }
@@ -192,7 +196,7 @@ function settingsOpenArmaSelect(event: any, message: any) {
 }
 
 function settingsOpenMissionCache(event: any, message: any) {
-  shell.showItemInFolder(join(app.getPath('appData'), '..', 'Local', 'Arma 3', 'MPMissionsCache', 'x'));
+  shell.showItemInFolder(join(app.getPath('appData'), '..', 'Local', 'Arma 3', 'MPMissionsCache', 'Panthor.RL_Map.pbo'));
 }
 
 function settingsValidateA3(event: any, message: any) {
@@ -239,6 +243,7 @@ app.whenReady().then(() => {
   ipcMain.on('mods:init', modInitMessageToWorker);
   ipcMain.on('mod:update', modUpdateMessageToWorker);
   ipcMain.on('mod:verify', modVerifyMessageToWorker);
+  ipcMain.on('mod:stop', modStopMessageToWorker);
   ipcMain.on('mod:openFolder', modOpenFolder);
   ipcMain.on('worker:update', workerStatusUpdateMessageToUI);
   ipcMain.on('worker:requestUpdate', workerStatusUpdateRequest);

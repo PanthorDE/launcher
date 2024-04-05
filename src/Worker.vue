@@ -2,13 +2,16 @@
   <v-app id="panthor-launcher-worker">
     <v-main>
       <v-container>
-        Path: {{ path }}
-        <v-row>
-          <v-col cols="6" v-for="updater in update_services">
-            <v-card :title="updater.getMod().name">
+        Arma 3 Path: {{ path }}
+        <v-row class="mt-4">
+          <v-col cols="12" v-for="updater in update_services">
+            <v-card>
+              <v-card-title>
+                {{ updater.getMod().name }}
+                </v-card-title>
               <v-card-text>
                 Mod ID: <v-pill>{{ updater.getModId() }}</v-pill><br>
-                Status: <v-pill>{{ updater.getStatus().toString() }}</v-pill><br>
+                Status: <v-pill>{{ updater.getStatus() }} ({{ status_texts[updater.getStatus()] }})</v-pill><br>
                 Dateiforschritt: <v-pill>{{ updater.getSizeProgress() }}</v-pill><br>
                 Dateien: <v-pill>{{ updater.getCompletedFiles() }}/{{ updater.getCompletedFiles() + updater.getRemainingFiles() }}</v-pill><br>
                 Geschwindigkeit: <v-pill>{{ updater.getSpeed() }}</v-pill><br>
@@ -37,6 +40,7 @@ export default defineComponent({
       update_services: [] as UpdateService[],
       mods: [] as number[],
       path: "",
+      status_texts: StatusTexts,
     };
   },
   mounted() {
@@ -69,10 +73,16 @@ export default defineComponent({
         console.log(error);
       });
     });
+    ipcRenderer.on('mod:stop', (_event, mod_id: number) => {
+      this.stop(mod_id);
+    });
     ipcRenderer.on('settings:changedArmaPath', (_event, path: string) => {
       this.changeArmaPath(path);
     });
     ipcRenderer.on('worker:requestUpdate', (_event, path: string) => {
+      this.updateWorkerStatus();
+    });
+    ipcRenderer.on('worker:requestStop', (_event, path: string) => {
       this.updateWorkerStatus();
     });
   },
@@ -94,6 +104,16 @@ export default defineComponent({
           update_service.verify(true)
         })
       }
+    },
+    stop(mod_id: number) {
+      const updater = this.update_services.find((updater) => updater.getModId() === mod_id);
+
+      if (updater === undefined) {
+        return;
+      }
+
+      console.log(updater.getModId(), "stopped")
+      updater.stop();
     },
     changeArmaPath(path: string) {
       if (this.path !== "" && this.path !== undefined) {
@@ -129,7 +149,7 @@ export default defineComponent({
         
         ipcRenderer.send('worker:update', updater.getModId(), JSON.stringify(worker_status));
 
-        console.log(updater.getModId(), JSON.stringify(worker_status))
+        //console.log(updater.getModId(), JSON.stringify(worker_status))
       })
     }
   }

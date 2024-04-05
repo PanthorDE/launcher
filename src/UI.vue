@@ -21,7 +21,7 @@
         <v-avatar class="hidden-sm-and-down" v-if="requesting_login && !logged_in" color="primary" size="32"><v-icon
             icon="mdi-help-circle-outline"></v-icon></v-avatar>
       </v-chip>
-      <v-btn :loading="loading_api_data" @click="loadAPIData" icon>
+      <v-btn :loading="loading_api_data" @click="loadAPIDataUI" icon :disabled="!reloadAllowed">
         <v-avatar class="hidden-sm-and-down" color="primary" size="32"><v-tooltip text="Login"
             location="bottom"></v-tooltip><v-icon icon="mdi-refresh"></v-icon></v-avatar>
         <template v-slot:loader>
@@ -50,9 +50,9 @@
             <v-card flat v-for="(server, i) in api_data.servers" @click="openServer(i)" class="mb-3">
               <v-card-title>
                 {{ server.name }}
-                <v-progress-circular :model-value="(server.players.length / notZero(server.slots)) * 100" color="primary"
-                  :size="70" :width="8" class="float-right">{{ Math.round((server.players.length /
-                    notZero(server.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
+                <v-progress-circular :model-value="(server.players.length / notZero(server.slots)) * 100"
+                  color="primary" :size="70" :width="8" class="float-right">{{ Math.round((server.players.length /
+      notZero(server.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
                   style="font-size: 18px !important">Online: {{ server.players.length }} / {{ server.slots
                   }}</span></v-card-title>
             </v-card>
@@ -62,7 +62,7 @@
                 Teamspeak
                 <v-progress-circular :model-value="(teamspeak.users.length / notZero(teamspeak.slots)) * 100"
                   color="primary" :size="70" :width="8" class="float-right">{{ Math.round((teamspeak.users.length /
-                    notZero(teamspeak.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
+      notZero(teamspeak.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
                   style="font-size: 18px !important">Online: {{ teamspeak.users.length }} / {{ teamspeak.slots
                   }}</span></v-card-title>
             </v-card>
@@ -81,11 +81,12 @@
                     :indeterminate="mod.worker_status.fileop_progress == 0"
                     v-if="mod.worker_status.status === 2 || mod.worker_status.status === 4">
                     <strong v-if="mod.worker_status.fileop_progress > 0">{{ Math.ceil(mod.worker_status.fileop_progress)
-                    }}%</strong>
+                      }}%</strong>
                   </v-progress-linear>
                 </v-row>
                 <v-row class="text-center justify-center mb-0 mt-2 pt-3">
-                  <v-col cols="auto" v-if="mod.worker_status.status === 3 || mod.worker_status.status === 5" class="pt-0">
+                  <v-col cols="auto" v-if="mod.worker_status.status === 3 || mod.worker_status.status === 5"
+                    class="pt-0">
                     <v-chip class="ma-2" color="warning" variant="outlined">
                       <v-icon start icon="mdi-file-alert"></v-icon>
                       {{ mod.worker_status.fileop_files_broken }}
@@ -105,7 +106,7 @@
                     <v-chip class="ma-2" color="success" variant="outlined">
                       <v-icon start icon="mdi-file-multiple"></v-icon>
                       {{ mod.worker_status.fileop_files_done }} / {{ mod.worker_status.fileop_files_remaining +
-                        mod.worker_status.fileop_files_done }}
+      mod.worker_status.fileop_files_done }}
                     </v-chip>
                   </v-col>
                   <v-col cols="auto"
@@ -114,8 +115,9 @@
                     <v-chip class="ma-2" color="success" variant="outlined">
                       <v-icon start icon="mdi-harddisk"></v-icon>
                       {{ humanFileSize(mod.worker_status.fileop_size_done, true, 1) }} /
-                      {{ humanFileSize(mod.worker_status.fileop_size_remaining + mod.worker_status.fileop_size_done, true,
-                        1) }}
+                      {{ humanFileSize(mod.worker_status.fileop_size_remaining + mod.worker_status.fileop_size_done,
+      true,
+      1) }}
                     </v-chip>
                   </v-col>
                   <v-col cols="auto" v-if="mod.worker_status.fileop_time_remaining > 0" class="pt-0">
@@ -134,9 +136,12 @@
                   Panthor unterstützen <v-icon icon="mdi-heart" size="x-large" color="red" class="float-right"></v-icon>
                 </v-card-title>
                 <v-card-text>
-                  Pathor wird durch Panthor+ und Panthor Pro Abos finanziert. Das Abo kann jederzeit beenden und es besteht natürlich keine Verpflichtung uns bei der Finanzierung zu unterstützen.
+                  Pathor wird durch Panthor+ und Panthor Pro Abos finanziert. Das Abo kann jederzeit beenden und es
+                  besteht
+                  natürlich keine Verpflichtung uns bei der Finanzierung zu unterstützen.
                   <br>
-                  <v-btn color="primary" class="mt-3" block prepend-icon="mdi-launch" @click="openURL('https://info.panthor.de/shop')">Zum Shop</v-btn>
+                  <v-btn color="primary" class="mt-3" block prepend-icon="mdi-launch"
+                    @click="openURL('https://info.panthor.de/shop')">Zum Shop</v-btn>
                 </v-card-text>
               </v-card>
             </div>
@@ -155,8 +160,9 @@
 
               <!-- Servers -->
               <v-window-item :value="2">
-                <server-window :servers="api_data.servers" @load-api-data="loadAPIData" @switch-tab="switchTab(1)"
-                  :default_tab="server_window_default_tab" ref="serverWindowRef"></server-window>
+                <server-window :servers="api_data.servers" @load-api-data="loadAPIDataUI" @switch-tab="switchTab(1)"
+                  :reload_allowed="reloadAllowed" :default_tab="server_window_default_tab"
+                  ref="serverWindowRef"></server-window>
               </v-window-item>
 
               <!-- Changelogs -->
@@ -362,6 +368,7 @@ export default defineComponent({
       first_run_selected_path: 0,
       possible_a3_paths: [] as Array<string>,
       server_window_default_tab: 0,
+      reloadAllowed: true,
       a3_registry_keys: [
         {
           key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 107410',
@@ -406,6 +413,15 @@ export default defineComponent({
       }
       return bytes.toFixed(dp) + ' ' + units[u];
     },
+    loadAPIDataUI() {
+      if (this.reloadAllowed) {
+        this.loadAPIData();
+        this.reloadAllowed = false;
+        setTimeout(() => {
+          this.reloadAllowed = true;
+        }, 5000);
+      }
+    },
     loadAPIData() {
       if (!this.loading_api_data) {
         this.loading_api_data = true;
@@ -422,11 +438,13 @@ export default defineComponent({
     getAPIData() {
       let promises: Promise<unknown>[] = [];
 
-      promises.push(
-        PanthorApiService.getMods(this.logged_in ? this.settings.auth_token : undefined)
-          .then((mods) => (this.api_data.mods = mods))
-          .catch(console.error)
-      );
+      if (this.logged_in || this.settings.auth_token === '') {
+        promises.push(
+          PanthorApiService.getMods(this.logged_in ? this.settings.auth_token : undefined)
+            .then((mods) => (this.api_data.mods = mods))
+            .catch(console.error)
+        );
+      }
 
       promises.push(
         PanthorApiService.getServers()
@@ -614,13 +632,27 @@ export default defineComponent({
       },
       deep: true,
     },
-    'api_data.mods'(newVal, oldVal) {
+    'api_data.mods'(newVal: Mod[], oldVal: Mod[]) {
       let mod_ids = [] as number[];
-      this.api_data.mods.forEach((mod) => {
-        mod_ids.push(mod.id);
+
+      if(oldVal.length == 0) {
+        ipcRenderer.send('mods:init', newVal.map((mod) => mod.id));
+        return;
+      }
+
+      newVal.forEach((mod_new) => {
+        oldVal.forEach((mod_old) => {
+          if (mod_new.id == mod_old.id) {
+            if ((mod_new.version_hash != mod_old.version_hash) || (mod_new.files != mod_old.files) || (mod_new.dir != mod_old.dir) || (mod_new.has_files != mod_old.has_files) || (mod_new.appid != mod_old.appid)) {
+              mod_ids.push(mod_new.id);
+            }
+          }
+        });
       });
 
-      ipcRenderer.send('mods:init', mod_ids);
+      if (mod_ids.length > 0) {
+        ipcRenderer.send('mods:init', mod_ids);
+      }
     },
   },
   mounted() {

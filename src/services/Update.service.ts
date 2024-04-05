@@ -21,6 +21,7 @@ const readFile = util.promisify(fs.readFile);
 export class UpdateService {
   private hashlist: Array<ModFile> = [];
   private queue: Array<ModFile> = [];
+  private currentFiles: Array<ModFile> = [];
   private wrongHashes: Array<ModFile> = [];
   private modId: number;
   private mod: Mod = {} as Mod;
@@ -37,6 +38,7 @@ export class UpdateService {
   private timeRemaining: number = 0;
   private maxThreads: number;
   private statusChanged: UpdateEventEmitter = new UpdateEventEmitter();
+  private stopRequested: boolean = false;
 
   constructor(maxConcurrentDownloads: number, modId: number, basePath: string) {
     this.maxThreads = maxConcurrentDownloads;
@@ -68,6 +70,8 @@ export class UpdateService {
   }
 
   public async download(): Promise<boolean> {
+    this.stopRequested = false;
+    this.currentFiles = []
     return new Promise<boolean>((resolve, reject) => {
       this.loadAPIData().then(async () => {
         this.queue = []
@@ -75,7 +79,7 @@ export class UpdateService {
         if (this.wrongHashes.length > 0 && (this.status === UpdateStatus.HASHED_UPDATE_REQUIRED || this.status === UpdateStatus.DOWNLOADED_UPDATE_REQUIRED)) {
         } else {
           this.wrongHashes = []
-          await this.verify(true)
+          await this.verify(true, true)
         }
 
         this.completedFiles = 0;
@@ -83,7 +87,6 @@ export class UpdateService {
         this.totalFiles = this.wrongHashes.length
 
         this.status = UpdateStatus.DOWNLOADING;
-        this.setOperationEnded();
         this.statusChanged.emit('statusChanged', this.status);
 
         const filesToDownload = this.wrongHashes
@@ -95,28 +98,35 @@ export class UpdateService {
 
         await this.waitForAllDownloadsToComplete();
 
+        if(this.stopRequested) {
+          this.status = UpdateStatus.UKNOWN;
+          this.setOperationEnded();
+          resolve(true);
+          return;
+        }
+
         if (this.wrongHashes.length === 0) {
           this.status = UpdateStatus.INTACT;
           this.setOperationEnded();
-          this.statusChanged.emit('statusChanged', this.status);
         } else {
           this.status = UpdateStatus.DOWNLOADED_UPDATE_REQUIRED;
           this.setOperationEnded();
-          this.statusChanged.emit('statusChanged', this.status);
         }
         resolve(true)
       }).catch(reject)
     })
   }
 
-  public async verify(quick: boolean = false): Promise<boolean> {
+  public async verify(quick: boolean = false, downloadIfEmpty: boolean = false): Promise<boolean> {
+    this.stopRequested = false;
+    this.currentFiles = []
     return new Promise<boolean>((resolve, reject) => {
       this.loadAPIData().then(async () => {
-        if (!fs.existsSync(join(this.basePath, this.mod.dir))) {
+        if (!fs.existsSync(join(this.basePath, this.mod.dir)) && !downloadIfEmpty) {
           this.status = UpdateStatus.NOT_FOUND;
           this.setOperationEnded();
-          this.statusChanged.emit('statusChanged', this.status);
           resolve(true)
+          return
         }
 
         this.queue = []
@@ -127,7 +137,6 @@ export class UpdateService {
         this.totalFiles = this.hashlist.length
 
         this.status = UpdateStatus.HASHING;
-        this.setOperationEnded();
         this.statusChanged.emit('statusChanged', this.status);
 
         for (let i = 0; i < this.hashlist.length; i++) {
@@ -136,14 +145,25 @@ export class UpdateService {
 
         await this.waitForAllHashesToComplete();
 
+        if(this.stopRequested) {
+          this.status = UpdateStatus.UKNOWN;
+          this.setOperationEnded();
+          resolve(true);
+          return;
+        }
+
         if (this.wrongHashes.length === 0) {
           this.status = UpdateStatus.INTACT;
+          if(quick) {
+            console.log('Mod seems intact based on sizes only')
+          } else {
+            console.log('Mod seems intact based on hashes')
+          }          
           this.setOperationEnded();
-          this.statusChanged.emit('statusChanged', this.status);
         } else {
           this.status = UpdateStatus.HASHED_UPDATE_REQUIRED;
+          console.log('Mismatched or Missing Files', this.wrongHashes)
           this.setOperationEnded();
-          this.statusChanged.emit('statusChanged', this.status);
         }
         resolve(true)
       }).catch(reject)
@@ -174,15 +194,22 @@ export class UpdateService {
     this.runningThreads++;
 
     try {
+      this.currentFiles.push(file);
       const success = await this.downloadFile(file);
       if (success) {
         console.log(`Download erfolgreich für ${file.FileName}`);
       } else {
-        console.error(`Download fehlgeschlagen oder MD5-Validierung fehlgeschlagen für ${file.FileName}`);
+        if(!this.stopRequested) {
+          console.error(`Download fehlgeschlagen oder MD5-Validierung fehlgeschlagen für ${file.FileName}`);
+        }
       }
     } catch (error) {
       console.error('Fehler beim Herunterladen:', error);
     } finally {
+      const index = this.currentFiles.indexOf(file);
+      if (index > -1) {
+        this.currentFiles.splice(index, 1);
+      }
       this.completedFiles++;
       this.runningThreads--;
 
@@ -227,6 +254,10 @@ export class UpdateService {
 
       const req = http.request(options, (res) => {
         res.on('data', (chunk) => {
+          if(this.stopRequested) {
+            req.destroy();
+            return;
+          }
           downloadedSize += chunk.length;
           fileStream.write(chunk);
           hash.update(chunk);
@@ -235,18 +266,36 @@ export class UpdateService {
         });
 
         res.on('end', () => {
+          if(this.stopRequested) {
+            fileStream.close();
+            try {
+              fs.unlinkSync(fullFilePath);
+            } catch (error) {
+              console.error('Failed to unlink on stop: ', error);
+            }
+            resolve(false);
+            return;
+          }
           fileStream.end();
           const downloadedHash = hash.digest('hex');
 
           if (downloadedHash.toUpperCase() !== file.Hash.toUpperCase()) {
-            fs.unlinkSync(fullFilePath);
+            try {
+              fs.unlinkSync(fullFilePath);
+            } catch (error) {
+              console.error('Failed to unlink due to wrong hash: ', error);
+            }
             this.wrongHashes.push(file);
           }
           resolve(true)
         });
 
         res.on('error', (error) => {
-          reject(error);
+          if(!this.stopRequested) {
+            reject(error);
+          } else {
+            resolve(false)
+          }
         });
       });
 
@@ -285,10 +334,15 @@ export class UpdateService {
     this.runningThreads++;
 
     try {
+      this.currentFiles.push(file);
       const success = await this.hashFile(file, quick);
     } catch (error) {
       console.error('Fehler beim Herunterladen:', error);
     } finally {
+      const index = this.currentFiles.indexOf(file);
+      if (index > -1) {
+        this.currentFiles.splice(index, 1);
+      }
       this.completedFiles++;
       this.runningThreads--;
 
@@ -308,6 +362,11 @@ export class UpdateService {
   private async hashFile(file: ModFile, quick: boolean): Promise<boolean> {
     return new Promise<boolean>(async (resolve, reject) => {
       const fullFilePath = join(this.basePath, file.RelativPath);
+
+      if(this.stopRequested) {
+        resolve(true);
+        return;
+      }
 
       if (!fs.existsSync(fullFilePath)) {
         this.wrongHashes.push(file);
@@ -361,7 +420,10 @@ export class UpdateService {
     this.completedSize = 0
     this.completedFiles = 0
     this.timeRemaining = 0
+    this.lastSpeedSize = 0
+    this.totalFiles = 0
     this.queue = []
+    this.currentFiles = []
     this.statusChanged.emit('statusChanged', this.status);
   }
 
@@ -394,7 +456,7 @@ export class UpdateService {
   }
 
   public getRemainingFiles(): number {
-    return this.queue.length
+    return this.queue.length + this.currentFiles.length
   }
 
   public getCompletedFiles(): number {
@@ -405,6 +467,9 @@ export class UpdateService {
     let size = 0
     for (let i = 0; i < this.queue.length; i++) {
       size += this.queue[i].Size
+    }
+    for (let i = 0; i < this.currentFiles.length; i++) {
+      size += this.currentFiles[i].Size
     }
     return size
   }
@@ -425,6 +490,9 @@ export class UpdateService {
     let size = 0
     for (let i = 0; i < this.queue.length; i++) {
       size += this.queue[i].Size
+    }
+    for (let i = 0; i < this.currentFiles.length; i++) {
+      size += this.currentFiles[i].Size
     }
     return size
   }
@@ -450,7 +518,7 @@ export class UpdateService {
   }
 
   public stop() {
-    this.queue = [];
-    this.totalFiles = 0;
+    this.stopRequested = true;
+    this.init();
   }
 }

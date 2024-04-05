@@ -11,4 +11,5 @@ export default interface Mod {
   has_files: boolean;
   dir: string;
   worker_status: WorkerStatus;
+  version_hash: string;
 }

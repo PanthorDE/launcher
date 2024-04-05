@@ -6,7 +6,7 @@
   </v-tabs>
   <v-row>
     <v-col cols="12" class="mb-3">
-      <server-card :server="selected_server" @load-api-data="$emit('load-api-data')" @switch-tab="$emit('switch-tab', 0)"></server-card>
+      <server-card :server="selected_server" @load-api-data="$emit('load-api-data')" @switch-tab="$emit('switch-tab', 0)" :reload_allowed="reload_allowed"></server-card>
     </v-col>
   </v-row>
 </template>
@@ -21,6 +21,7 @@ export default {
   props: {
     servers: { type: Array<Server>, required: true },
     default_tab: { type: Number, default: 0 },
+    reload_allowed: { type: Boolean },
   },
   data() {
     return {
