@@ -37,17 +37,15 @@
           </v-row>
         </v-card-text>
       </v-card>
-      <!--
       <v-card @click="openURL('https://www.twitch.tv/panthorde')" class="mt-2">
         <v-card-title>Panthor auf Twitch <v-icon icon="mdi-twitch" size="small" class="float-right mt-1"
             color="deep-purple"></v-icon></v-card-title>
         <v-card-text ref="twitch">
           <iframe class="mt-2 shadow-lg rounded-lg" style="border: none;"
-            :src="`https://player.twitch.tv/?channel=panthorde&enableExtensions=true&muted=true&parent=${host}&player=popout&quality=chunked&volume=0.4&allowfullscreen=false&theme=dark`"
+            src="https://api.panthor.de/v2/twitch_embed"
             :width="width" :height="width * 0.5625"></iframe>
         </v-card-text>
       </v-card>
-      -->
     </v-col>
     <v-col cols="3">
       <v-card v-if="last_changeLog">

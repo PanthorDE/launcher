@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain, screen, Tray, Menu, ipcRenderer } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, screen, Tray, Menu, ipcRenderer, session } from 'electron';
 import type { Event } from 'electron';
 import { release } from 'node:os';
 import { dialog } from 'electron';
@@ -123,6 +123,15 @@ async function createWindow() {
     },
   });
 
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': ["script-src * data: blob: 'unsafe-inline' 'unsafe-eval'; frame-src * api.panthor.de https: file: file; frame-ancestors * api.panthor.de https: file: file;"],
+        'X-Frame-Options': 'ALLOWALL'
+      }
+    })
+  })
   if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(url);
     win.webContents.openDevTools({ mode: 'detach' });
