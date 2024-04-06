@@ -38,7 +38,7 @@
     "productName": "Panthor Launcher",
     "copyright": "Copyright ©2024 Panthor",
     "directories": {
-      "output": "build/${version}"
+      "output": "build-dist/${version}"
     },
     "portable": {
       "requestExecutionLevel": "user"
