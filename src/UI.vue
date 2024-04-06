@@ -16,14 +16,15 @@
       <v-chip color="white" v-if="requesting_login || logged_in">
         <span class="me-2"><span v-if="requesting_login && !logged_in"><v-progress-linear indeterminate
               style="width: 60px"></v-progress-linear></span><span v-else>{{ user.name }}</span></span>
-        <v-avatar class="hidden-sm-and-down" color="primary" size="32" :image="user.player.avatar_medium"
-          v-if="user.player"><v-icon v-if="requesting_login && !logged_in" icon="mdi-login-variant"></v-icon></v-avatar>
+        <v-avatar class="hidden-sm-and-down" color="primary" size="32" v-if="user.player">
+          <v-img alt="Avatar" :src="user.player.avatar_medium"></v-img>
+          <v-icon v-if="requesting_login && !logged_in" icon="mdi-login-variant"></v-icon></v-avatar>
         <v-avatar class="hidden-sm-and-down" v-if="requesting_login && !logged_in" color="primary" size="32"><v-icon
             icon="mdi-help-circle-outline"></v-icon></v-avatar>
       </v-chip>
       <v-btn :loading="loading_api_data" @click="loadAPIDataUI" icon :disabled="!reloadAllowed">
-        <v-avatar class="hidden-sm-and-down" color="primary" size="32"><v-tooltip text="Login"
-            location="bottom"></v-tooltip><v-icon icon="mdi-refresh"></v-icon></v-avatar>
+        <v-avatar class="hidden-sm-and-down" color="primary" size="32"><v-tooltip text="Aktualisieren" location="bottom"
+            activator="parent"></v-tooltip><v-icon icon="mdi-refresh"></v-icon></v-avatar>
         <template v-slot:loader>
           <v-progress-circular indeterminate></v-progress-circular>
         </template>
@@ -443,7 +444,23 @@ export default defineComponent({
       if (this.logged_in || this.settings.auth_token === '') {
         promises.push(
           PanthorApiService.getMods(this.logged_in ? this.settings.auth_token : undefined)
-            .then((mods) => (this.api_data.mods = mods))
+            .then((mods) => {
+              let missing_status = false;
+              mods.forEach((mod) => {
+                this.api_data.mods.forEach((old_mod) => {
+                  if (old_mod.id === mod.id) {
+                    mod.worker_status = old_mod.worker_status;
+                  }
+                });
+                if (!mod.worker_status) {
+                  missing_status = true;
+                }
+              })
+              this.api_data.mods = mods
+              if (missing_status) {
+                this.requestWorkerUpdate();
+              }
+            })
             .catch(console.error)
         );
       }
@@ -476,7 +493,6 @@ export default defineComponent({
 
       Promise.all(promises).then((results) => {
         this.loading_api_data = false;
-        this.requestWorkerUpdate();
       });
     },
     notZero(input: number) {
@@ -637,7 +653,7 @@ export default defineComponent({
     'api_data.mods'(newVal: Mod[], oldVal: Mod[]) {
       let mod_ids = [] as number[];
 
-      if(oldVal.length == 0) {
+      if (oldVal.length == 0 || oldVal.length != newVal.length) {
         ipcRenderer.send('mods:init', newVal.map((mod) => mod.id));
         return;
       }

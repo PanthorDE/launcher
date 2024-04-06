@@ -5,6 +5,9 @@ import { dialog } from 'electron';
 import path, { join } from 'node:path';
 import fs from 'fs';
 import Store from 'electron-store';
+import https from 'https';
+import unzip from 'unzipper';
+import { unlink, unlinkSync } from 'node:fs';
 
 switch (process.argv[1]) {
   case '--open-website':
@@ -136,6 +139,30 @@ async function createWindow() {
 app.whenReady().then(createWorker);
 app.whenReady().then(createWindow);
 
+
+function downloadStaticFile(path: string, target: string): Promise<boolean> {
+  return new Promise<boolean>((resolve, reject) => {
+    const fileStream = fs.createWriteStream(target);
+
+    const req = https.get('https://static.panthor.de/arma/' + path, (res) => {
+      res.on('data', (chunk) => {
+        fileStream.write(chunk);
+      });
+
+      res.on('end', () => {
+        fileStream.end();
+        resolve(true)
+      });
+
+      res.on('error', (error) => {
+        reject(error);
+      });
+    });
+
+    req.end();
+  })
+}
+
 function modInitMessageToWorker(event: any, mods: any, path: any) {
   worker_win.webContents.send('mods:init', mods, path);
 }
@@ -203,6 +230,80 @@ function settingsValidateA3(event: any, message: any) {
   shell.openExternal('steam://validate/107410');
 }
 
+function downloadTfar() {
+  let filePath = app.getPath('downloads') + '\\' + 'PanthorTFAR_latest.ts3_plugin';
+
+  win.webContents.send('dl:tfar:status', 2);
+  let result = downloadStaticFile('PanthorTFAR_latest.ts3_plugin', filePath);
+  result.then((value) => {
+    if (value) {
+      win.webContents.send('dl:tfar:status', 3);
+      let shellResponse = shell.openPath(app.getPath('downloads') + '\\' + 'PanthorTFAR_latest.ts3_plugin');
+
+      if (!shellResponse) {
+        win.webContents.send('dl:tfar:status', 4);
+        let stream = fs.createReadStream(filePath).pipe(unzip.Extract({ path: app.getPath('downloads') + '\\Panthor' }))
+        stream.on('close', () => {
+          try {
+            fs.unlinkSync(app.getPath('downloads') + '\\Panthor\\package.ini')
+          } catch (err) {
+            console.log(err)
+          }
+          shell.showItemInFolder(app.getPath('downloads') + '\\Panthor\\plugins\\TFAR_win64.dll')
+
+          setTimeout(() => {
+            win.webContents.send('dl:tfar:status', 0);
+          }, 5000);
+        })
+      } else {
+        setTimeout(() => {
+          win.webContents.send('dl:tfar:status', 0);
+        }, 3000);
+      }
+    } else {
+      win.webContents.send('dl:tfar:status', 5);
+    }
+  });
+}
+
+function downloadSound() {
+  let filePath = app.getPath('downloads') + '\\' + 'Panthor.ts3_soundpack';
+
+  win.webContents.send('dl:sound:status', 2);
+  let result = downloadStaticFile('Panthor.ts3_soundpack', filePath);
+  result.then((value) => {
+    if (value) {
+      win.webContents.send('dl:sound:status', 3);
+      shell.openPath(app.getPath('downloads') + '\\' + 'Panthor.ts3_soundpack');
+
+      setTimeout(() => {
+        win.webContents.send('dl:sound:status', 0);
+      }, 3000);
+    } else {
+      win.webContents.send('dl:sound:status', 5);
+    }
+  });
+}
+
+function downloadSkin() {
+  let filePath = app.getPath('downloads') + '\\' + 'PanthorSkin.ts3_addon';
+
+  win.webContents.send('dl:skin:status', 2);
+  let result = downloadStaticFile('PanthorSkin.ts3_addon', filePath);
+  result.then((value) => {
+    if (value) {
+      win.webContents.send('dl:skin:status', 3);
+      shell.openPath(app.getPath('downloads') + '\\' + 'PanthorSkin.ts3_addon');
+
+      setTimeout(() => {
+        win.webContents.send('dl:skin:status', 0);
+      }, 3000);
+    } else {
+      win.webContents.send('dl:skin:status', 5);
+    }
+  });
+}
+
 function getArmaProfiles(event: Event, message: any) {
   const submitResults = function (result: typeof profiles) {
     win.webContents.send('settings:getArmaProfiles:result', result);
@@ -255,6 +356,10 @@ app.whenReady().then(() => {
   ipcMain.on('settings:changedArmaPath', settingsChangedArmaPath);
   ipcMain.on('settings:validateA3', settingsValidateA3);
   ipcMain.on('settings:getArmaProfiles', getArmaProfiles);
+
+  ipcMain.on('dl:tfar', downloadTfar);
+  ipcMain.on('dl:sound', downloadSound);
+  ipcMain.on('dl:skin', downloadSkin);
 
   Store.initRenderer();
 });

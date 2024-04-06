@@ -8,7 +8,7 @@ import Mod from '@/interfaces/ModInterface';
 import { PanthorApiService } from './PanthorApi.service';
 import { join, sep } from 'path';
 import { EventEmitter } from 'events';
-import { UpdateStatus } from '@/interfaces/WorkerStatusInterface';
+import { UpdateStatus } from '@/enums/UpdateStatusEnum';
 
 class UpdateEventEmitter extends EventEmitter {
   constructor() {

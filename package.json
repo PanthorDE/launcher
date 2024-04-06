@@ -65,6 +65,8 @@
     "vuetify": "^3.5.8",
     "webfontloader": "^1.6.28",
     "winreg": "^1.2.5",
-    "xml-js": "^1.6.11"
+    "xml-js": "^1.6.11",
+    "unzipper": "^0.10.14",
+    "@types/unzipper": "^0.10.9"
   }
 }

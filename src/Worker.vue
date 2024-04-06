@@ -31,7 +31,8 @@
 import { ipcRenderer } from 'electron';
 import { UpdateService } from './services/Update.service';
 import { defineComponent } from 'vue';
-import WorkerStatus, { StatusColors, StatusIcons, StatusTexts } from './interfaces/WorkerStatusInterface';
+import { StatusColors, StatusIcons, StatusTexts } from './enums/UpdateStatusEnum';
+import WorkerStatus from './interfaces/WorkerStatusInterface';
 
 export default defineComponent({
   name: 'Worker',
