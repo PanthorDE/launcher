@@ -670,11 +670,6 @@ async@^3.2.3:
   resolved "https://registry.yarnpkg.com/async/-/async-3.2.4.tgz#2d22e00f8cddeb5fde5dd33522b56d1cf569a81c"
   integrity sha512-iAB+JbDEGXhyIUavoDl9WP/Jj106Kz9DEn1DPgYw5ruDn0e3Wgi3sKFm55sASdGBNOQB8F59d9qQ7deqrHA8wQ==
 
-async@^3.2.5:
-  version "3.2.5"
-  resolved "https://registry.yarnpkg.com/async/-/async-3.2.5.tgz#ebd52a8fdaf7a2289a24df399f8d8485c8a46b66"
-  integrity sha512-baNZyqaaLhyLVKm/DlvdW051MSgO6b8eVfIezl9E5PqWxFgzLm/wQntEW4zOytVburDEr0JlALEpdOFwvErLsg==
-
 asynckit@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
@@ -1181,10 +1176,10 @@ electron-updater@^6.1.8:
     semver "^7.3.8"
     tiny-typed-emitter "^2.1.0"
 
-electron@^29.1.1:
-  version "29.1.1"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-29.1.1.tgz#e9cb11311324e4b43a3e73667cd2b65a30e8fa34"
-  integrity sha512-cXN15NgCi7MkzGo5/23ZQbii+0UfhmUiDjACunmzcUofYCjF42XhFbL7JZnwgI0qtBCCeJU8qZNZt9lU91gUFw==
+electron@^29.2.0:
+  version "29.2.0"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-29.2.0.tgz#98e9d45dcebda124fb0bd1ff20fc509ec692101c"
+  integrity sha512-ALKrCN52RG4g9prx4DriXSPnY5WoiyRUCNp7zEVQuoiNOpHTNqMMpRidQAHzntV4hajF1LMWHVoBkwqIs1jHhg==
   dependencies:
     "@electron/get" "^2.0.0"
     "@types/node" "^20.9.0"
@@ -1604,11 +1599,6 @@ inherits@2, inherits@~2.0.0, inherits@~2.0.3:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.4.tgz#0fa2c64f932917c3433a0ded55363aae37416b7c"
   integrity sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==
-
-install@^0.13.0:
-  version "0.13.0"
-  resolved "https://registry.yarnpkg.com/install/-/install-0.13.0.tgz#6af6e9da9dd0987de2ab420f78e60d9c17260776"
-  integrity sha512-zDml/jzr2PKU9I8J/xyZBQn8rPCAY//UOYNmR01XwNwyfhEWObo2SWfSl1+0tm1u6PhxLwDnfsT/6jB7OUxqFA==
 
 is-ci@^3.0.0:
   version "3.0.1"
@@ -2528,10 +2518,10 @@ vite-plugin-electron-renderer@^0.14.5:
   resolved "https://registry.yarnpkg.com/vite-plugin-electron-renderer/-/vite-plugin-electron-renderer-0.14.5.tgz#2ac36f31773cb23a09353fabb6fb788bdad94f50"
   integrity sha512-EQ7ORuPp8vFPCqfuGnVo7d36fXS0IFH4/RUlKb1drseix3TQEPcgwEuFADdXBxRgqMp70njz/1m0kdf5lEsm8w==
 
-vite-plugin-electron@^0.28.2:
-  version "0.28.2"
-  resolved "https://registry.yarnpkg.com/vite-plugin-electron/-/vite-plugin-electron-0.28.2.tgz#8c47aa691fbe64e32c1599811be1ff6e49452a48"
-  integrity sha512-RSYvChUSIMN7L4yxW5hqtF8VutJWLRPukxrSWtefEATCZ/PGAf+9l8VQ84UTIk/gbYJghRMOd5139Byhx5pfIw==
+vite-plugin-electron@^0.28.4:
+  version "0.28.4"
+  resolved "https://registry.yarnpkg.com/vite-plugin-electron/-/vite-plugin-electron-0.28.4.tgz#ce06f8626b76890b7e6883a26763dee1d87d1b3f"
+  integrity sha512-OcWQQZk1ygkG4g/nj6cQ0zMu5q9yPcxEtDNcY8xagWqjQ3PxZbWuf1VyElZSo16GqPa71vBzoz+XAukia/TgNQ==
 
 vite-plugin-vuetify@^1.0.2:
   version "1.0.2"

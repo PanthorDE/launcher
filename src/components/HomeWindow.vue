@@ -37,6 +37,7 @@
           </v-row>
         </v-card-text>
       </v-card>
+      <!--
       <v-card @click="openURL('https://www.twitch.tv/panthorde')" class="mt-2">
         <v-card-title>Panthor auf Twitch <v-icon icon="mdi-twitch" size="small" class="float-right mt-1"
             color="deep-purple"></v-icon></v-card-title>
@@ -46,6 +47,7 @@
             :width="width" :height="width * 0.5625"></iframe>
         </v-card-text>
       </v-card>
+      -->
     </v-col>
     <v-col cols="3">
       <v-card v-if="last_changeLog">

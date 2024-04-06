@@ -90,16 +90,16 @@ export default defineComponent({
   },
   methods: {
     init(mods: number[], force: boolean = false) {
+      this.mods = mods
       if (this.path !== "" && this.path !== undefined && (mods.length !== this.update_services.length || force)) {
         this.update_services.forEach((updater) => {
           updater.stop()
         })
         this.update_services.splice(0)
-        this.mods = mods
         mods.forEach((mod) => {
           let update_service = new UpdateService(3, mod, this.path)
           update_service.getEventEmitter().on('statusChanged', () => {
-            this.updateWorkerStatus();
+            this.updateWorkerStatus()
           })
           this.update_services.push(update_service)
           update_service.init()
@@ -117,12 +117,8 @@ export default defineComponent({
       updater.stop();
     },
     changeArmaPath(path: string) {
-      if (this.update_services.length === 0) {
-        this.path = path
-      } else {
-        this.path = path
-        this.init(this.mods, true)
-      }
+      this.path = path
+      this.init(this.mods, true)
     },
     updateWorkerStatus() {
       let send_window_progress_update = false

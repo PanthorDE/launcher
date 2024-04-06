@@ -26,7 +26,7 @@ export default {
         },
         {
           title: 'Ein Bug im Launcher! Was nun ?',
-          text: 'Melde deinen Bug im&nbsp;<a href="https://discord.gg/Hf3XeAyn4h">Discord Bugtracker</a>&nbsp;oder via&nbsp;<a href="https://github.com/PanthorDE/launcher/issues">GitHub</a>.',
+          text: 'Melde deinen Bug im&nbsp;<a target="_blank" href="https://discord.gg/Hf3XeAyn4h">Discord Bugtracker</a>&nbsp;oder via&nbsp;<a target="_blank" href="https://github.com/PanthorDE/launcher/issues">GitHub</a>.',
         },
       ],
     };

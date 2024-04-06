@@ -112,7 +112,8 @@
                     </v-chip>
                   </v-col>
                 </v-row>
-                <v-row class="text-center justify-center mb-0 pt-0 mt-0" v-if="mod.worker_status.fileop_size_remaining > 0 && mod.worker_status.fileop_size_done > 0">
+                <v-row class="text-center justify-center mb-0 pt-0 mt-0"
+                  v-if="mod.worker_status.fileop_size_remaining > 0 && mod.worker_status.fileop_size_done > 0">
                   <v-col cols="auto" v-if="mod.worker_status.fileop_files_remaining > 0" class="pt-0">
                     <v-chip class="ma-2" color="success" variant="outlined">
                       <v-icon start icon="mdi-file-multiple"></v-icon>
@@ -152,7 +153,7 @@
             </div>
           </v-col>
           <v-col cols="9">
-            <v-window v-model="tab">
+            <v-window v-model="tab" class="h-100">
               <!-- Home -->
               <v-window-item :value="0">
                 <home-window :changelogs="api_data.changelogs" :news="news"></home-window>
@@ -311,10 +312,10 @@
                 text="Leider ist Arma auf deinem PC nicht an einer üblichen Stelle installiert oder du hast es manuell verschoben. Bitte überspringe diesen Schritt."></v-alert>
             </v-card-text>
             <v-card-actions class="justify-center mb-2">
-              <v-btn color="warning" flat prepend-icon="mdi-debug-step-over" @click="firstRunSkip"
+              <v-btn color="warning" variant="outlined" prepend-icon="mdi-debug-step-over" @click="firstRunSkip"
                 size="large">Überspringen</v-btn>
-              <v-btn color="success" flat prepend-icon="mdi-content-save-cog" @click="firstRunSave" size="large"
-                v-if="possible_a3_paths.length > 0">Speichern</v-btn>
+              <v-btn color="success" variant="outlined" prepend-icon="mdi-content-save-cog" @click="firstRunSave"
+                size="large" v-if="possible_a3_paths.length > 0">Speichern</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -324,7 +325,7 @@
 </template>
 
 <script lang="ts">
-import { ipcRenderer, shell } from 'electron';
+import { ipcMain, ipcRenderer, shell } from 'electron';
 import ModWindow from '@/components/ModWindow.vue';
 import ChangelogWindow from '@/components/ChangelogWindow.vue';
 import TfarWindow from '@/components/TfarWindow.vue';
@@ -333,7 +334,6 @@ import HomeWindow from '@/components/HomeWindow.vue';
 import FaqWindow from '@/components/FaqWindow.vue';
 import { defineComponent, ref } from 'vue';
 import Store from 'electron-store';
-import Winreg from 'winreg';
 
 import { HumanizeDurationLanguage, HumanizeDuration } from 'humanize-duration-ts/dist';
 import Server from '@/interfaces/ServerInterface';
@@ -375,25 +375,7 @@ export default defineComponent({
       first_run_selected_path: 0,
       possible_a3_paths: [] as Array<string>,
       server_window_default_tab: 0,
-      reloadAllowed: true,
-      a3_registry_keys: [
-        {
-          key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 107410',
-          index: 3,
-        },
-        {
-          key: '\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 107410',
-          index: 3,
-        },
-        {
-          key: '\\SOFTWARE\\WOW6432Node\\bohemia interactive studio\\ArmA 3',
-          index: 0,
-        },
-        {
-          key: '\\SOFTWARE\\WOW6432Node\\bohemia interactive\\arma 3',
-          index: 1,
-        },
-      ],
+      reloadAllowed: true
     };
   },
   methods: {
@@ -551,27 +533,10 @@ export default defineComponent({
     },
     launch_first_run() {
       this.first_run_dialog = true;
-
-      this.a3_registry_keys.forEach((cur) => {
-        let regKey = new Winreg({
-          hive: Winreg.HKLM,
-          key: cur.key,
-        });
-
-        regKey.keyExists((err, exists) => {
-          if (err) throw err;
-          if (exists) {
-            regKey.values((err, items) => {
-              if (err) throw err;
-              if (existsSync(items[cur.index].value + '\\arma3.exe')) {
-                this.possible_a3_paths.push(items[cur.index].value);
-              }
-            });
-          }
-        });
+      ipcRenderer.on('checkRegKeys:result', (_event, key: string) => {
+        this.possible_a3_paths.push(key);
       });
-
-      console.log(this.possible_a3_paths);
+      ipcRenderer.send('checkRegKeys:request');
     },
     requestWorkerUpdate() {
       ipcRenderer.send('worker:requestUpdate');
@@ -644,11 +609,7 @@ export default defineComponent({
     */
     'settings.arma_path': {
       handler: function (newVal, oldVal) {
-        console.log(newVal)
-        console.log(oldVal)
-
         if (newVal !== oldVal) {
-          console.log('Arma Path changed')
           ipcRenderer.send('settings:changedArmaPath', this.settings.arma_path);
         }
       }

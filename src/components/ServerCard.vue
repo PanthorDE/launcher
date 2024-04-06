@@ -42,11 +42,11 @@
               <td>Letzte Aktualisierung</td>
               <td class="text-right">
                 {{
-            new Date(server.updated_at.date).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            })
-          }}
+                  new Date(server.updated_at.date).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                }}
               </td>
             </tr>
           </tbody>
@@ -83,8 +83,8 @@
       </v-col>
       <v-col cols="2"></v-col>
       <v-col cols="3">
-        <v-btn color="primary" block size="large" prepend-icon="mdi-reload"
-          @click="$emit('load-api-data')" :disabled="!reload_allowed">Aktualisieren</v-btn>
+        <v-btn color="primary" block size="large" prepend-icon="mdi-reload" @click="$emit('load-api-data')"
+          :disabled="!reload_allowed">Aktualisieren</v-btn>
       </v-col>
       <v-col cols="3">
         <v-btn color="success" block size="large" prepend-icon="mdi-connection" @click="joinServer(server)"
@@ -103,7 +103,6 @@ import { clipboard, ipcRenderer } from 'electron';
 import Store from 'electron-store';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CoreChartOptions, DatasetChartOptions, ElementChartOptions, PluginChartOptions } from 'chart.js';
 import { Pie } from 'vue-chartjs';
-import { promise } from 'ping';
 import SettingsStore, { defaultSettings } from '@/interfaces/SettingsStoreInterface';
 import { _DeepPartialObject } from 'chart.js/dist/types/utils';
 
@@ -260,11 +259,7 @@ export default {
     },
     pingServer() {
       this.ping = 0;
-      promise.probe(this.server.ip).then((res) => {
-        setTimeout(() => {
-          this.ping = parseInt(res.avg);
-        }, 1000);
-      });
+      ipcRenderer.send('ping:request', this.server.ip);
     },
     updateTimeUntilNextTarget() {
       const targets = [6, 12, 18, 24];
@@ -321,6 +316,11 @@ export default {
     this.intervalId = setInterval(this.updateTimeUntilNextTarget, 1000);
     this.pingServer();
     this.retrieveArmaProfiles();
+
+    ipcRenderer.on('ping:result', (_event, ip: string, ping: number) => {
+      if (ip !== this.server.ip) return;
+      this.ping = ping;
+    });
   },
   beforeUnmount() {
     clearInterval(this.intervalId);

@@ -1,13 +1,15 @@
-import { app, BrowserWindow, shell, ipcMain, screen, Tray, Menu } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, screen, Tray, Menu, ipcRenderer } from 'electron';
 import type { Event } from 'electron';
 import { release } from 'node:os';
 import { dialog } from 'electron';
 import path, { join } from 'node:path';
-import fs from 'fs';
+import fs, { existsSync } from 'fs';
 import Store from 'electron-store';
 import https from 'https';
 import unzip from 'unzipper';
 import { autoUpdater } from 'electron-updater';
+import { promise } from 'ping';
+import Winreg from 'winreg';
 
 switch (process.argv[1]) {
   case '--open-website':
@@ -82,13 +84,14 @@ async function createWorker() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
+      backgroundThrottling: false,
     },
   });
 
   if (process.env.VITE_DEV_SERVER_URL) {
     worker_win.loadURL(`${url}#${hash}`);
     worker_win.show();
-    worker_win.webContents.openDevTools();
+    worker_win.webContents.openDevTools({ mode: 'detach' });
   } else {
     worker_win.loadFile(indexHtml, { hash: hash });
   }
@@ -115,13 +118,14 @@ async function createWindow() {
     minHeight: 1000,
     webPreferences: {
       nodeIntegration: true,
+      backgroundThrottling: false,
       contextIsolation: false,
     },
   });
 
   if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(url);
-    win.webContents.openDevTools();
+    win.webContents.openDevTools({ mode: 'detach' });
   } else {
     win.loadFile(indexHtml);
     win.removeMenu()
@@ -255,6 +259,58 @@ function downloadStaticFile(path: string, target: string): Promise<boolean> {
 
     req.end();
   })
+}
+
+function pingServer(event: any, ip: string) {
+  promise.probe(ip).then((res) => {
+    setTimeout(() => {
+      win.webContents.send('ping:result', ip, parseInt(res.avg));
+    }, 1000);
+  });
+}
+
+function checkRegKeys() {
+  const a3_registry_keys = [
+    {
+      key: '\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 107410',
+      index: 3,
+    },
+    {
+      key: '\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 107410',
+      index: 3,
+    },
+    {
+      key: '\\SOFTWARE\\WOW6432Node\\bohemia interactive studio\\ArmA 3',
+      index: 0,
+    },
+    {
+      key: '\\SOFTWARE\\WOW6432Node\\bohemia interactive\\arma 3',
+      index: 1,
+    },
+  ]
+
+  try {
+    a3_registry_keys.forEach((cur) => {
+      let regKey = new Winreg({
+        hive: Winreg.HKLM,
+        key: cur.key,
+      });
+
+      regKey.keyExists((err, exists) => {
+        if (err) throw err;
+        if (exists) {
+          regKey.values((err, items) => {
+            if (err) throw err;
+            if (existsSync(items[cur.index].value + '\\arma3.exe')) {
+              win.webContents.send('checkRegKeys:result', items[cur.index].value);
+            }
+          });
+        }
+      });
+    });
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 function modInitMessageToWorker(event: any, mods: any, path: any) {
@@ -450,6 +506,10 @@ app.whenReady().then(() => {
   ipcMain.on('settings:changedArmaPath', settingsChangedArmaPath);
   ipcMain.on('settings:validateA3', settingsValidateA3);
   ipcMain.on('settings:getArmaProfiles', getArmaProfiles);
+
+  ipcMain.on('ping:request', pingServer);
+
+  ipcMain.on('checkRegKeys:request', checkRegKeys);
 
   ipcMain.on('dl:tfar', downloadTfar);
   ipcMain.on('dl:sound', downloadSound);
