@@ -27,9 +27,29 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build && electron-builder",
+    "build": "vue-tsc --noEmit && vite build && electron-builder build -p never",
+    "publish": "vue-tsc --noEmit && vite build && electron-builder build -p publish",
     "preview": "vite preview",
     "format": "prettier --write src/ electron/"
+  },
+  "build": {
+    "appId": "panthor.de",
+    "productName": "Panthor Launcher",
+    "copyright": "Copyright ©2024 Panthor",
+    "portable": {
+      "requestExecutionLevel": "user"
+    },
+    "win": {
+      "target": "nsis",
+      "publish": [
+        "github"
+      ]
+    },
+    "nsis": {
+      "installerLanguages": [
+        "de_DE"
+      ]
+    }
   },
   "devDependencies": {
     "@babel/types": "^7.24.0",

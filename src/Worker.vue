@@ -10,14 +10,14 @@
                 {{ updater.getMod().name }}
                 </v-card-title>
               <v-card-text>
-                Mod ID: <v-pill>{{ updater.getModId() }}</v-pill><br>
-                Status: <v-pill>{{ updater.getStatus() }} ({{ status_texts[updater.getStatus()] }})</v-pill><br>
-                Dateiforschritt: <v-pill>{{ updater.getSizeProgress() }}</v-pill><br>
-                Dateien: <v-pill>{{ updater.getCompletedFiles() }}/{{ updater.getCompletedFiles() + updater.getRemainingFiles() }}</v-pill><br>
-                Geschwindigkeit: <v-pill>{{ updater.getSpeed() }}</v-pill><br>
-                Verbleidend: <v-pill>{{ updater.getTimeRemaining() }}</v-pill><br>
-                Fehler: <v-pill>{{ updater.getWrongHashes() }}</v-pill><br>
-                Path: <v-pill>{{ updater.getPath() }}</v-pill><br>
+                Mod ID: <v-chip label>{{ updater.getModId() }}</v-chip><br>
+                Status: <v-chip label>{{ updater.getStatus() }} ({{ status_texts[updater.getStatus()] }})</v-chip><br>
+                Dateiforschritt: <v-chip label>{{ updater.getSizeProgress() }}</v-chip><br>
+                Dateien: <v-chip label>{{ updater.getCompletedFiles() }}/{{ updater.getCompletedFiles() + updater.getRemainingFiles() }}</v-chip><br>
+                Geschwindigkeit: <v-chip label>{{ updater.getSpeed() }}</v-chip><br>
+                Verbleidend: <v-chip label>{{ updater.getTimeRemaining() }}</v-chip><br>
+                Fehler: <v-chip label>{{ updater.getWrongHashes() }}</v-chip><br>
+                Path: <v-chip label>{{ updater.getPath() }}</v-chip><br>
               </v-card-text>
             </v-card>
           </v-col>
@@ -147,10 +147,8 @@ export default defineComponent({
         worker_status.message = StatusTexts[updater.getStatus()]
         worker_status.color = StatusColors[updater.getStatus()]
         worker_status.icon = StatusIcons[updater.getStatus()]
-        
-        ipcRenderer.send('worker:update', updater.getModId(), JSON.stringify(worker_status));
 
-        //console.log(updater.getModId(), JSON.stringify(worker_status))
+        ipcRenderer.send('worker:update', updater.getModId(), JSON.stringify(worker_status));
       })
     }
   }
