@@ -101,10 +101,11 @@ import Server from '@/interfaces/ServerInterface';
 import { PropType } from 'vue';
 import { clipboard, ipcRenderer } from 'electron';
 import Store from 'electron-store';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CoreChartOptions, DatasetChartOptions, ElementChartOptions, PluginChartOptions } from 'chart.js';
 import { Pie } from 'vue-chartjs';
 import { promise } from 'ping';
 import SettingsStore, { defaultSettings } from '@/interfaces/SettingsStoreInterface';
+import { _DeepPartialObject } from 'chart.js/dist/types/utils';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -142,7 +143,7 @@ export default {
         tooltips: {
           displayColors: false,
         },
-      },
+      } as _DeepPartialObject<CoreChartOptions<"pie"> & ElementChartOptions<"pie"> & PluginChartOptions<"pie"> & DatasetChartOptions<"pie">>,
       player_search: '',
       restart_in: 0,
       intervalId: 0 as NodeJS.Timeout | number,

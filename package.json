@@ -1,6 +1,6 @@
 {
   "name": "Panthor",
-  "version": "2.0.0",
+  "version": "1.9.0",
   "main": "dist-electron/main/index.js",
   "description": "Panthor Launcher",
   "author": "Kaibu",
@@ -28,6 +28,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build && electron-builder build -p never",
+    "build_portable": "vue-tsc --noEmit && vite build && electron-builder build -p never --win portable",
     "publish": "vue-tsc --noEmit && vite build && electron-builder build -p publish",
     "preview": "vite preview",
     "format": "prettier --write src/ electron/"
@@ -36,6 +37,9 @@
     "appId": "panthor.de",
     "productName": "Panthor Launcher",
     "copyright": "Copyright ©2024 Panthor",
+    "directories": {
+      "output": "build/${version}"
+    },
     "portable": {
       "requestExecutionLevel": "user"
     },
@@ -43,7 +47,8 @@
       "target": "nsis",
       "publish": [
         "github"
-      ]
+      ],
+      "artifactName": "${productName}_${version}.${ext}"
     },
     "nsis": {
       "installerLanguages": [
@@ -74,6 +79,7 @@
     "async": "^3.2.5",
     "axios": "^1.6.7",
     "chart.js": "^4.4.2",
+    "@types/chart.js": "^2.9.41",
     "electron-store": "^8.2.0",
     "humanize-duration-ts": "^2.1.1",
     "install": "^0.13.0",
@@ -87,6 +93,7 @@
     "winreg": "^1.2.5",
     "xml-js": "^1.6.11",
     "unzipper": "^0.10.14",
-    "@types/unzipper": "^0.10.9"
+    "@types/unzipper": "^0.10.9",
+    "electron-updater": "^6.1.8"
   }
 }

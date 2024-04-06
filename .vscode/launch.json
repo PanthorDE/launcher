@@ -9,7 +9,7 @@
       "preLaunchTask": "Before Debug",
       "configurations": [
         "Debug Main Process",
-        "Debug Renderer Process"
+        //"Debug Renderer Process"
       ],
       "presentation": {
         "hidden": false,
@@ -35,6 +35,7 @@
       "envFile": "${workspaceFolder}/.vscode/.debug.env",
       "console": "integratedTerminal"
     },
+    /*
     {
       "name": "Debug Renderer Process",
       "port": 9229,
@@ -49,5 +50,36 @@
         "http://127.0.0.1:3344/**"
       ]
     },
+    */
+    {
+      "name": "Build executable",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceRoot}",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+          "run-script", "build"
+      ]
+    },
+    {
+      "name": "Build portable",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceRoot}",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+          "run-script", "build_portable"
+      ]
+    },
+    {
+      "name": "Build & publish executable",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceRoot}",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+          "run-script", "publish"
+      ]
+    }
   ]
 }

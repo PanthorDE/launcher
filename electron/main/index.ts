@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain, screen } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, screen, Tray, Menu } from 'electron';
 import type { Event } from 'electron';
 import { release } from 'node:os';
 import { dialog } from 'electron';
@@ -7,7 +7,7 @@ import fs from 'fs';
 import Store from 'electron-store';
 import https from 'https';
 import unzip from 'unzipper';
-import { unlink, unlinkSync } from 'node:fs';
+import { autoUpdater } from 'electron-updater';
 
 switch (process.argv[1]) {
   case '--open-website':
@@ -24,6 +24,8 @@ process.env.DIST_ELECTRON = join(__dirname, '..');
 process.env.DIST = join(process.env.DIST_ELECTRON, '../dist');
 process.env.SRC = join(process.env.DIST_ELECTRON, '../src');
 process.env.PUBLIC = process.env.VITE_DEV_SERVER_URL ? join(process.env.DIST_ELECTRON, '../public') : process.env.DIST;
+
+autoUpdater.checkForUpdatesAndNotify()
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith('6.1')) app.disableHardwareAcceleration();
@@ -47,6 +49,7 @@ let worker_win: BrowserWindow | null = null;
 const preload = join(__dirname, '../preload/index.js');
 const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = join(process.env.DIST, 'index.html');
+let tray: Tray | null = null;
 
 app.setUserTasks([
   {
@@ -72,9 +75,10 @@ async function createWorker() {
 
   worker_win = new BrowserWindow({
     title: 'Panthor Launcher Worker',
-    icon: join(process.env.PUBLIC, 'favicon.ico'),
-    width: 500,
-    height: 500,
+    icon: join(__dirname, '../../src/assets/workericon.ico'),
+    width: 1500,
+    height: 1500,
+    show: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -83,6 +87,7 @@ async function createWorker() {
 
   if (process.env.VITE_DEV_SERVER_URL) {
     worker_win.loadURL(`${url}#${hash}`);
+    worker_win.show();
     worker_win.webContents.openDevTools();
   } else {
     worker_win.loadFile(indexHtml, { hash: hash });
@@ -103,7 +108,7 @@ async function createWindow() {
 
   win = new BrowserWindow({
     title: 'Panthor Launcher',
-    icon: join(process.env.PUBLIC, 'favicon.ico'),
+    icon: join(__dirname, '../../src/assets/webicon.ico'),
     width: Math.round(width * 0.45),
     height: Math.round(height * 0.5),
     minWidth: 1500,
@@ -113,6 +118,8 @@ async function createWindow() {
       contextIsolation: false,
     },
   });
+
+  win.removeMenu()
 
   if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(url);
@@ -136,8 +143,96 @@ async function createWindow() {
   // win.webContents.on('will-navigate', (event, url) => { }) #344
 }
 
+const toggleDevTools = () => {
+  if (!win || !worker_win) return
+  win.show()
+  if (win.webContents.isDevToolsOpened()) {
+    win.webContents.closeDevTools()
+    worker_win.hide()
+  } else {
+    win.webContents.openDevTools()
+    worker_win.show()
+  }
+}
+
+const createTray = () => {
+  tray = new Tray(join(__dirname, '../../src/assets/webicon.ico'))
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Auf Updates prüfen',
+      click: () => {
+        if (typeof process.env.PORTABLE_EXECUTABLE_DIR !== 'undefined') {
+          dialog.showMessageBox(win, {
+            'type': 'info',
+            'title': 'Panthor Launcher Portable',
+            'message': 'Du verwendest die Portable Version des Panthor Launchers, automatische Updates werden nicht unterstützt.',
+            'buttons': [
+              'Update manuell downloaden',
+              'Normale Version downloaden'
+            ]
+          }).then((result) => {
+            if (result.response === 0) {
+              shell.openExternal('https://github.com/PanthorDE/launcher/releases/latest')
+            } else if (result.response === 1) {
+              shell.openExternal('https://panthor.de/download/')
+            }
+          })
+        } else {
+          autoUpdater.checkForUpdatesAndNotify()
+        }
+      }
+    },
+    {
+      label: 'Dev-Tools',
+      click: () => {
+        toggleDevTools()
+      }
+    },
+    {
+      label: 'Restart',
+      click: () => {
+        app.relaunch()
+        app.quit()
+      }
+    },
+    {
+      type: 'separator'
+    },
+    {
+      label: 'Beenden',
+      click: () => {
+        app.quit()
+      }
+    }
+  ])
+  tray.setToolTip('Panthor Launcher')
+  tray.setContextMenu(contextMenu)
+  tray.on('click', () => {
+    win.isMinimized() ? win.restore() : win.minimize()
+  })
+}
+
+app.setUserTasks([
+  {
+    program: process.execPath,
+    arguments: '--open-website',
+    iconPath: process.execPath,
+    iconIndex: 0,
+    title: 'Website',
+    description: 'Panthor Website'
+  }, {
+    program: process.execPath,
+    arguments: '--open-teamspeak',
+    iconPath: process.execPath,
+    iconIndex: 0,
+    title: 'Teamspeak',
+    description: 'Panthor Teamspeak'
+  }
+])
+
 app.whenReady().then(createWorker);
 app.whenReady().then(createWindow);
+app.whenReady().then(createTray);
 
 
 function downloadStaticFile(path: string, target: string): Promise<boolean> {
