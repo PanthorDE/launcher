@@ -35,5 +35,5 @@ export var StatusIcons = {
     [UpdateStatus.HASHED_UPDATE_REQUIRED]: "mdi-alert-outline",
     [UpdateStatus.DOWNLOADING]: "mdi-loading mdi-spin",
     [UpdateStatus.DOWNLOADED_UPDATE_REQUIRED]: "mdi-alert-outline",
-    [UpdateStatus.NOT_FOUND]: "mdi-download"
+    [UpdateStatus.NOT_FOUND]: "mdi-download-off"
 };

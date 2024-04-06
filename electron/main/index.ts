@@ -119,13 +119,12 @@ async function createWindow() {
     },
   });
 
-  win.removeMenu()
-
   if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(url);
     win.webContents.openDevTools();
   } else {
     win.loadFile(indexHtml);
+    win.removeMenu()
   }
 
   win.on('close', () => {
@@ -443,8 +442,8 @@ app.whenReady().then(() => {
   ipcMain.on('mod:openFolder', modOpenFolder);
   ipcMain.on('worker:update', workerStatusUpdateMessageToUI);
   ipcMain.on('worker:requestUpdate', workerStatusUpdateRequest);
-  ipcMain.on('winprogress-change', (event, arg) => {
-    win.setProgressBar(arg.progress / 100);
+  ipcMain.on('winprogress-change', (event: any, progress: number) => {
+    win.setProgressBar(progress / 100);
   });
   ipcMain.on('settings:openArmaSelect', settingsOpenArmaSelect);
   ipcMain.on('settings:openMissionCache', settingsOpenMissionCache);

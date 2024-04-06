@@ -15,5 +15,6 @@ export default interface WorkerStatus {
   fileop_size_remaining: number;
   fileop_files_broken: number;
   fileop_files_broken_size: number;
+  fileop_size_total: number;
 }
 

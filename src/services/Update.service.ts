@@ -31,8 +31,10 @@ export class UpdateService {
   private completedFiles: number = 0;
   private completedSize: number = 0;
   private totalFiles: number = 0;
+  private totalSize: number = 0;
   private promiseResolvers: Array<() => void> = [];
   private lastSpeedCalculation: number = 0;
+  private lastUpdate: number = 0;
   private lastSpeedSize: number = 0;
   private lastSpeed: number = 0;
   private timeRemaining: number = 0;
@@ -85,6 +87,7 @@ export class UpdateService {
         this.completedFiles = 0;
         this.completedSize = 0;
         this.totalFiles = this.wrongHashes.length
+        this.setTotalSize(this.wrongHashes);
 
         this.status = UpdateStatus.DOWNLOADING;
         this.statusChanged.emit('statusChanged', this.status);
@@ -135,6 +138,7 @@ export class UpdateService {
         this.completedFiles = 0;
         this.completedSize = 0;
         this.totalFiles = this.hashlist.length
+        this.setTotalSize(this.hashlist);
 
         this.status = UpdateStatus.HASHING;
         this.statusChanged.emit('statusChanged', this.status);
@@ -400,7 +404,7 @@ export class UpdateService {
   }
 
   private calculateSpeed() {
-    if (this.lastSpeedCalculation + 1000 < Date.now()) {
+    if (this.lastSpeedCalculation + 2000 < Date.now()) {
       const doneSinceLastCalculation = this.completedSize - this.lastSpeedSize
       this.lastSpeedSize = this.completedSize;
       this.lastSpeed = Math.round(
@@ -410,6 +414,9 @@ export class UpdateService {
         (this.getRemainingSize() / this.lastSpeed)
       );
       this.lastSpeedCalculation = Date.now();
+    }
+    if (this.lastUpdate + 500 < Date.now()) {
+      this.lastUpdate = Date.now();
       this.statusChanged.emit('statusChanged', this.status);
     }
   }
@@ -417,11 +424,13 @@ export class UpdateService {
   private setOperationEnded() {
     this.lastSpeed = 0
     this.lastSpeedCalculation = 0
+    this.lastUpdate = 0
     this.completedSize = 0
     this.completedFiles = 0
     this.timeRemaining = 0
     this.lastSpeedSize = 0
     this.totalFiles = 0
+    this.totalSize = 0
     this.queue = []
     this.currentFiles = []
     this.statusChanged.emit('statusChanged', this.status);
@@ -486,15 +495,17 @@ export class UpdateService {
     return this.completedSize
   }
 
-  public getTotalSize(): number {
+  private setTotalSize(list: ModFile[]) {
     let size = 0
-    for (let i = 0; i < this.queue.length; i++) {
-      size += this.queue[i].Size
+    for (let i = 0; i < list.length; i++) {
+      size += list[i].Size
     }
-    for (let i = 0; i < this.currentFiles.length; i++) {
-      size += this.currentFiles[i].Size
-    }
-    return size
+
+    this.totalSize = size
+  }
+
+  public getTotalSize(): number {
+    return this.totalSize
   }
 
   public getModId(): number {

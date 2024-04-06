@@ -53,7 +53,7 @@
                 {{ server.name }}
                 <v-progress-circular :model-value="(server.players.length / notZero(server.slots)) * 100"
                   color="primary" :size="70" :width="8" class="float-right">{{ Math.round((server.players.length /
-      notZero(server.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
+                    notZero(server.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
                   style="font-size: 18px !important">Online: {{ server.players.length }} / {{ server.slots
                   }}</span></v-card-title>
             </v-card>
@@ -63,7 +63,7 @@
                 Teamspeak
                 <v-progress-circular :model-value="(teamspeak.users.length / notZero(teamspeak.slots)) * 100"
                   color="primary" :size="70" :width="8" class="float-right">{{ Math.round((teamspeak.users.length /
-      notZero(teamspeak.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
+                    notZero(teamspeak.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
                   style="font-size: 18px !important">Online: {{ teamspeak.users.length }} / {{ teamspeak.slots
                   }}</span></v-card-title>
             </v-card>
@@ -85,9 +85,9 @@
                       }}%</strong>
                   </v-progress-linear>
                 </v-row>
-                <v-row class="text-center justify-center mb-0 mt-2 pt-3">
-                  <v-col cols="auto" v-if="mod.worker_status.status === 3 || mod.worker_status.status === 5"
-                    class="pt-0">
+                <v-row class="text-center justify-center mb-0 mt-2 pt-3"
+                  v-if="mod.worker_status.status === 3 || mod.worker_status.status === 5">
+                  <v-col cols="auto" class="pt-0">
                     <v-chip class="ma-2" color="warning" variant="outlined">
                       <v-icon start icon="mdi-file-alert"></v-icon>
                       {{ mod.worker_status.fileop_files_broken }}
@@ -97,17 +97,27 @@
                       {{ humanFileSize(mod.worker_status.fileop_files_broken_size) }}
                     </v-chip>
                   </v-col>
+                </v-row>
+                <v-row class="text-center justify-center mb-0 mt-2 pt-3" v-if="mod.worker_status.fileop_speed > 0">
                   <v-col cols="auto" v-if="mod.worker_status.fileop_speed > 0" class="pt-0">
                     <v-chip class="ma-2" color="success" variant="outlined">
                       <v-icon start icon="mdi-speedometer-slow"></v-icon>
                       {{ humanFileSize(mod.worker_status.fileop_speed, true, 2, true) }}
                     </v-chip>
                   </v-col>
+                  <v-col cols="auto" v-if="mod.worker_status.fileop_time_remaining > 0" class="pt-0">
+                    <v-chip class="ma-2" color="success" variant="outlined">
+                      <v-icon start icon="mdi-clock-end"></v-icon>
+                      {{ formatTime(Math.ceil(mod.worker_status.fileop_time_remaining)) }}
+                    </v-chip>
+                  </v-col>
+                </v-row>
+                <v-row class="text-center justify-center mb-0 pt-0 mt-0" v-if="mod.worker_status.fileop_size_remaining > 0 && mod.worker_status.fileop_size_done > 0">
                   <v-col cols="auto" v-if="mod.worker_status.fileop_files_remaining > 0" class="pt-0">
                     <v-chip class="ma-2" color="success" variant="outlined">
                       <v-icon start icon="mdi-file-multiple"></v-icon>
                       {{ mod.worker_status.fileop_files_done }} / {{ mod.worker_status.fileop_files_remaining +
-      mod.worker_status.fileop_files_done }}
+                        mod.worker_status.fileop_files_done }}
                     </v-chip>
                   </v-col>
                   <v-col cols="auto"
@@ -116,15 +126,9 @@
                     <v-chip class="ma-2" color="success" variant="outlined">
                       <v-icon start icon="mdi-harddisk"></v-icon>
                       {{ humanFileSize(mod.worker_status.fileop_size_done, true, 1) }} /
-                      {{ humanFileSize(mod.worker_status.fileop_size_remaining + mod.worker_status.fileop_size_done,
-      true,
-      1) }}
-                    </v-chip>
-                  </v-col>
-                  <v-col cols="auto" v-if="mod.worker_status.fileop_time_remaining > 0" class="pt-0">
-                    <v-chip class="ma-2" color="success" variant="outlined">
-                      <v-icon start icon="mdi-clock-end"></v-icon>
-                      {{ formatTime(Math.ceil(mod.worker_status.fileop_time_remaining)) }}
+                      {{ humanFileSize(mod.worker_status.fileop_size_total,
+                        true,
+                        1) }}
                     </v-chip>
                   </v-col>
                 </v-row>
@@ -638,15 +642,24 @@ export default defineComponent({
       });
     },
     */
+    'settings.arma_path': {
+      handler: function (newVal, oldVal) {
+        console.log(newVal)
+        console.log(oldVal)
+
+        if (newVal !== oldVal) {
+          console.log('Arma Path changed')
+          ipcRenderer.send('settings:changedArmaPath', this.settings.arma_path);
+        }
+      }
+    },
     settings: {
-      handler: function (val, oldVal) {
+      handler: function (newVal, oldVal) {
         let store = new Store<SettingsStore>({
           defaults: defaultSettings,
         });
 
-        store.store = val;
-
-        ipcRenderer.send('settings:changedArmaPath', this.settings.arma_path);
+        store.store = newVal;
       },
       deep: true,
     },

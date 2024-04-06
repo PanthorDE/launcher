@@ -8,12 +8,13 @@
             <v-card>
               <v-card-title>
                 {{ updater.getMod().name }}
-                </v-card-title>
+              </v-card-title>
               <v-card-text>
                 Mod ID: <v-chip label>{{ updater.getModId() }}</v-chip><br>
                 Status: <v-chip label>{{ updater.getStatus() }} ({{ status_texts[updater.getStatus()] }})</v-chip><br>
                 Dateiforschritt: <v-chip label>{{ updater.getSizeProgress() }}</v-chip><br>
-                Dateien: <v-chip label>{{ updater.getCompletedFiles() }}/{{ updater.getCompletedFiles() + updater.getRemainingFiles() }}</v-chip><br>
+                Dateien: <v-chip label>{{ updater.getCompletedFiles() }}/{{ updater.getCompletedFiles() +
+                  updater.getRemainingFiles() }}</v-chip><br>
                 Geschwindigkeit: <v-chip label>{{ updater.getSpeed() }}</v-chip><br>
                 Verbleidend: <v-chip label>{{ updater.getTimeRemaining() }}</v-chip><br>
                 Fehler: <v-chip label>{{ updater.getWrongHashes() }}</v-chip><br>
@@ -88,8 +89,8 @@ export default defineComponent({
     });
   },
   methods: {
-    init(mods: number[]) {
-      if (this.path !== "" && this.path !== undefined && mods.length !== this.update_services.length) {
+    init(mods: number[], force: boolean = false) {
+      if (this.path !== "" && this.path !== undefined && (mods.length !== this.update_services.length || force)) {
         this.update_services.forEach((updater) => {
           updater.stop()
         })
@@ -113,24 +114,19 @@ export default defineComponent({
         return;
       }
 
-      console.log(updater.getModId(), "stopped")
       updater.stop();
     },
     changeArmaPath(path: string) {
-      if (this.path !== "" && this.path !== undefined) {
+      if (this.update_services.length === 0) {
         this.path = path
       } else {
-        if (this.update_services.length === 0) {
-          this.path = path
-        } else {
-          this.update_services.forEach((updater) => {
-            updater.stop()
-          })
-          this.init(this.mods)
-        }
+        this.path = path
+        this.init(this.mods, true)
       }
     },
     updateWorkerStatus() {
+      let send_window_progress_update = false
+
       this.update_services.forEach((updater) => {
         let worker_status = {} as WorkerStatus;
 
@@ -140,6 +136,7 @@ export default defineComponent({
         worker_status.fileop_progress = updater.getSizeProgress() * 100
         worker_status.fileop_size_done = updater.getCompletedSize()
         worker_status.fileop_size_remaining = updater.getRemainingSize()
+        worker_status.fileop_size_total = updater.getTotalSize()
         worker_status.fileop_speed = updater.getSpeed()
         worker_status.fileop_time_remaining = updater.getTimeRemaining()
         worker_status.fileop_files_broken = updater.getWrongHashes()
@@ -148,8 +145,22 @@ export default defineComponent({
         worker_status.color = StatusColors[updater.getStatus()]
         worker_status.icon = StatusIcons[updater.getStatus()]
 
+        if (worker_status.fileop_progress != 0 && !send_window_progress_update && worker_status.fileop_time_remaining !== Infinity) {
+          if (worker_status.fileop_progress > 97) {
+            ipcRenderer.send('winprogress-change', 0)
+          } else {
+            ipcRenderer.send('winprogress-change', Math.round(worker_status.fileop_progress))
+          }
+
+          send_window_progress_update = true
+        }
+
         ipcRenderer.send('worker:update', updater.getModId(), JSON.stringify(worker_status));
       })
+
+      if (!send_window_progress_update) {
+        ipcRenderer.send('winprogress-change', 0)
+      }
     }
   }
 });
