@@ -305,17 +305,19 @@ function checkRegKeys() {
         key: cur.key,
       });
 
-      regKey.keyExists((err, exists) => {
-        if (err) throw err;
-        if (exists) {
-          regKey.values((err, items) => {
-            if (err) throw err;
-            if (existsSync(items[cur.index].value + '\\arma3.exe')) {
-              win.webContents.send('checkRegKeys:result', items[cur.index].value);
-            }
-          });
-        }
-      });
+      if (regKey) {
+        regKey.keyExists((err, exists) => {
+          if (err) throw err;
+          if (exists) {
+            regKey.values((err, items) => {
+              if (err) throw err;
+              if (existsSync(items[cur.index].value + '\\arma3.exe')) {
+                win.webContents.send('checkRegKeys:result', items[cur.index].value);
+              }
+            });
+          }
+        });
+      }
     });
   } catch (err) {
     console.log(err);

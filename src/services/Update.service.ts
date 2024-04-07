@@ -133,7 +133,9 @@ export class UpdateService {
           return
         }
 
-        await this.deleteExtraFiles()
+        if (fs.existsSync(join(this.basePath, this.mod.dir))) {
+          await this.deleteExtraFiles()
+        }
 
         this.queue = []
         this.wrongHashes = []
@@ -294,12 +296,16 @@ export class UpdateService {
       };
 
       const directories = fullFilePath.split(sep).slice(0, -1);
+
       let currentDirectory = '';
 
       for (const directory of directories) {
-        currentDirectory = join(currentDirectory, directory);
-        if (!fs.existsSync(currentDirectory)) {
-          fs.mkdirSync(currentDirectory);
+        currentDirectory = join(currentDirectory, directory + "\\");
+        if (!this.basePath.includes(currentDirectory)) {
+          if (!fs.existsSync(currentDirectory)) {
+            console.log('Creating directory', currentDirectory)
+            fs.mkdirSync(currentDirectory);
+          }
         }
       }
 
@@ -308,13 +314,14 @@ export class UpdateService {
       let downloadedSize = 0;
 
       const req = http.request(options, (res) => {
+        res.pipe(fileStream);
+
         res.on('data', (chunk) => {
           if (this.stopRequested) {
             req.destroy();
             return;
           }
           downloadedSize += chunk.length;
-          fileStream.write(chunk);
           hash.update(chunk);
           this.completedSize += chunk.length;
           this.calculateSpeed();
@@ -349,11 +356,11 @@ export class UpdateService {
 
             hash.update(fileData);
 
-            let hashDigest = hash.digest('hex').toUpperCase();
-
-            console.log('Downloaded', file.FileName, 'Hash:', hashDigest, 'Expected:', file.Hash.toUpperCase())
+            let hashDigest = hash.digest('hex').toUpperCase();            
 
             if (hashDigest !== file.Hash.toUpperCase()) {
+              console.log('Downloaded', file.FileName, 'Hash:', hashDigest, 'Expected:', file.Hash.toUpperCase())
+
               try {
                 fs.unlinkSync(fullFilePath);
               } catch (error) {
