@@ -41,6 +41,7 @@ export class UpdateService {
   private maxThreads: number;
   private statusChanged: UpdateEventEmitter = new UpdateEventEmitter();
   private stopRequested: boolean = false;
+  private retriedFiles: Array<ModFile> = [];
 
   constructor(maxConcurrentDownloads: number, modId: number, basePath: string) {
     this.maxThreads = maxConcurrentDownloads;
@@ -87,6 +88,7 @@ export class UpdateService {
         this.completedFiles = 0;
         this.completedSize = 0;
         this.totalFiles = this.wrongHashes.length
+        this.retriedFiles = []
         this.setTotalSize(this.wrongHashes);
 
         this.status = UpdateStatus.DOWNLOADING;
@@ -142,6 +144,7 @@ export class UpdateService {
 
         this.completedFiles = 0;
         this.completedSize = 0;
+        this.retriedFiles = []
         this.totalFiles = this.hashlist.length
         this.setTotalSize(this.hashlist);
 
@@ -356,7 +359,7 @@ export class UpdateService {
 
             hash.update(fileData);
 
-            let hashDigest = hash.digest('hex').toUpperCase();            
+            let hashDigest = hash.digest('hex').toUpperCase();
 
             if (hashDigest !== file.Hash.toUpperCase()) {
               console.log('Downloaded', file.FileName, 'Hash:', hashDigest, 'Expected:', file.Hash.toUpperCase())
@@ -366,7 +369,14 @@ export class UpdateService {
               } catch (error) {
                 console.error('Failed to unlink due to wrong hash: ', error);
               }
-              this.wrongHashes.push(file);
+              if (!this.retriedFiles.includes(file)) {
+                console.log('Retrying download for', file.FileName)
+                this.retriedFiles.push(file)
+                await this.downloadFile(file)
+              } else {
+                console.log('Failed to download', file.FileName, 'after retry')
+                this.wrongHashes.push(file);
+              }
             }
           }
 
@@ -537,6 +547,7 @@ export class UpdateService {
     this.totalSize = 0
     this.queue = []
     this.currentFiles = []
+    this.retriedFiles = []
     this.statusChanged.emit('statusChanged', this.status);
   }
 
