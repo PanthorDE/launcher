@@ -74,7 +74,7 @@
                 <v-card-title><v-icon icon="mdi-download-network-outline" size="small" class="float-right"
                     :color="mod.worker_status.color"></v-icon>
                   {{ mod.name }}</v-card-title>
-                <v-row class="mt-0 mx-auto ps-5 pe-5">
+                <v-row class="mt-0 mx-auto ps-5 pe-5 mb-2">
                   <v-card-text class="text-center"><v-icon :icon="mod.worker_status.icon" class="me-2"
                       :color="mod.worker_status.color"></v-icon> {{ mod.worker_status.message }}</v-card-text>
                   <v-progress-linear rounded striped v-model="mod.worker_status.fileop_progress"
@@ -85,59 +85,65 @@
                       }}%</strong>
                   </v-progress-linear>
                 </v-row>
-                <v-row class="text-center justify-center mb-0 mt-2 pt-3"
-                  v-if="mod.worker_status.status === 3 || mod.worker_status.status === 5">
-                  <v-col cols="auto" class="pt-0">
-                    <v-chip class="ma-2" color="warning" variant="outlined">
-                      <v-icon start icon="mdi-file-alert"></v-icon>
-                      {{ mod.worker_status.fileop_files_broken }}
-                    </v-chip>
-                    <v-chip class="ma-2" color="warning" variant="outlined">
-                      <v-icon start icon="mdi-file-download"></v-icon>
-                      {{ humanFileSize(mod.worker_status.fileop_files_broken_size) }}
-                    </v-chip>
-                  </v-col>
-                </v-row>
-                <v-row class="text-center justify-center mb-0 mt-2 pt-3" v-if="mod.worker_status.fileop_speed > 0">
-                  <v-col cols="auto" v-if="mod.worker_status.fileop_speed > 0" class="pt-0">
-                    <v-chip class="ma-2" color="success" variant="outlined">
-                      <v-icon start icon="mdi-speedometer-slow"></v-icon>
-                      {{ humanFileSize(mod.worker_status.fileop_speed, true, 2, true) }}
-                    </v-chip>
-                  </v-col>
-                  <v-col cols="auto" v-if="mod.worker_status.fileop_time_remaining > 0" class="pt-0">
-                    <v-chip class="ma-2" color="success" variant="outlined">
-                      <v-icon start icon="mdi-clock-end"></v-icon>
-                      {{ formatTime(Math.ceil(mod.worker_status.fileop_time_remaining)) }}
-                    </v-chip>
-                  </v-col>
-                </v-row>
-                <v-row class="text-center justify-center mb-0 pt-0 mt-0"
-                  v-if="mod.worker_status.fileop_size_remaining > 0 && mod.worker_status.fileop_size_done > 0">
-                  <v-col cols="auto" v-if="mod.worker_status.fileop_files_remaining > 0" class="pt-0">
-                    <v-chip class="ma-2" color="success" variant="outlined">
-                      <v-icon start icon="mdi-file-multiple"></v-icon>
-                      {{ mod.worker_status.fileop_files_done }} / {{ mod.worker_status.fileop_files_remaining +
-                        mod.worker_status.fileop_files_done }}
-                    </v-chip>
-                  </v-col>
-                  <v-col cols="auto"
-                    v-if="mod.worker_status.fileop_size_remaining > 0 && mod.worker_status.fileop_size_done > 0"
-                    class="pt-0">
-                    <v-chip class="ma-2" color="success" variant="outlined">
-                      <v-icon start icon="mdi-harddisk"></v-icon>
-                      {{ humanFileSize(mod.worker_status.fileop_size_done, true, 1) }} /
-                      {{ humanFileSize(mod.worker_status.fileop_size_total,
-                        true,
-                        1) }}
-                    </v-chip>
-                  </v-col>
-                </v-row>
+                <Transition name="fade">
+                  <v-row class="text-center justify-center mb-0 pt-3"
+                    v-if="mod.worker_status.status === 3 || mod.worker_status.status === 5">
+                    <v-col cols="auto" class="pt-0">
+                      <v-chip class="ma-2" color="warning" variant="outlined">
+                        <v-icon start icon="mdi-file-alert"></v-icon>
+                        {{ mod.worker_status.fileop_files_broken }}
+                      </v-chip>
+                      <v-chip class="ma-2" color="warning" variant="outlined">
+                        <v-icon start icon="mdi-file-download"></v-icon>
+                        {{ humanFileSize(mod.worker_status.fileop_files_broken_size) }}
+                      </v-chip>
+                    </v-col>
+                  </v-row>
+                </Transition>
+                <Transition name="fade">
+                  <v-row class="text-center justify-center mb-0 mt-2 pt-3" v-if="mod.worker_status.fileop_speed > 0">
+                    <v-col cols="auto" v-if="mod.worker_status.fileop_speed > 0" class="pt-0">
+                      <v-chip class="ma-2" color="success" variant="outlined">
+                        <v-icon start icon="mdi-speedometer-slow"></v-icon>
+                        {{ humanFileSize(mod.worker_status.fileop_speed, true, 2, true) }}
+                      </v-chip>
+                    </v-col>
+                    <v-col cols="auto" v-if="mod.worker_status.fileop_time_remaining > 0" class="pt-0">
+                      <v-chip class="ma-2" color="success" variant="outlined">
+                        <v-icon start icon="mdi-clock-end"></v-icon>
+                        {{ formatTime(Math.ceil(mod.worker_status.fileop_time_remaining)) }}
+                      </v-chip>
+                    </v-col>
+                  </v-row>
+                </Transition>
+                <Transition name="fade">
+                  <v-row class="text-center justify-center mb-0 pt-0 mt-0"
+                    v-if="mod.worker_status.fileop_size_remaining > 0 && mod.worker_status.fileop_size_done > 0">
+                    <v-col cols="auto" v-if="mod.worker_status.fileop_files_remaining > 0" class="pt-0">
+                      <v-chip class="ma-2" color="success" variant="outlined">
+                        <v-icon start icon="mdi-file-multiple"></v-icon>
+                        {{ mod.worker_status.fileop_files_done }} / {{ mod.worker_status.fileop_files_remaining +
+                          mod.worker_status.fileop_files_done }}
+                      </v-chip>
+                    </v-col>
+                    <v-col cols="auto"
+                      v-if="mod.worker_status.fileop_size_remaining > 0 && mod.worker_status.fileop_size_done > 0"
+                      class="pt-0">
+                      <v-chip class="ma-2" color="success" variant="outlined">
+                        <v-icon start icon="mdi-harddisk"></v-icon>
+                        {{ humanFileSize(mod.worker_status.fileop_size_done, true, 1) }} /
+                        {{ humanFileSize(mod.worker_status.fileop_size_total,
+                          true,
+                          1) }}
+                      </v-chip>
+                    </v-col>
+                  </v-row>
+                </Transition>
               </v-card>
             </div>
             <v-divider class="border-opacity-75 mt-3 mb-3" color="primary"></v-divider>
             <div>
-              <v-card flat>
+              <v-card flat v-show="tab == 0">
                 <v-card-title>
                   Panthor unterstützen <v-icon icon="mdi-heart" size="x-large" color="red" class="float-right"></v-icon>
                 </v-card-title>
@@ -150,13 +156,11 @@
                     @click="openURL('https://info.panthor.de/shop')">Zum Shop</v-btn>
                 </v-card-text>
               </v-card flat>
-              <Transition name="slide-fade">
-                <v-card @click="openURL('https://www.twitch.tv/panthorde')" class="mt-2 w-100" v-show="tab != 0"
-                  ref="twitch2">
-                  <iframe class="mt-2 shadow-lg rounded-lg" style="border: none;"
-                    src="https://api.panthor.de/v2/twitch_embed" width="100%" :height="width * 0.5625"></iframe>
-                </v-card>
-              </Transition>
+              <v-card @click="openURL('https://www.twitch.tv/panthorde')" class="mt-2 w-100" v-show="tab != 0"
+                ref="twitch2">
+                <iframe class="mt-2 shadow-lg rounded-lg" style="border: none;"
+                  src="https://api.panthor.de/v2/twitch_embed" width="100%" :height="width * 0.5625"></iframe>
+              </v-card>
             </div>
           </v-col>
           <v-col cols="9">
@@ -461,7 +465,16 @@ export default defineComponent({
 
       promises.push(
         PanthorApiService.getServers()
-          .then((servers) => (this.api_data.servers = servers))
+          .then((servers) => {
+            for (let i = 0; i < this.api_data.servers.length; i++) {
+              for(let j = 0; j < servers.length; j++) {
+                if (this.api_data.servers[i].id === servers[j].id) {
+                  servers[j].mod_ready = this.api_data.servers[i].mod_ready;
+                }
+              }
+            }
+            this.api_data.servers = servers
+          })
           .catch(console.error)
       );
 
@@ -710,16 +723,16 @@ html {
   height: 100%;
 }
 
-.slide-fade-enter-active {
-  transition: all 0.3s ease-out;
+.fade-enter-active {
+  transition: all 0.6s ease-out;
 }
 
-.slide-fade-leave-active {
-  transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
+.fade-leave-active {
+  transition: all 0.6s cubic-bezier(1, 0.5, 0.8, 1);
 }
 
-.slide-fade-enter-from,
-.slide-fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 </style>

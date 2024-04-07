@@ -101,7 +101,7 @@ export class UpdateService {
 
         await this.waitForAllDownloadsToComplete();
 
-        if(this.stopRequested) {
+        if (this.stopRequested) {
           this.status = UpdateStatus.UKNOWN;
           this.setOperationEnded();
           resolve(true);
@@ -112,6 +112,7 @@ export class UpdateService {
           this.status = UpdateStatus.INTACT;
           this.setOperationEnded();
         } else {
+          console.log('Mismatched or Missing Files', this.wrongHashes)
           this.status = UpdateStatus.DOWNLOADED_UPDATE_REQUIRED;
           this.setOperationEnded();
         }
@@ -132,6 +133,8 @@ export class UpdateService {
           return
         }
 
+        await this.deleteExtraFiles()
+
         this.queue = []
         this.wrongHashes = []
 
@@ -149,7 +152,7 @@ export class UpdateService {
 
         await this.waitForAllHashesToComplete();
 
-        if(this.stopRequested) {
+        if (this.stopRequested) {
           this.status = UpdateStatus.UKNOWN;
           this.setOperationEnded();
           resolve(true);
@@ -158,11 +161,11 @@ export class UpdateService {
 
         if (this.wrongHashes.length === 0) {
           this.status = UpdateStatus.INTACT;
-          if(quick) {
-            console.log('Mod seems intact based on sizes only')
+          if (quick) {
+            console.log('Mod seems intact based on quick check only')
           } else {
             console.log('Mod seems intact based on hashes')
-          }          
+          }
           this.setOperationEnded();
         } else {
           this.status = UpdateStatus.HASHED_UPDATE_REQUIRED;
@@ -172,6 +175,54 @@ export class UpdateService {
         resolve(true)
       }).catch(reject)
     })
+  }
+
+  private readdirDirectory(basedir: string): string[] {
+    return fs.readdirSync(basedir, { withFileTypes: true }).flatMap((file) => file.isDirectory() ? this.readdirDirectory(join(basedir, file.name)) : join(basedir, file.name))
+  }
+
+  private async deleteExtraFiles() {
+    const files = this.readdirDirectory(join(this.basePath, this.mod.dir))
+    const simepleHashlist = this.hashlist.map((file) => join(this.basePath, file.RelativPath))
+
+    let extraFiles = []
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      let found = false
+      for (let j = 0; j < simepleHashlist.length; j++) {
+        const simpleHash = simepleHashlist[j]
+
+        /*
+        if(simpleHash.includes('.pbo.PANTHOR_20240202173536.bisign') && file.includes('.pbo.PANTHOR_20240202173536.bisign')) {
+          console.log('Comparing', simpleHash, file)
+        }
+        */
+
+        if (simpleHash === file) {
+          found = true
+          break
+        }
+      }
+      if (!found) {
+        extraFiles.push(file)
+      }
+    }
+
+    for (let i = 0; i < extraFiles.length; i++) {
+      const file = extraFiles[i]
+      //console.log('Deleting extra File', file)
+      fs.unlinkSync(file)
+
+      //check if hash file exists
+      const hashFile = file + '.md5'
+      if (fs.existsSync(hashFile)) {
+        try {
+          fs.unlinkSync(hashFile)
+        } catch (error) {
+          console.error('Failed to unlink hash file:', error)
+        }
+      }
+    }
   }
 
   async waitForAllDownloadsToComplete(): Promise<void> {
@@ -201,9 +252,9 @@ export class UpdateService {
       this.currentFiles.push(file);
       const success = await this.downloadFile(file);
       if (success) {
-        console.log(`Download erfolgreich für ${file.FileName}`);
+        //console.log(`Download erfolgreich für ${file.FileName}`);
       } else {
-        if(!this.stopRequested) {
+        if (!this.stopRequested) {
           console.error(`Download fehlgeschlagen oder MD5-Validierung fehlgeschlagen für ${file.FileName}`);
         }
       }
@@ -258,7 +309,7 @@ export class UpdateService {
 
       const req = http.request(options, (res) => {
         res.on('data', (chunk) => {
-          if(this.stopRequested) {
+          if (this.stopRequested) {
             req.destroy();
             return;
           }
@@ -269,8 +320,8 @@ export class UpdateService {
           this.calculateSpeed();
         });
 
-        res.on('end', () => {
-          if(this.stopRequested) {
+        res.on('end', async () => {
+          if (this.stopRequested) {
             fileStream.close();
             try {
               fs.unlinkSync(fullFilePath);
@@ -281,21 +332,42 @@ export class UpdateService {
             return;
           }
           fileStream.end();
-          const downloadedHash = hash.digest('hex');
+          const downloadedHash = hash.digest('hex').toUpperCase();
 
-          if (downloadedHash.toUpperCase() !== file.Hash.toUpperCase()) {
+          if (downloadedHash !== file.Hash.toUpperCase()) {
+            console.log('Hash mismatch for', file.FileName, 'Expected:', file.Hash, 'Got:', downloadedHash)
+
             try {
               fs.unlinkSync(fullFilePath);
             } catch (error) {
               console.error('Failed to unlink due to wrong hash: ', error);
             }
             this.wrongHashes.push(file);
+          } else {
+            const hash = crypto.createHash('md5');
+            const fileData = await readFile(fullFilePath);
+
+            hash.update(fileData);
+
+            let hashDigest = hash.digest('hex').toUpperCase();
+
+            console.log('Downloaded', file.FileName, 'Hash:', hashDigest, 'Expected:', file.Hash.toUpperCase())
+
+            if (hashDigest !== file.Hash.toUpperCase()) {
+              try {
+                fs.unlinkSync(fullFilePath);
+              } catch (error) {
+                console.error('Failed to unlink due to wrong hash: ', error);
+              }
+              this.wrongHashes.push(file);
+            }
           }
+
           resolve(true)
         });
 
         res.on('error', (error) => {
-          if(!this.stopRequested) {
+          if (!this.stopRequested) {
             reject(error);
           } else {
             resolve(false)
@@ -358,6 +430,21 @@ export class UpdateService {
     }
   }
 
+  /*
+  private async writeHashFile(file: ModFile, hash: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const fullFilePath = join(this.basePath, file.RelativPath + '.md5');
+      fs.writeFile(fullFilePath, hash, (error) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+    })
+  }
+  */
+
   private async enqueueFileHash(file: ModFile, quick: boolean): Promise<void> {
     this.queue.push(file);
     this.hashNext(quick);
@@ -367,7 +454,7 @@ export class UpdateService {
     return new Promise<boolean>(async (resolve, reject) => {
       const fullFilePath = join(this.basePath, file.RelativPath);
 
-      if(this.stopRequested) {
+      if (this.stopRequested) {
         resolve(true);
         return;
       }
@@ -378,26 +465,36 @@ export class UpdateService {
       } else {
         const fileSize = fs.statSync(fullFilePath).size;
 
-        if (fileSize !== file.Size) {
-          this.wrongHashes.push(file);
+        /*
+        if (fullFilePath.includes('RL_Weapons_Pistols.pbo')) {
+          console.log('Checking', fullFilePath, 'Size:', fileSize, 'Expected:', file.Size)
+        }
+        */
+
+        if (!quick || file.FileName.includes('.bisign') && file.FileName.includes('.dll') && file.FileName.includes('.paa') && file.FileName.includes('.cpp') && fileSize < 5000000) {
+          const hash = crypto.createHash('md5');
+          const fileData = await readFile(fullFilePath);
+
+          hash.update(fileData);
+
+          this.completedSize += file.Size;
+          this.calculateSpeed();
+
+          let hashDigest = hash.digest('hex').toUpperCase();
+
+          if (hashDigest !== file.Hash.toUpperCase()) {
+            this.wrongHashes.push(file);
+          } else {
+            //if (!file.FileName.includes('.bisign') && !file.FileName.includes('.dll') && !file.FileName.includes('.paa') && !file.FileName.includes('.cpp'))
+            //this.writeHashFile(file, hashDigest)
+          }
           resolve(true)
         } else {
-          if (!quick || file.FileName.includes('.bisign')) {
-            const hash = crypto.createHash('md5');
-            const fileData = await readFile(fullFilePath);
-
-            hash.update(fileData);
-
-            this.completedSize += file.Size;
-            this.calculateSpeed();
-
-            if (hash.digest('hex').toUpperCase() !== file.Hash.toUpperCase()) {
-              this.wrongHashes.push(file);
-            }
-            resolve(true)
-          } else {
+          if (fileSize !== file.Size) {
+            this.wrongHashes.push(file);
             resolve(true)
           }
+          resolve(true)
         }
       }
     });

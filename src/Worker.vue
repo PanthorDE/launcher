@@ -57,7 +57,7 @@ export default defineComponent({
       }
 
       updater.download().then((result) => {
-        console.log(result);
+        console.log("Update finished", result);
       }).catch((error) => {
         console.log(error);
       });
