@@ -8,11 +8,11 @@
             @click="scrollTo('#entry' + i)">
             <v-list-item-title>
               {{ changelog.version }} <span class="float-right">{{ `${new
-            Date(changelog.release_at).toLocaleDateString([], {
-              month: '2-digit',
-              day: '2-digit',
-              year: '2-digit',
-            })} - ${new Date(changelog.release_at).toLocaleTimeString([], { hour: '2-digit' })}` }}</span>
+                Date(changelog.release_at).toLocaleDateString([], {
+                  month: '2-digit',
+                  day: '2-digit',
+                  year: '2-digit',
+                })} - ${new Date(changelog.release_at).toLocaleTimeString([], { hour: '2-digit' })}` }}</span>
             </v-list-item-title>
           </v-list-item>
         </v-list>
@@ -26,24 +26,32 @@
             day: '2-digit',
             year: '2-digit',
           })} - ${new Date(changelog.release_at).toLocaleTimeString([], { hour: '2-digit' })}` }}</span>
-          </v-card-title>
-        <v-card-subtitle v-if="changelog.change_mission.length > 0"><v-icon icon="mdi-map"></v-icon> Mission</v-card-subtitle>
+        </v-card-title>
+        <v-card-subtitle v-if="changelog.change_mission.length > 0"><v-icon icon="mdi-map"></v-icon>
+          Mission</v-card-subtitle>
         <v-card-text v-if="changelog.change_mission.length > 0">
-          <ul class="ms-5">
-            <li v-for="change in changelog.change_mission">{{ change }}</li>
-          </ul>
+          <v-list density="compact" class="pt-0">
+            <v-list-item v-for="change in changelog.change_mission">
+              <v-list-item-title class=""><v-icon :icon="getChangeIcon(change)" class="me-2"></v-icon> {{ formatChangeText(change) }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
         </v-card-text>
-        <v-card-subtitle v-if="changelog.change_map.length > 0"><v-icon icon="mdi-terrain"></v-icon> Map</v-card-subtitle>
+        <v-card-subtitle v-if="changelog.change_map.length > 0"><v-icon icon="mdi-terrain"></v-icon>
+          Map</v-card-subtitle>
         <v-card-text v-if="changelog.change_map.length > 0">
-          <ul class="ms-5">
-            <li v-for="change in changelog.change_map">{{ change }}</li>
-          </ul>
+          <v-list density="compact" class="pt-0">
+            <v-list-item v-for="change in changelog.change_map">
+              <v-list-item-title class=""><v-icon :icon="getChangeIcon(change)" class="me-2"></v-icon> {{ formatChangeText(change) }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
         </v-card-text>
         <v-card-subtitle v-if="changelog.change_mod.length > 0"><v-icon icon="mdi-car"></v-icon> Mod</v-card-subtitle>
         <v-card-text v-if="changelog.change_mod.length > 0">
-          <ul class="ms-5">
-            <li v-for="change in changelog.change_mod">{{ change }}</li>
-          </ul>
+          <v-list density="compact" class="pt-0">
+            <v-list-item v-for="change in changelog.change_mod">              
+              <v-list-item-title class=""><v-icon :icon="getChangeIcon(change)" class="me-2"></v-icon> {{ formatChangeText(change) }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
         </v-card-text>
       </v-card>
     </v-col>
@@ -75,6 +83,24 @@ export default {
         offset: -13,
       });
     },
+    getChangeIcon(change: string) {
+      if (change.includes('Hinzugefügt')) {
+        return 'mdi-plus';
+      }
+      if (change.includes('Bearbeitet')) {
+        return 'mdi-pencil-outline';
+      }
+      if (change.includes('Behoben')) {
+        return 'mdi-wrench-outline';
+      }
+      if (change.includes('Entfernt')) {
+        return 'mdi-minus';
+      }
+      return 'mdi-'
+    },
+    formatChangeText(change: string) {
+      return change.replace("Hinzugefügt:", "").replace("Behoben:", "").replace("Bearbeitet:", "").replace("Entfernt:", "");
+    },
   },
   computed: {
     scroll_height: () => {
@@ -84,3 +110,9 @@ export default {
   components: {},
 };
 </script>
+
+<style scoped>
+li {
+  list-style-type: none;
+}
+</style>

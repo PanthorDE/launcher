@@ -48,7 +48,7 @@
       </v-card>
     </v-col>
     <v-col cols="3">
-      <v-card v-if="last_changeLog">
+      <v-card v-if="last_changeLog" @click="$emit('switch-tab')">
         <v-card-title>Letztes Update <v-icon icon="mdi-update" size="small" class="float-right"
             color="success"></v-icon></v-card-title>
         <v-card-text style="font-size: 18px" class="pt-0 pb-1">{{ new

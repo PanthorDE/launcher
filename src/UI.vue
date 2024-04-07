@@ -1,7 +1,7 @@
 <template>
   <v-app id="panthor-launcher">
     <v-app-bar class="px-3" color="black" flat density="comfortable" v-if="!first_run_dialog">
-      <img src="@/assets/Panthor_Header_Logo_Line.png" class="image-left" />
+      <img src="@/assets/Panthor_Header_Logo_Line.png" class="image-left pt-1 pb-1" />
 
       <v-spacer></v-spacer>
 
@@ -31,14 +31,14 @@
       </v-btn>
       <v-btn :loading="requesting_login" icon @click="loginOrOut" v-if="!logged_in"><v-avatar class="hidden-sm-and-down"
           color="primary" size="32"><v-tooltip text="Login" location="bottom" activator="parent"></v-tooltip><v-icon
-            icon="mdi-login-variant"></v-icon></v-avatar>
+            icon="mdi-login"></v-icon></v-avatar>
         <template v-slot:loader>
           <v-progress-circular indeterminate></v-progress-circular>
         </template>
       </v-btn>
       <v-btn :loading="requesting_login" icon @click="loginOrOut" v-if="logged_in"><v-avatar class="hidden-sm-and-down"
           color="primary" size="32"><v-tooltip text="Logout" location="bottom" activator="parent"></v-tooltip><v-icon
-            icon="mdi-logout-variant"></v-icon></v-avatar>
+            icon="mdi-logout"></v-icon></v-avatar>
         <template v-slot:loader>
           <v-progress-circular indeterminate></v-progress-circular>
         </template>
@@ -146,17 +146,24 @@
                   besteht
                   natürlich keine Verpflichtung uns bei der Finanzierung zu unterstützen.
                   <br>
-                  <v-btn color="primary" class="mt-3" block prepend-icon="mdi-launch"
+                  <v-btn color="primary" variant="outlined" class="mt-3" block prepend-icon="mdi-launch"
                     @click="openURL('https://info.panthor.de/shop')">Zum Shop</v-btn>
                 </v-card-text>
-              </v-card>
+              </v-card flat>
+              <Transition name="slide-fade">
+                <v-card @click="openURL('https://www.twitch.tv/panthorde')" class="mt-2 w-100" v-show="tab != 0"
+                  ref="twitch2">
+                  <iframe class="mt-2 shadow-lg rounded-lg" style="border: none;"
+                    src="https://api.panthor.de/v2/twitch_embed" width="100%" :height="width * 0.5625"></iframe>
+                </v-card>
+              </Transition>
             </div>
           </v-col>
           <v-col cols="9">
             <v-window v-model="tab" class="h-100">
               <!-- Home -->
               <v-window-item :value="0">
-                <home-window :changelogs="api_data.changelogs" :news="news"></home-window>
+                <home-window :changelogs="api_data.changelogs" :news="news" @switch-tab="switchTab(3)"></home-window>
               </v-window-item>
               <!-- Mods -->
               <v-window-item :value="1">
@@ -243,9 +250,9 @@
                               <v-switch v-model="settings.windowed" hide-details inset label="Fenstermodus"
                                 color="primary"></v-switch>
                               <v-switch v-model="settings.noPause" hide-details inset
-                                label="Spiel nicht durch Tab pausieren" color="primary"></v-switch>
+                                label="Spiel nicht im Hintergrund pausieren" color="primary"></v-switch>
                               <v-switch v-model="settings.noPauseAudio" hide-details inset
-                                label="Audio nicht durch Tab pausieren" color="primary"></v-switch>
+                                label="Ton nicht im Hintergrund pausieren" color="primary"></v-switch>
                             </v-card-text>
 
                             <v-card-subtitle class="ps-0">Debug</v-card-subtitle>
@@ -346,6 +353,7 @@ import SettingsStore, { defaultSettings } from './interfaces/SettingsStoreInterf
 import { existsSync } from 'node:fs';
 import { PanthorApiService } from './services/PanthorApi.service';
 import News from './interfaces/NewsInterface';
+import { useElementSize } from '@vueuse/core';
 
 const langService: HumanizeDurationLanguage = new HumanizeDurationLanguage();
 const duration_humanizer = new HumanizeDuration(langService);
@@ -671,6 +679,16 @@ export default defineComponent({
       });
     });
   },
+  setup() {
+    const twitch2 = ref(null)
+    const { width, height } = useElementSize(twitch2)
+
+    return {
+      twitch2,
+      width,
+      height,
+    }
+  },
   components: { ModWindow, ChangelogWindow, ServerWindow, FaqWindow, HomeWindow, TfarWindow },
 });
 </script>
@@ -690,5 +708,18 @@ html {
   align-self: flex-start;
   width: auto;
   height: 100%;
+}
+
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
 }
 </style>

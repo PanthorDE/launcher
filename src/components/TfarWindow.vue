@@ -49,7 +49,7 @@
       <!-- ng-click="initFileDownload('PanthorSkin.ts3_addon')" -->
       <v-tooltip text="Skin by Kaibu">
         <template v-slot:activator="{ props }">
-          <v-btn v-bind="props" variant="flat" :color="TfarDownloadStatusColors[skin_status]" @click="downloadSkin" :disabled="skin_status == 1 || skin_status == 2"><v-icon :icon="TfarDownloadStatusIcons[skin_status]" class="me-2"></v-icon> {{ TfarDownloadStatusTexts[skin_status] }}</v-btn>
+          <v-btn v-bind="props" variant="outlined" :color="TfarDownloadStatusColors[skin_status]" @click="downloadSkin" :disabled="skin_status == 1 || skin_status == 2"><v-icon :icon="TfarDownloadStatusIcons[skin_status]" class="me-2"></v-icon> {{ TfarDownloadStatusTexts[skin_status] }}</v-btn>
         </template>
       </v-tooltip>
     </v-card-actions>
@@ -85,7 +85,7 @@
       <!-- ng-click="initFileDownload('Panthor.ts3_soundpack')" -->
       <v-tooltip text="Skin by Kaibu">
         <template v-slot:activator="{ props }">
-          <v-btn v-bind="props" variant="flat" :color="TfarDownloadStatusColors[sound_status]" @click="downloadSound" :disabled="sound_status == 1 || sound_status == 2"><v-icon :icon="TfarDownloadStatusIcons[sound_status]" class="me-2"></v-icon> {{ TfarDownloadStatusTexts[sound_status] }}</v-btn>
+          <v-btn v-bind="props" variant="outlined" :color="TfarDownloadStatusColors[sound_status]" @click="downloadSound" :disabled="sound_status == 1 || sound_status == 2"><v-icon :icon="TfarDownloadStatusIcons[sound_status]" class="me-2"></v-icon> {{ TfarDownloadStatusTexts[sound_status] }}</v-btn>
         </template>
       </v-tooltip>
     </v-card-actions>

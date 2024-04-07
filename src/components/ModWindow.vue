@@ -1,6 +1,6 @@
 <template>
   <v-row>
-    <v-col cols="6" v-for="mod in mods">
+    <v-col :cols="(mods.length === 1) ? 8:6" v-for="mod in mods">
       <mod-card :mod="mod" :arma_path="arma_path" @choose-armapath="$emit('choose-armapath')" @open-server="$emit('open-server')"></mod-card>
     </v-col>
   </v-row>
