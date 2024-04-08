@@ -53,7 +53,7 @@
                 {{ server.name }}
                 <v-progress-circular :model-value="(server.players.length / notZero(server.slots)) * 100"
                   color="primary" :size="70" :width="8" class="float-right">{{ Math.round((server.players.length /
-                    notZero(server.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
+      notZero(server.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
                   style="font-size: 18px !important">Online: {{ server.players.length }} / {{ server.slots
                   }}</span></v-card-title>
             </v-card>
@@ -63,13 +63,13 @@
                 Teamspeak
                 <v-progress-circular :model-value="(teamspeak.users.length / notZero(teamspeak.slots)) * 100"
                   color="primary" :size="70" :width="8" class="float-right">{{ Math.round((teamspeak.users.length /
-                    notZero(teamspeak.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
+      notZero(teamspeak.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
                   style="font-size: 18px !important">Online: {{ teamspeak.users.length }} / {{ teamspeak.slots
                   }}</span></v-card-title>
             </v-card>
             <div v-for="mod in api_data.mods">
               <v-card flat min-height="100" class="mt-3"
-                v-if="mod.worker_status && mod.worker_status.status != 0 && mod.worker_status.status != 1"
+                v-if="mod.worker_status && mod.worker_status.status != 0 && mod.worker_status.status != 1 && mod.worker_status.status != 6"
                 @click="tab = 1">
                 <v-card-title><v-icon icon="mdi-download-network-outline" size="small" class="float-right"
                     :color="mod.worker_status.color"></v-icon>
@@ -123,7 +123,7 @@
                       <v-chip class="ma-2" color="success" variant="outlined">
                         <v-icon start icon="mdi-file-multiple"></v-icon>
                         {{ mod.worker_status.fileop_files_done }} / {{ mod.worker_status.fileop_files_remaining +
-                          mod.worker_status.fileop_files_done }}
+      mod.worker_status.fileop_files_done }}
                       </v-chip>
                     </v-col>
                     <v-col cols="auto"
@@ -133,8 +133,8 @@
                         <v-icon start icon="mdi-harddisk"></v-icon>
                         {{ humanFileSize(mod.worker_status.fileop_size_done, true, 1) }} /
                         {{ humanFileSize(mod.worker_status.fileop_size_total,
-                          true,
-                          1) }}
+      true,
+      1) }}
                       </v-chip>
                     </v-col>
                   </v-row>
@@ -172,13 +172,13 @@
               <!-- Mods -->
               <v-window-item :value="1">
                 <mod-window :mods="api_data.mods" :arma_path="settings.arma_path" @choose-armapath="chooseArmaPath"
-                  @open-server="openServer()"></mod-window>
+                  @launch-game="launchGame" @open-server="openServer()"></mod-window>
               </v-window-item>
 
               <!-- Servers -->
               <v-window-item :value="2">
                 <server-window :servers="api_data.servers" @load-api-data="loadAPIDataUI" @switch-tab="switchTab(1)"
-                  :reload_allowed="reloadAllowed" :default_tab="server_window_default_tab"
+                  :reload_allowed="reloadAllowed" :default_tab="server_window_default_tab" @launch-game="launchGame"
                   ref="serverWindowRef"></server-window>
               </v-window-item>
 
@@ -467,7 +467,7 @@ export default defineComponent({
         PanthorApiService.getServers()
           .then((servers) => {
             for (let i = 0; i < this.api_data.servers.length; i++) {
-              for(let j = 0; j < servers.length; j++) {
+              for (let j = 0; j < servers.length; j++) {
                 if (this.api_data.servers[i].id === servers[j].id) {
                   servers[j].mod_ready = this.api_data.servers[i].mod_ready;
                 }
@@ -618,6 +618,45 @@ export default defineComponent({
           this.show_login_dialog = false;
         });
     },
+    launchGame(mod: Mod | undefined, server: Server | undefined, profileName: string = '') {
+      console.log(mod, server, profileName)
+
+      if (mod === undefined && server === undefined) return
+
+      let params = []
+
+      if (mod === undefined && server !== undefined) {
+        mod = this.api_data.mods.find((mod) => mod.id === server.mod_id)
+      }
+
+      if (mod) {
+        params.push('-mod=' + mod.dir)
+      }
+
+      if (server) {
+        params.push('-connect=' + server.ip);
+        params.push('-port=' + server.port);
+        if (server.password) {
+          params.push('-password=' + server.password);
+        }
+      }
+
+      if (profileName) params.push('-name=' + profileName);
+
+      if (this.settings.noSplash) params.push('-noSplash');
+      if (this.settings.skipIntro) params.push('-skipIntro');
+      if (this.settings.enableHT) params.push('-enableHt');
+      if (this.settings.windowed) params.push('-window');
+      if (this.settings.noPause) params.push('-noPause');
+      if (this.settings.noPauseAudio) params.push('-noPauseAudio');
+      if (this.settings.noPause) params.push('-noPause');
+      if (this.settings.showScriptErrors) params.push('-showScriptErrors');
+      if (this.settings.command_line && this.settings.command_line.length > 0) {
+        params.push(this.settings.command_line);
+      }
+
+      ipcRenderer.send('launchGame:request', params, this.settings.arma_path);
+    }
   },
   watch: {
     /*

@@ -42,11 +42,11 @@
               <td>Letzte Aktualisierung</td>
               <td class="text-right">
                 {{
-                  new Date(server.updated_at.date).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })
-                }}
+            new Date(server.updated_at.date).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+          }}
               </td>
             </tr>
           </tbody>
@@ -79,7 +79,7 @@
       <v-col cols="4">
         <v-select label="Arma Profil" placeholder="Arma Profil wählen" density="comfortable" single-line
           variant="solo-filled" flat hide-details :items="armaProfiles" @update:modelValue="onArmaProfileChange"
-          clearable></v-select>
+          clearable v-if="armaProfiles.length !== 0"></v-select>
       </v-col>
       <v-col cols="2"></v-col>
       <v-col cols="3">
@@ -116,7 +116,7 @@ interface IPlayerWithType {
 
 export default {
   name: 'ModCard',
-  emits: ['load-api-data', 'switch-tab'],
+  emits: ['load-api-data', 'switch-tab', 'launch-game'],
   data() {
     return {
       ping: 0,
@@ -301,11 +301,11 @@ export default {
     },
     joinServer(server: Server) {
       if (server.appid === 107410) {
-        let params = [];
         if (this.selectedArmaProfile) {
-          params.push('-name=' + this.selectedArmaProfile);
-          alert('JOIN SERVER as ' + this.selectedArmaProfile);
-        } else alert('JOIN SERVER');
+          this.$emit('launch-game', undefined, server, this.selectedArmaProfile);
+        } else {
+          this.$emit('launch-game', undefined, server, '');
+        }
       }
     },
   },

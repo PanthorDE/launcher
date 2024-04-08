@@ -1,9 +1,9 @@
 <template>
   <v-row>
     <v-col cols="3">
-      <v-card>
+      <v-card :style="{ 'max-height': `${scroll_height-100}px` }">
         <v-card-title>Versionen <v-icon class="float-right" icon="mdi-tag-multiple"></v-icon></v-card-title>
-        <v-list density="compact">
+        <v-list density="compact"  style="overflow-y: auto; height: 100%">
           <v-list-item v-for="(changelog, i) in changelogs" :key="i" :value="changelog" color="primary"
             @click="scrollTo('#entry' + i)">
             <v-list-item-title>
@@ -18,7 +18,7 @@
         </v-list>
       </v-card>
     </v-col>
-    <v-col cols="9" style="overflow-y: scroll" :style="{ 'max-height': scroll_height }" id="scrollContainer">
+    <v-col cols="9" style="overflow-y: scroll" :style="{ 'max-height': `${scroll_height-88}px` }" id="scrollContainer">
       <v-card v-for="(changelog, i) in changelogs" class="mb-3" :id="'entry' + i">
         <v-card-title>{{ changelog.version }}
           <span class="float-right">{{ `${new Date(changelog.release_at).toLocaleDateString([], {
@@ -104,7 +104,7 @@ export default {
   },
   computed: {
     scroll_height: () => {
-      return window.innerHeight - 100 + 'px';
+      return window.innerHeight;
     },
   },
   components: {},

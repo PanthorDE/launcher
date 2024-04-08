@@ -2,14 +2,14 @@
   <v-row>
     <v-col cols="9">
       <v-card>
-        <v-card-title>Willkommen bei Panthor Life <v-icon icon="mdi-human-greeting" size="small" class="float-right mt-1"
-            color="primary"></v-icon></v-card-title>
+        <v-card-title>Willkommen bei Panthor Life <v-icon icon="mdi-human-greeting" size="small"
+            class="float-right mt-1" color="primary"></v-icon></v-card-title>
         <v-card-text class="mt-2">
           <v-row>
             <v-col cols="3">
               <v-card color="black_bg" @click="openURL('https://panthor.de')">
-                <v-card-title class="text-primary">Blog <v-icon icon="mdi-newspaper-variant-multiple-outline" size="small"
-                    class="float-right mt-1" color="primary"></v-icon></v-card-title>
+                <v-card-title class="text-primary">Blog <v-icon icon="mdi-newspaper-variant-multiple-outline"
+                    size="small" class="float-right mt-1" color="primary"></v-icon></v-card-title>
                 <v-card-text>Hier erfahrt ihr mehr über unser Team und aktuelle Projekte.</v-card-text>
               </v-card>
             </v-col>
@@ -41,8 +41,7 @@
         <v-card-title>Panthor auf Twitch <v-icon icon="mdi-twitch" size="small" class="float-right mt-1"
             color="deep-purple"></v-icon></v-card-title>
         <v-card-text ref="twitch">
-          <iframe class="mt-2 shadow-lg rounded-lg" style="border: none;"
-            src="https://api.panthor.de/v2/twitch_embed"
+          <iframe class="mt-2 shadow-lg rounded-lg" style="border: none;" src="https://api.panthor.de/v2/twitch_embed"
             :width="width" :height="width * 0.5625"></iframe>
         </v-card-text>
       </v-card>
@@ -52,18 +51,18 @@
         <v-card-title>Letztes Update <v-icon icon="mdi-update" size="small" class="float-right"
             color="success"></v-icon></v-card-title>
         <v-card-text style="font-size: 18px" class="pt-0 pb-1">{{ new
-          Date(last_changeLog.release_at).toLocaleDateString([], {
-            month: '2-digit',
-            day: '2-digit',
-            year: '2-digit',
-          }) }} ({{ new Date(last_changeLog.release_at).toLocaleTimeString([], { hour: '2-digit' }) }})</v-card-text>
+                Date(last_changeLog.release_at).toLocaleDateString([], {
+                  month: '2-digit',
+                  day: '2-digit',
+                  year: '2-digit',
+                }) }} ({{ new Date(last_changeLog.release_at).toLocaleTimeString([], { hour: '2-digit' }) }})</v-card-text>
         <v-card-subtitle class="pb-2">{{ last_changeLog.version }}</v-card-subtitle>
       </v-card>
-      <v-card class="mt-3">
-        <v-card-title>Neueste Blogs<v-icon icon="mdi-newspaper-variant-multiple-outline" size="small" class="float-right"
-            color="primary"></v-icon></v-card-title>
+      <v-card class="mt-3" :style="{ 'max-height': `${scroll_height-215}px` }">
+        <v-card-title>Neueste Blogs<v-icon icon="mdi-newspaper-variant-multiple-outline" size="small"
+            class="float-right" color="primary"></v-icon></v-card-title>
         <v-card-text class="pa-0">
-          <v-list>
+          <v-list style="overflow-y: auto; height: 100%">
             <v-list-item v-for="article in news.slice(0, 10)" @click="openURL(article.link._text)"
               :title="article.title._text" :subtitle="article['dc:creator']._cdata">
             </v-list-item>
@@ -104,7 +103,10 @@ export default {
       } else {
         return null
       }
-    }
+    },
+    scroll_height: () => {
+      return window.innerHeight;
+    },
   },
   setup() {
     const twitch = ref(null)

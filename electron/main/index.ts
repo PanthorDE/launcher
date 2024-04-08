@@ -10,6 +10,8 @@ import unzip from 'unzipper';
 import { autoUpdater } from 'electron-updater';
 import { promise } from 'ping';
 import Winreg from 'winreg';
+import { spawn } from 'node:child_process';
+import { set } from '@vueuse/core';
 
 switch (process.argv[1]) {
   case '--open-website':
@@ -115,7 +117,7 @@ async function createWindow() {
     width: Math.round(width * 0.45),
     height: Math.round(height * 0.5),
     minWidth: 1500,
-    minHeight: 1000,
+    minHeight: 900,
     webPreferences: {
       nodeIntegration: true,
       backgroundThrottling: false,
@@ -244,8 +246,25 @@ app.setUserTasks([
 
 app.whenReady().then(createWorker);
 app.whenReady().then(createWindow);
-app.whenReady().then(createTray);
 
+if (!process.env.VITE_DEV_SERVER_URL) {
+  app.whenReady().then(createTray);
+}
+
+function launchGame(event: any, uiparams: string[], arma_path: string) {
+  let params = uiparams.concat([
+    '-noLauncher',
+    '-useBE'
+  ])
+
+  console.log("Launching Arma 3 with params: " + params.join(' '))
+  let result = spawn(arma_path + '\\arma3launcher.exe', params, { detached: true, stdio: 'ignore' });
+  result.unref();
+
+  setTimeout(() => {
+    win.minimize();
+  }, 3000)
+}
 
 function downloadStaticFile(path: string, target: string): Promise<boolean> {
   return new Promise<boolean>((resolve, reject) => {
@@ -471,6 +490,8 @@ function getArmaProfiles(event: Event, message: any) {
   };
   const armaProfiles = app.getPath('documents') + '\\Arma 3 - Other Profiles';
 
+  if (!fs.existsSync(armaProfiles)) return submitResults([]);
+
   if (!fs.lstatSync(armaProfiles).isDirectory()) return submitResults([]);
   const profiles = fs
     .readdirSync(armaProfiles)
@@ -517,6 +538,8 @@ app.whenReady().then(() => {
   ipcMain.on('settings:changedArmaPath', settingsChangedArmaPath);
   ipcMain.on('settings:validateA3', settingsValidateA3);
   ipcMain.on('settings:getArmaProfiles', getArmaProfiles);
+
+  ipcMain.on('launchGame:request', launchGame);
 
   ipcMain.on('ping:request', pingServer);
 
