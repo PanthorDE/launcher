@@ -1,6 +1,6 @@
 <template>
   <v-card flat>
-    <v-img :height="single ? 500:250" :src="mod.img" cover>
+    <v-img :height="single ? 500:230" :src="mod.img" cover>
       <v-btn color="white" flat icon="mdi-folder-open" rounded="sm" class="float-right mt-2 mr-2" size="small"
         @click="requestFolderOpen">
         <v-icon icon="mdi-folder-open"></v-icon>

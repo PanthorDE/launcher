@@ -6,7 +6,6 @@
     </v-card-item>
 
     <v-card-item>
-      <p>Bitte folge diesen Anweisungen, um das Task Force Radio Plugin zu installieren:</p>
       <ol style="margin-left: 1rem">
         <li>Stelle sicher, dass Teamspeak vor der Installation vollständig geschlossen ist.</li>
         <li>Lade die <code>.ts3_plugin</code> Datei herunter, indem du den "Plugin Download" Button unten klickst.</li>
@@ -24,7 +23,9 @@
       <!-- ng-click="initFileDownload('PanthorTFAR_latest.ts3_plugin')" -->
       <v-tooltip text="Benötigt TeamSpeak 3.1.0.1+">
         <template v-slot:activator="{ props }">
-          <v-btn v-bind="props" variant="flat" :color="TfarDownloadStatusColors[tfar_status]" @click="downloadTFAR" :disabled="tfar_status == 1 || tfar_status == 2"><v-icon :icon="TfarDownloadStatusIcons[tfar_status]" class="me-2"></v-icon> {{ TfarDownloadStatusTexts[tfar_status] }}</v-btn>
+          <v-btn v-bind="props" variant="flat" :color="TfarDownloadStatusColors[tfar_status]" @click="downloadTFAR"
+            :disabled="tfar_status == 1"><v-icon :icon="TfarDownloadStatusIcons[tfar_status]"
+              class="me-2"></v-icon> {{ TfarDownloadStatusTexts[tfar_status] }}</v-btn>
         </template>
       </v-tooltip>
     </v-card-actions>
@@ -37,11 +38,10 @@
     </v-card-item>
 
     <v-card-item>
-      <p>Bitte folge diesen Anweisungen, um den TeamSpeak 3 Skin und das Icon Pack im Panthor-Stil zu installieren:</p>
       <ol style="margin-left: 1rem">
         <li>Stelle sicher, dass Teamspeak vor der Installation vollständig geschlossen ist.</li>
         <li>Lade die <code>.ts3_addon</code> Datei herunter, indem du den "Skin Download" Button unten klickst.</li>
-        <li>Führe den Installationsassistenten aus und starte die Installation.</li>
+        <li>Der Installationsassistent von Teamspeak öffnet sich, klicke hier auf "Installieren".</li>
       </ol>
     </v-card-item>
 
@@ -49,7 +49,9 @@
       <!-- ng-click="initFileDownload('PanthorSkin.ts3_addon')" -->
       <v-tooltip text="Skin by Kaibu">
         <template v-slot:activator="{ props }">
-          <v-btn v-bind="props" variant="outlined" :color="TfarDownloadStatusColors[skin_status]" @click="downloadSkin" :disabled="skin_status == 1 || skin_status == 2"><v-icon :icon="TfarDownloadStatusIcons[skin_status]" class="me-2"></v-icon> {{ TfarDownloadStatusTexts[skin_status] }}</v-btn>
+          <v-btn v-bind="props" variant="outlined" :color="TfarDownloadStatusColors[skin_status]" @click="downloadSkin"
+            :disabled="skin_status == 1"><v-icon :icon="TfarDownloadStatusIcons[skin_status]"
+              class="me-2"></v-icon> {{ TfarDownloadStatusTexts[skin_status] }}</v-btn>
         </template>
       </v-tooltip>
     </v-card-actions>
@@ -63,15 +65,14 @@
 
     <v-card-item>
       <p>
-        Bitte folge diesen Anweisungen, um ein TeamSpeak 3 Soundpack zu installieren welches unnötige Sounds (z.B. User
-        Join/Leave) entfernt:
+        Das TeamSpeak 3 Soundpack entfernt unnötige Sounds (z.B. User Join/Leave)
       </p>
       <ol style="margin-left: 1rem">
         <li>Stelle sicher, dass Teamspeak vor der Installation vollständig geschlossen ist.</li>
         <li>
           Lade die <code>.ts3_soundpack</code> Datei herunter, indem du den "Soundpack Download" Button unten klickst.
         </li>
-        <li>Führe den Installationsassistenten aus und starte die Installation.</li>
+        <li>Der Installationsassistent von Teamspeak öffnet sich, klicke hier auf "Installieren".</li>
       </ol>
 
       <p>
@@ -85,7 +86,10 @@
       <!-- ng-click="initFileDownload('Panthor.ts3_soundpack')" -->
       <v-tooltip text="Skin by Kaibu">
         <template v-slot:activator="{ props }">
-          <v-btn v-bind="props" variant="outlined" :color="TfarDownloadStatusColors[sound_status]" @click="downloadSound" :disabled="sound_status == 1 || sound_status == 2"><v-icon :icon="TfarDownloadStatusIcons[sound_status]" class="me-2"></v-icon> {{ TfarDownloadStatusTexts[sound_status] }}</v-btn>
+          <v-btn v-bind="props" variant="outlined" :color="TfarDownloadStatusColors[sound_status]"
+            @click="downloadSound" :disabled="sound_status == 1"><v-icon
+              :icon="TfarDownloadStatusIcons[sound_status]" class="me-2"></v-icon> {{
+                TfarDownloadStatusTexts[sound_status] }}</v-btn>
         </template>
       </v-tooltip>
     </v-card-actions>

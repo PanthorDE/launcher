@@ -53,7 +53,7 @@
                 {{ server.name }}
                 <v-progress-circular :model-value="(server.players.length / notZero(server.slots)) * 100"
                   color="primary" :size="70" :width="8" class="float-right">{{ Math.round((server.players.length /
-      notZero(server.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
+                    notZero(server.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
                   style="font-size: 18px !important">Online: {{ server.players.length }} / {{ server.slots
                   }}</span></v-card-title>
             </v-card>
@@ -63,7 +63,7 @@
                 Teamspeak
                 <v-progress-circular :model-value="(teamspeak.users.length / notZero(teamspeak.slots)) * 100"
                   color="primary" :size="70" :width="8" class="float-right">{{ Math.round((teamspeak.users.length /
-      notZero(teamspeak.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
+                    notZero(teamspeak.slots)) * 100) }}%</v-progress-circular><br /><span class="text-h5"
                   style="font-size: 18px !important">Online: {{ teamspeak.users.length }} / {{ teamspeak.slots
                   }}</span></v-card-title>
             </v-card>
@@ -123,7 +123,7 @@
                       <v-chip class="ma-2" color="success" variant="outlined">
                         <v-icon start icon="mdi-file-multiple"></v-icon>
                         {{ mod.worker_status.fileop_files_done }} / {{ mod.worker_status.fileop_files_remaining +
-      mod.worker_status.fileop_files_done }}
+                          mod.worker_status.fileop_files_done }}
                       </v-chip>
                     </v-col>
                     <v-col cols="auto"
@@ -133,8 +133,8 @@
                         <v-icon start icon="mdi-harddisk"></v-icon>
                         {{ humanFileSize(mod.worker_status.fileop_size_done, true, 1) }} /
                         {{ humanFileSize(mod.worker_status.fileop_size_total,
-      true,
-      1) }}
+                          true,
+                          1) }}
                       </v-chip>
                     </v-col>
                   </v-row>
@@ -270,7 +270,7 @@
                           <v-col cols="12">
                             <v-text-field label="Weitere Startparameter" prepend-inner-icon="mdi-powershell"
                               variant="solo-filled" density="comfortable" v-model="settings.command_line"
-                              placeholder="-debug" block flat></v-text-field>
+                              placeholder="-debug -hugePages -noLogs" block flat></v-text-field>
                           </v-col>
                         </v-row>
                       </v-card-text>
@@ -302,22 +302,24 @@
       <v-container :fluid="true" v-if="first_run_dialog">
         <v-dialog transition="dialog-top-transition" width="800" v-model="first_run_dialog" persistent>
           <v-card>
-            <v-toolbar color="red" title="Willkommen im Panthor Launcher!" class="text-center"></v-toolbar>
+            <img src="@/assets/Panthor_Header_Logo_Line.png" class=" pa-3" />
             <v-card-text>
               <div class="pa-5 text-center">
-                <span class="text-h6">Um die Panthor Mod zu installieren muss der Launcher den Pfad zu einer Arma 3
-                  Installation
-                  finden.</span>
+                <span class="text-h6">Willkommen im <span class="text-primary">Panthor Life</span> Launcher!</span>
                 <br />
                 <br />
-                <span class="text-h8">Folgede Ordner wurden automatisch erkannt, bitte wähle den richtigen aus:</span>
+                <span class="text-h6">Um die Panthor Mod zu installieren muss der Launcher den Pfad zu deiner Arma 3
+                  Installation finden.</span>
+                <br />
+                <br />
+                <span class="text-h8">Folgende mögliche Ordner wurden automatisch erkannt, bitte wähle den richtigen aus:</span>
 
                 <v-radio-group label="Arma 3 Pfad" v-model="first_run_selected_path" class="mt-8"
                   v-if="possible_a3_paths.length > 0">
                   <v-radio :label="path" :value="i" v-for="(path, i) in possible_a3_paths"></v-radio>
                 </v-radio-group>
                 <br />
-                <span class="text-h8">Falls der richtige Pfad nicht in der Liste ist überspringe diesen Schritt.</span>
+                <span class="text-h8">Falls dein Pfad nicht aufgeführt ist überspringe diesen Schritt.</span>
               </div>
               <v-alert type="warning" title="Keine validen Pfade gefunden" v-if="possible_a3_paths.length === 0"
                 text="Leider ist Arma auf deinem PC nicht an einer üblichen Stelle installiert oder du hast es manuell verschoben. Bitte überspringe diesen Schritt."></v-alert>
@@ -328,6 +330,25 @@
               <v-btn color="success" variant="outlined" prepend-icon="mdi-content-save-cog" @click="firstRunSave"
                 size="large" v-if="possible_a3_paths.length > 0">Speichern</v-btn>
             </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-container>
+      <v-container :fluid="true" v-if="launching_game">
+        <v-dialog transition="dialog-top-transition" width="800" v-model="launching_game">
+          <v-card>
+            <v-card-text>
+              <div class="pa-5 text-center">
+                <span class="text-h4"><v-icon icon="mdi-loading mdi-spin"></v-icon> Arma wird gestartet</span>
+                <v-divider class="mt-5 mb-5"></v-divider>
+                <code style="font-size: 14px;">{{ settings.arma_path }}arma3launcher.exe</code>
+                <v-divider class="mt-5 mb-5"></v-divider>
+                <span class="text-h6"><v-icon icon="mdi-powershell"></v-icon> Startparameter</span>
+                <v-chip-group variant="outlined" class="mt-3 w-100" column>
+                  <v-chip label v-for="par in launch_params">{{ par }}</v-chip>
+                </v-chip-group>
+
+              </div>
+            </v-card-text>
           </v-card>
         </v-dialog>
       </v-container>
@@ -357,7 +378,7 @@ import SettingsStore, { defaultSettings } from './interfaces/SettingsStoreInterf
 import { existsSync } from 'node:fs';
 import { PanthorApiService } from './services/PanthorApi.service';
 import News from './interfaces/NewsInterface';
-import { useElementSize } from '@vueuse/core';
+import { set, useElementSize } from '@vueuse/core';
 
 const langService: HumanizeDurationLanguage = new HumanizeDurationLanguage();
 const duration_humanizer = new HumanizeDuration(langService);
@@ -385,6 +406,8 @@ export default defineComponent({
       settings: defaultSettings as SettingsStore,
       first_run_dialog: false,
       first_run_selected_path: 0,
+      launching_game: false,
+      launch_params: [] as Array<string>,
       possible_a3_paths: [] as Array<string>,
       server_window_default_tab: 0,
       reloadAllowed: true
@@ -649,13 +672,21 @@ export default defineComponent({
       if (this.settings.windowed) params.push('-window');
       if (this.settings.noPause) params.push('-noPause');
       if (this.settings.noPauseAudio) params.push('-noPauseAudio');
-      if (this.settings.noPause) params.push('-noPause');
+      if (this.settings.setThreadCharacteristics) params.push('-setThreadCharacteristics');
       if (this.settings.showScriptErrors) params.push('-showScriptErrors');
       if (this.settings.command_line && this.settings.command_line.length > 0) {
-        params.push(this.settings.command_line);
+        this.settings.command_line.split(' ').forEach((par) => {
+          params.push(par);
+        });
       }
 
+      this.launch_params = params;
+      this.launching_game = true;
       ipcRenderer.send('launchGame:request', params, this.settings.arma_path);
+
+      setTimeout(() => {
+        this.launching_game = false;
+      }, 5000);
     }
   },
   watch: {

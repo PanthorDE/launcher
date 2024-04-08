@@ -341,7 +341,10 @@ export class UpdateService {
             resolve(false);
             return;
           }
+
           fileStream.end();
+          fileStream.close();
+
           const downloadedHash = hash.digest('hex').toUpperCase();
 
           if (downloadedHash !== file.Hash.toUpperCase()) {
@@ -518,7 +521,7 @@ export class UpdateService {
   }
 
   private calculateSpeed() {
-    if (this.lastSpeedCalculation + 2000 < Date.now()) {
+    if (this.lastSpeedCalculation + 5000 < Date.now()) {
       const doneSinceLastCalculation = this.completedSize - this.lastSpeedSize
       this.lastSpeedSize = this.completedSize;
       this.lastSpeed = Math.round(
@@ -588,14 +591,7 @@ export class UpdateService {
   }
 
   public getRemainingSize(): number {
-    let size = 0
-    for (let i = 0; i < this.queue.length; i++) {
-      size += this.queue[i].Size
-    }
-    for (let i = 0; i < this.currentFiles.length; i++) {
-      size += this.currentFiles[i].Size
-    }
-    return size
+    return this.totalSize - this.completedSize;
   }
 
   public getSizeProgress(): number {

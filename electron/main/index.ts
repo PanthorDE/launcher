@@ -263,7 +263,7 @@ function launchGame(event: any, uiparams: string[], arma_path: string) {
 
   setTimeout(() => {
     win.minimize();
-  }, 3000)
+  }, 5000)
 }
 
 function downloadStaticFile(path: string, target: string): Promise<boolean> {
@@ -330,8 +330,10 @@ function checkRegKeys() {
           if (exists) {
             regKey.values((err, items) => {
               if (err) throw err;
-              if (existsSync(items[cur.index].value + '\\arma3.exe')) {
-                win.webContents.send('checkRegKeys:result', items[cur.index].value);
+              if (items[cur.index]) {
+                if (existsSync(items[cur.index].value + '\\arma3.exe')) {
+                  win.webContents.send('checkRegKeys:result', items[cur.index].value);
+                }
               }
             });
           }
