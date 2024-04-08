@@ -340,13 +340,14 @@
               <div class="pa-5 text-center">
                 <span class="text-h4"><v-icon icon="mdi-loading mdi-spin"></v-icon> Arma wird gestartet</span>
                 <v-divider class="mt-5 mb-5"></v-divider>
-                <code style="font-size: 14px;">{{ settings.arma_path }}arma3launcher.exe</code>
+                <span class="text-h6"><v-icon icon="mdi-folder-heart-outline"></v-icon> Arma Pfad</span>
+                <br>
+                <code style="font-size: 16px;">{{ settings.arma_path }}</code>
                 <v-divider class="mt-5 mb-5"></v-divider>
                 <span class="text-h6"><v-icon icon="mdi-powershell"></v-icon> Startparameter</span>
                 <v-chip-group variant="outlined" class="mt-3 w-100" column>
                   <v-chip label v-for="par in launch_params">{{ par }}</v-chip>
                 </v-chip-group>
-
               </div>
             </v-card-text>
           </v-card>

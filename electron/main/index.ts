@@ -258,7 +258,7 @@ function launchGame(event: any, uiparams: string[], arma_path: string) {
   ])
 
   console.log("Launching Arma 3 with params: " + params.join(' '))
-  let result = spawn(arma_path + '\\arma3launcher.exe', params, { detached: true, stdio: 'ignore' });
+  let result = spawn(join(arma_path + '\\arma3launcher.exe'), params, { detached: true, stdio: 'ignore' });
   result.unref();
 
   setTimeout(() => {
