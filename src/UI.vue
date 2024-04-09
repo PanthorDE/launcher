@@ -148,9 +148,8 @@
                   Panthor unterstützen <v-icon icon="mdi-heart" size="x-large" color="red" class="float-right"></v-icon>
                 </v-card-title>
                 <v-card-text>
-                  Pathor wird durch Panthor+ und Panthor Pro Abos finanziert. Das Abo kann jederzeit beenden und es
-                  besteht
-                  natürlich keine Verpflichtung uns bei der Finanzierung zu unterstützen.
+                  Pathor wird durch Panthor+ und Panthor Pro Abos finanziert. Das Abo kann jederzeit beendet werden. 
+                  Es besteht natürlich keine Verpflichtung uns bei der Finanzierung zu unterstützen.
                   <br>
                   <v-btn color="primary" variant="outlined" class="mt-3" block prepend-icon="mdi-launch"
                     @click="openURL('https://info.panthor.de/shop')">Zum Shop</v-btn>

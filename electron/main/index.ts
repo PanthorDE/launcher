@@ -11,7 +11,6 @@ import { autoUpdater } from 'electron-updater';
 import { promise } from 'ping';
 import Winreg from 'winreg';
 import { spawn } from 'node:child_process';
-import { set } from '@vueuse/core';
 
 switch (process.argv[1]) {
   case '--open-website':
@@ -109,13 +108,9 @@ async function createWorker() {
 }
 
 async function createWindow() {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-
   win = new BrowserWindow({
     title: 'Panthor Launcher',
     icon: join(__dirname, '../../src/assets/webicon.ico'),
-    width: Math.round(width * 0.45),
-    height: Math.round(height * 0.5),
     minWidth: 1500,
     minHeight: 900,
     webPreferences: {
