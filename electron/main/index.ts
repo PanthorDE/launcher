@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain, screen, Tray, Menu, ipcRenderer, session } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, screen, Tray, Menu, ipcRenderer, session, Notification } from 'electron';
 import type { Event } from 'electron';
 import { release } from 'node:os';
 import { dialog } from 'electron';
@@ -497,6 +497,17 @@ function getArmaProfiles(event: Event, message: any) {
   submitResults(profiles);
 }
 
+app.setAppUserModelId(process.execPath);
+
+function createNotification(event: Event, title: string, body: string) {
+  const notification = new Notification({
+    title: title,
+    body: body
+  })
+
+  notification.show()
+}
+
 app.on('window-all-closed', () => {
   win = null;
   if (process.platform !== 'darwin') app.quit();
@@ -545,6 +556,8 @@ app.whenReady().then(() => {
   ipcMain.on('dl:tfar', downloadTfar);
   ipcMain.on('dl:sound', downloadSound);
   ipcMain.on('dl:skin', downloadSkin);
+
+  ipcMain.on('notification:create', createNotification);
 
   Store.initRenderer();
 });

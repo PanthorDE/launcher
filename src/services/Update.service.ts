@@ -9,6 +9,9 @@ import { PanthorApiService } from './PanthorApi.service';
 import { join, sep } from 'path';
 import { EventEmitter } from 'events';
 import { UpdateStatus } from '@/enums/UpdateStatusEnum';
+import checkDiskSpace from 'check-disk-space';
+import { ipcRenderer } from 'electron';
+import { PanthorUtils } from './PanthorUtils.service';
 
 class UpdateEventEmitter extends EventEmitter {
   constructor() {
@@ -72,6 +75,12 @@ export class UpdateService {
     return Promise.all(promises)
   }
 
+  private async checkAvailableSpace(): Promise<boolean> {
+    return await checkDiskSpace(this.basePath).then((diskSpace) => {
+      return (diskSpace.free > (this.totalSize + 1000000000));
+    });
+  }
+
   public async download(): Promise<boolean> {
     this.stopRequested = false;
     this.currentFiles = []
@@ -90,6 +99,18 @@ export class UpdateService {
         this.totalFiles = this.wrongHashes.length
         this.retriedFiles = []
         this.setTotalSize(this.wrongHashes);
+
+        let enoughSpace = await this.checkAvailableSpace()
+
+        if (!enoughSpace) {
+          ipcRenderer.send('notification:create', "Speicherplatz nicht ausreichend", "Nicht ausreichend Speicherplatz verfügbar. Es werden mindestens " + PanthorUtils.humanFileSize(this.totalSize + 1000000000) + " freier Speicherplatz benötigt.");
+          this.status = UpdateStatus.UKNOWN;
+          this.setOperationEnded();
+          resolve(true);
+          return;
+        }
+
+        console.log('Downloading', this.wrongHashes.length, 'files')
 
         this.status = UpdateStatus.DOWNLOADING;
         this.statusChanged.emit('statusChanged', this.status);

@@ -148,7 +148,7 @@
                   Panthor unterstützen <v-icon icon="mdi-heart" size="x-large" color="red" class="float-right"></v-icon>
                 </v-card-title>
                 <v-card-text>
-                  Pathor wird durch Panthor+ und Panthor Pro Abos finanziert. Das Abo kann jederzeit beendet werden. 
+                  Pathor wird durch Panthor+ und Panthor Pro Abos finanziert. Das Abo kann jederzeit beendet werden.
                   Es besteht natürlich keine Verpflichtung uns bei der Finanzierung zu unterstützen.
                   <br>
                   <v-btn color="primary" variant="outlined" class="mt-3" block prepend-icon="mdi-launch"
@@ -311,7 +311,8 @@
                   Installation finden.</span>
                 <br />
                 <br />
-                <span class="text-h8">Folgende mögliche Ordner wurden automatisch erkannt, bitte wähle den richtigen aus:</span>
+                <span class="text-h8">Folgende mögliche Ordner wurden automatisch erkannt, bitte wähle den richtigen
+                  aus:</span>
 
                 <v-radio-group label="Arma 3 Pfad" v-model="first_run_selected_path" class="mt-8"
                   v-if="possible_a3_paths.length > 0">
@@ -357,7 +358,7 @@
 </template>
 
 <script lang="ts">
-import { ipcMain, ipcRenderer, shell } from 'electron';
+import { ipcRenderer, shell } from 'electron';
 import ModWindow from '@/components/ModWindow.vue';
 import ChangelogWindow from '@/components/ChangelogWindow.vue';
 import TfarWindow from '@/components/TfarWindow.vue';
@@ -375,10 +376,11 @@ import Teamspeak from './interfaces/TeamspeakInterface';
 import WorkerStatus from './interfaces/WorkerStatusInterface';
 import User from './interfaces/UserInterface';
 import SettingsStore, { defaultSettings } from './interfaces/SettingsStoreInterface';
-import { existsSync } from 'node:fs';
 import { PanthorApiService } from './services/PanthorApi.service';
 import News from './interfaces/NewsInterface';
-import { set, useElementSize } from '@vueuse/core';
+import { useElementSize } from '@vueuse/core';
+import { UpdateStatus } from './enums/UpdateStatusEnum';
+import { PanthorUtils } from './services/PanthorUtils.service';
 
 const langService: HumanizeDurationLanguage = new HumanizeDurationLanguage();
 const duration_humanizer = new HumanizeDuration(langService);
@@ -410,33 +412,11 @@ export default defineComponent({
       launch_params: [] as Array<string>,
       possible_a3_paths: [] as Array<string>,
       server_window_default_tab: 0,
-      reloadAllowed: true
+      reloadAllowed: true,
+      humanFileSize: PanthorUtils.humanFileSize,
     };
   },
   methods: {
-    humanFileSize(bytes: number, si = true, dp = 1, speed = false) {
-      const thresh = si ? 1000 : 1024;
-
-      if (Math.abs(bytes) < thresh) {
-        return bytes + ' B/s';
-      }
-
-      const units = si
-        ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-        : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
-      let u = -1;
-      const r = 10 ** dp;
-
-      do {
-        bytes /= thresh;
-        ++u;
-      } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
-
-      if (speed) {
-        return bytes.toFixed(dp) + ' ' + units[u] + '/s';
-      }
-      return bytes.toFixed(dp) + ' ' + units[u];
-    },
     loadAPIDataUI() {
       if (this.reloadAllowed) {
         this.loadAPIData();
@@ -747,6 +727,21 @@ export default defineComponent({
 
       this.api_data.mods.forEach((mod) => {
         if (mod.id === mod_id) {
+          if (mod.worker_status) {
+            if (mod.worker_status.status === UpdateStatus.DOWNLOADING && worker_status.status === UpdateStatus.INTACT) {
+              ipcRenderer.send('notification:create', "Download abgeschlossen", "Der Download von " + mod.name + " wurde erfolgreich abgeschlossen.");
+            }
+            if (mod.worker_status.status === UpdateStatus.DOWNLOADING && worker_status.status === UpdateStatus.DOWNLOADED_UPDATE_REQUIRED) {
+              ipcRenderer.send('notification:create', "Download fehlerhaft", "Während des Downloads sind Fehler aufgetreten, bitte starte das Update erneut.");
+            }
+            if (mod.worker_status.status === UpdateStatus.HASHING && worker_status.status === UpdateStatus.HASHED_UPDATE_REQUIRED) {
+              ipcRenderer.send('notification:create', "Überprüfung abgeschlossen", "Die Überprüfung von " + mod.name + " wurde abgeschlossen, es wurden fehlerhafte/veraltete Dateien erkannt.");
+            }
+            if (mod.worker_status.status === UpdateStatus.HASHING && worker_status.status === UpdateStatus.INTACT) {
+              ipcRenderer.send('notification:create', "Überprüfung abgeschlossen", "Die Überprüfung von " + mod.name + " wurde erfolgreich abgeschlossen.");
+            }
+          }
+
           mod.worker_status = worker_status;
 
           this.api_data.servers.forEach((server) => {
