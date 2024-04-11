@@ -62,7 +62,7 @@
     "@babel/types": "^7.24.0",
     "@types/node": "^18.15.0",
     "@types/webfontloader": "^1.6.38",
-    "@vitejs/plugin-vue": "^4.1.0",
+    "@vitejs/plugin-vue": "^4.6.2",
     "electron": "^29.2.0",
     "electron-builder": "^24.13.3",
     "prettier": "^3.2.5",
