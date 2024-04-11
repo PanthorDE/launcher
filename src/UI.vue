@@ -22,7 +22,7 @@
         <v-avatar class="hidden-sm-and-down" v-if="requesting_login && !logged_in" color="primary" size="32"><v-icon
             icon="mdi-help-circle-outline"></v-icon></v-avatar>
       </v-chip>
-      <v-btn :loading="loading_api_data" @click="loadAPIDataUI" icon :disabled="!reloadAllowed">
+      <v-btn :loading="loading_api_data" @click="loadAPIDataUI" icon :disabled="!reload_allowed">
         <v-avatar class="hidden-sm-and-down" color="primary" size="32"><v-tooltip text="Aktualisieren" location="bottom"
             activator="parent"></v-tooltip><v-icon icon="mdi-refresh"></v-icon></v-avatar>
         <template v-slot:loader>
@@ -95,7 +95,7 @@
                       </v-chip>
                       <v-chip class="ma-2" color="warning" variant="outlined">
                         <v-icon start icon="mdi-file-download"></v-icon>
-                        {{ humanFileSize(mod.worker_status.fileop_files_broken_size) }}
+                        {{ human_file_size(mod.worker_status.fileop_files_broken_size) }}
                       </v-chip>
                     </v-col>
                   </v-row>
@@ -105,7 +105,7 @@
                     <v-col cols="auto" v-if="mod.worker_status.fileop_speed > 0" class="pt-0">
                       <v-chip class="ma-2" color="success" variant="outlined">
                         <v-icon start icon="mdi-speedometer-slow"></v-icon>
-                        {{ humanFileSize(mod.worker_status.fileop_speed, true, 2, true) }}
+                        {{ human_file_size(mod.worker_status.fileop_speed, true, 2, true) }}
                       </v-chip>
                     </v-col>
                     <v-col cols="auto" v-if="mod.worker_status.fileop_time_remaining > 0" class="pt-0">
@@ -131,8 +131,8 @@
                       class="pt-0">
                       <v-chip class="ma-2" color="success" variant="outlined">
                         <v-icon start icon="mdi-harddisk"></v-icon>
-                        {{ humanFileSize(mod.worker_status.fileop_size_done, true, 1) }} /
-                        {{ humanFileSize(mod.worker_status.fileop_size_total,
+                        {{ human_file_size(mod.worker_status.fileop_size_done, true, 1) }} /
+                        {{ human_file_size(mod.worker_status.fileop_size_total,
                           true,
                           1) }}
                       </v-chip>
@@ -177,7 +177,7 @@
               <!-- Servers -->
               <v-window-item :value="2">
                 <server-window :servers="api_data.servers" @load-api-data="loadAPIDataUI" @switch-tab="switchTab(1)"
-                  :reload_allowed="reloadAllowed" :default_tab="server_window_default_tab" @launch-game="launchGame"
+                  :reload_allowed="reload_allowed" :default_tab="server_window_default_tab" @launch-game="launchGame"
                   ref="serverWindowRef"></server-window>
               </v-window-item>
 
@@ -288,9 +288,10 @@
         <v-dialog transition="dialog-top-transition" width="400" v-model="show_login_dialog">
           <v-card>
             <v-toolbar color="red" title="Login" class="text-center pe-5"></v-toolbar>
-            <v-card-text class="mb-2">
-              <v-text-field v-model="settings.auth_token" class="mb-2" variant="solo-filled" flat clearable
-                label="Auth-Token"></v-text-field>
+            <v-card-text class="mb-2 text-center">
+              <p>API-Key von <a href="https://info.panthor.de/" target="_blank">info.panthor.de</a></p>
+              <v-text-field v-model="settings.auth_token" class="mb-2 mt-3" variant="solo-filled" flat clearable
+                label="API-Key"></v-text-field>
               <v-btn block color="success" size="large" type="submit" variant="elevated" @click="login">
                 Login <v-progress-circular v-if="requesting_login" indeterminate size="24"></v-progress-circular>
               </v-btn>
@@ -315,7 +316,7 @@
                   aus:</span>
 
                 <v-radio-group label="Arma 3 Pfad" v-model="first_run_selected_path" class="mt-8"
-                  v-if="possible_a3_paths.length > 0">
+                  v-if="possible_a3_paths.length > 0" color="success">
                   <v-radio :label="path" :value="i" v-for="(path, i) in possible_a3_paths"></v-radio>
                 </v-radio-group>
                 <br />
@@ -353,6 +354,22 @@
           </v-card>
         </v-dialog>
       </v-container>
+      <v-container :fluid="true" v-if="show_news && !first_run_dialog">
+        <v-dialog transition="dialog-top-transition" width="600" v-model="show_news">
+          <v-card>
+            <v-card-text>
+              <div class="pa-5 text-center">
+                <span class="text-h5"><v-icon icon="mdi-information-box-outline"></v-icon> Allgemeine
+                  Information!</span>
+                <v-divider class="mt-5 mb-5"></v-divider>
+                <p style="font-size: 16px;">{{ api_data.notification.message }}</p>
+                <v-btn class="mt-5" text="Schließen" prepend-icon="mdi-check" @click="show_news = false"
+                  variant="elevated" color="secondary"></v-btn>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
+      </v-container>
     </v-main>
   </v-app>
 </template>
@@ -375,12 +392,13 @@ import Changelog from '@/interfaces/ChangelogInterface';
 import Teamspeak from './interfaces/TeamspeakInterface';
 import WorkerStatus from './interfaces/WorkerStatusInterface';
 import User from './interfaces/UserInterface';
+import News from './interfaces/NewsInterface';
+import Notification from './interfaces/NotificationInterface';
 import SettingsStore, { defaultSettings } from './interfaces/SettingsStoreInterface';
 import { PanthorApiService } from './services/PanthorApi.service';
-import News from './interfaces/NewsInterface';
 import { useElementSize } from '@vueuse/core';
 import { UpdateStatus } from './enums/UpdateStatusEnum';
-import { PanthorUtils } from './services/PanthorUtils.service';
+import PanthorUtils from './services/PanthorUtils.service';
 
 const langService: HumanizeDurationLanguage = new HumanizeDurationLanguage();
 const duration_humanizer = new HumanizeDuration(langService);
@@ -395,6 +413,7 @@ export default defineComponent({
         servers: [] as Server[],
         changelogs: [] as Changelog[],
         teamspeaks: [] as Teamspeak[],
+        notification: {} as Notification,
       },
       news: [] as News[],
       tab: 0,
@@ -412,17 +431,19 @@ export default defineComponent({
       launch_params: [] as Array<string>,
       possible_a3_paths: [] as Array<string>,
       server_window_default_tab: 0,
-      reloadAllowed: true,
-      humanFileSize: PanthorUtils.humanFileSize,
+      reload_allowed: true,
+      showed_news: false,
+      show_news: false,
+      human_file_size: PanthorUtils.humanFileSize,
     };
   },
   methods: {
     loadAPIDataUI() {
-      if (this.reloadAllowed) {
+      if (this.reload_allowed) {
         this.loadAPIData();
-        this.reloadAllowed = false;
+        this.reload_allowed = false;
         setTimeout(() => {
-          this.reloadAllowed = true;
+          this.reload_allowed = true;
         }, 5000);
       }
     },
@@ -493,6 +514,18 @@ export default defineComponent({
           .catch(console.error)
       );
 
+      promises.push(
+        PanthorApiService.getNotification()
+          .then((notification) => {
+            this.api_data.notification = notification
+            if (this.api_data.notification.active && !this.showed_news) {
+              this.showed_news = true
+              this.show_news = true
+            }
+          })
+          .catch(console.error)
+      );
+
       if (this.logged_in) {
         promises.push(
           PanthorApiService.getProfile(this.settings.auth_token)
@@ -558,7 +591,9 @@ export default defineComponent({
     launch_first_run() {
       this.first_run_dialog = true;
       ipcRenderer.on('checkRegKeys:result', (_event, key: string) => {
-        this.possible_a3_paths.push(key);
+        if (!this.possible_a3_paths.includes(key)) {
+          this.possible_a3_paths.push(key);
+        }
       });
       ipcRenderer.send('checkRegKeys:request');
     },

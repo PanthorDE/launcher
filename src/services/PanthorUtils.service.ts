@@ -1,4 +1,4 @@
-export class PanthorUtils { 
+export default class PanthorUtils { 
     static humanFileSize(bytes: number, si = true, dp = 1, speed = false) {
       const thresh = si ? 1000 : 1024;
     

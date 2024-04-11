@@ -5,6 +5,7 @@ import type Mod from '@/interfaces/ModInterface';
 import type Server from '@/interfaces/ServerInterface';
 import type Teamspeak from '@/interfaces/TeamspeakInterface';
 import type { Player } from '@/interfaces/UserInterface';
+import type Notification from '@/interfaces/NotificationInterface';
 import convert from 'xml-js';
 import axios from 'axios';
 import News from '@/interfaces/NewsInterface';
@@ -93,6 +94,15 @@ export class PanthorApiService {
     return new Promise((res, rej) => {
       axios
         .get(this.host + '/v2/mod/hashlist/' + modId)
+        .then((response) => res(response.data.data))
+        .catch(rej);
+    });
+  }
+
+  static getNotification(): Promise<Notification> {
+    return new Promise((res, rej) => {
+      axios
+        .get(this.host + '/v2/notification')
         .then((response) => res(response.data.data))
         .catch(rej);
     });

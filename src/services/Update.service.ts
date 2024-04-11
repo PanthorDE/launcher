@@ -11,7 +11,7 @@ import { EventEmitter } from 'events';
 import { UpdateStatus } from '@/enums/UpdateStatusEnum';
 import checkDiskSpace from 'check-disk-space';
 import { ipcRenderer } from 'electron';
-import { PanthorUtils } from './PanthorUtils.service';
+import PanthorUtils from './PanthorUtils.service';
 
 class UpdateEventEmitter extends EventEmitter {
   constructor() {

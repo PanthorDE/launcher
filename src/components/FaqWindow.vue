@@ -18,11 +18,11 @@ export default {
       questions: [
         {
           title: 'Du wirst beim Joinen auf den Server gekickt ("Verbindung zur Sitzung abgebrochen"/"Session Lost")',
-          text: 'Nutze den Button "Bisign" zum Löschen der .bisign Dateien und Prüfen der Mods.',
+          text: 'Nutze den Button "Prüfen", dadurch werden fehlerhafte Dateien identifiziert und ersetzt.',
         },
         {
           title: 'Du wirst beim Joinen auf den Server gekickt wegen "Sie können diese Mission nicht spielen..."',
-          text: '<ul><li>Gehe 100% sicher, dass die Panthor-Mods geladen werden, dies istsichtbar am Panthor-Logo im Hauptmenü.</li><li>Fehler hierbei können unter anderem durch mehrere ArmaInstallationen entstehen. Der Panthor Launcher startet die ArmaInstallation, die im Pfad ausgewählt ist und nicht die, dieSteam möglicherweise verwendet!</li><li>Melde dich im Support, falls du das Problem nicht selber behbenkannst. Dort wird dir immer geholfen :)</li></ul>',
+          text: '<ul><li>Gehe 100% sicher, dass die Panthor-Mods geladen werden. Im Hauptmenü muss das Panthor-Logo angezeigt werden.</li><li>Fehler hierbei können unter anderem durch mehrere Arma Installationen entstehen. Der Panthor Launcher startet die Arma Installation, die im Pfad ausgewählt ist und nicht die, die Steam möglicherweise verwendet!</li><li>Melde dich im Support, falls du das Problem nicht selber beheben kannst. Dort wird dir immer geholfen :)</li></ul>',
         },
         {
           title: 'Ein Bug im Launcher! Was nun ?',

@@ -54,25 +54,6 @@ const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = join(process.env.DIST, 'index.html');
 let tray: Tray | null = null;
 
-app.setUserTasks([
-  {
-    program: process.execPath,
-    arguments: '--open-website',
-    iconPath: process.execPath,
-    iconIndex: 0,
-    title: 'Website',
-    description: 'Panthor Website',
-  },
-  {
-    program: process.execPath,
-    arguments: '--open-teamspeak',
-    iconPath: process.execPath,
-    iconIndex: 0,
-    title: 'Teamspeak',
-    description: 'Panthor Teamspeak',
-  },
-]);
-
 async function createWorker() {
   let hash = 'worker';
 
@@ -496,8 +477,6 @@ function getArmaProfiles(event: Event, message: any) {
     .map(decodeURIComponent);
   submitResults(profiles);
 }
-
-app.setAppUserModelId(process.execPath);
 
 function createNotification(event: Event, title: string, body: string) {
   const notification = new Notification({
