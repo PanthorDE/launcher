@@ -11,6 +11,7 @@ import { autoUpdater } from 'electron-updater';
 import { promise } from 'ping';
 import Winreg from 'winreg';
 import { spawn } from 'node:child_process';
+import { set } from '@vueuse/core';
 
 switch (process.argv[1]) {
   case '--open-website':
@@ -28,7 +29,12 @@ process.env.DIST = join(process.env.DIST_ELECTRON, '../dist');
 process.env.SRC = join(process.env.DIST_ELECTRON, '../src');
 process.env.PUBLIC = process.env.VITE_DEV_SERVER_URL ? join(process.env.DIST_ELECTRON, '../public') : process.env.DIST;
 
-autoUpdater.checkForUpdatesAndNotify()
+const autoUpdaterNotification = {
+  title: 'Launcher Update verfügbar',
+  body: 'Das Launcher Update wird heruntergeladen und beim nächsten Neustart des Launchers installiert.'
+}
+
+autoUpdater.checkForUpdatesAndNotify(autoUpdaterNotification)
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith('6.1')) app.disableHardwareAcceleration();
@@ -168,7 +174,7 @@ const createTray = () => {
             }
           })
         } else {
-          autoUpdater.checkForUpdatesAndNotify()
+          autoUpdater.checkForUpdatesAndNotify(autoUpdaterNotification)
         }
       }
     },
@@ -539,4 +545,8 @@ app.whenReady().then(() => {
   ipcMain.on('notification:create', createNotification);
 
   Store.initRenderer();
+
+  setTimeout(() => {
+    win.webContents.send('version', app.getVersion());
+  }, 1000);
 });

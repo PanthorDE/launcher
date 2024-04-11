@@ -30,6 +30,7 @@
     "build": "vue-tsc --noEmit && vite build && electron-builder build -p never",
     "build_portable": "vue-tsc --noEmit && vite build && electron-builder build -p never --win portable",
     "publish": "vue-tsc --noEmit && vite build && electron-builder build -p always",
+    "prebuild": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "format": "prettier --write src/ electron/"
   },

@@ -49,16 +49,23 @@
     <v-col cols="3">
       <v-card v-if="last_changeLog" @click="$emit('switch-tab')">
         <v-card-title>Letztes Update <v-icon icon="mdi-update" size="small" class="float-right"
-            color="success"></v-icon></v-card-title>
+            color="primary"></v-icon></v-card-title>
         <v-card-text style="font-size: 18px" class="pt-0 pb-1">{{ new
-                Date(last_changeLog.release_at).toLocaleDateString([], {
-                  month: '2-digit',
-                  day: '2-digit',
-                  year: '2-digit',
-                }) }} ({{ new Date(last_changeLog.release_at).toLocaleTimeString([], { hour: '2-digit' }) }})</v-card-text>
+          Date(last_changeLog.release_at).toLocaleDateString([], {
+            month: '2-digit',
+            day: '2-digit',
+            year: '2-digit',
+          }) }} ({{ new Date(last_changeLog.release_at).toLocaleTimeString([], { hour: '2-digit' }) }})</v-card-text>
         <v-card-subtitle class="pb-2">{{ last_changeLog.version }}</v-card-subtitle>
       </v-card>
-      <v-card class="mt-3" :style="{ 'max-height': `${scroll_height-215}px` }">
+      <Transition name="fade">
+      <v-card class="mt-3" v-if="version" @click="openURL('https://github.com/PanthorDE/launcher/releases/tag/v' + version)">
+        <v-card-title>Launcher Version <v-icon icon="mdi-tag-multiple-outline" size="small" class="float-right"
+            color="primary"></v-icon></v-card-title>
+        <v-card-text style="font-size: 18px" class="pt-0 pb-2">v{{ version }}</v-card-text>
+      </v-card>
+      </Transition>
+      <v-card class="mt-3" :style="{ 'max-height': `${scroll_height - 215}px` }">
         <v-card-title>Neueste Blogs<v-icon icon="mdi-newspaper-variant-multiple-outline" size="small"
             class="float-right" color="primary"></v-icon></v-card-title>
         <v-card-text class="pa-0">
@@ -77,14 +84,15 @@
 import { ref } from 'vue'
 import { useElementSize } from '@vueuse/core';
 import Changelog from '@/interfaces/ChangelogInterface';
-import { shell } from 'electron';
+import { ipcRenderer, shell } from 'electron';
 import News from '@/interfaces/NewsInterface';
 
 export default {
   name: 'HomeWindow',
   data() {
     return {
-      host: location.hostname
+      host: location.hostname,
+      version: ''
     };
   },
   methods: {
@@ -107,6 +115,11 @@ export default {
     scroll_height: () => {
       return window.innerHeight;
     },
+  },
+  mounted() {
+    ipcRenderer.on('version', (event, version) => {
+      this.version = version;
+    });
   },
   setup() {
     const twitch = ref(null)
