@@ -1,5 +1,5 @@
 {
-  "name": "Panthor",
+  "name": "panthor",
   "version": "1.9.6",
   "main": "dist-electron/main/index.js",
   "description": "Panthor Launcher",
