@@ -89,7 +89,7 @@
     "roboto-fontface": "*",
     "unzipper": "^0.10.14",
     "vue": "^3.4.21",
-    "vue-chartjs": "^5.3.0",
+    "vue-chartjs": "^5.3.1",
     "vue-router": "^4.3.0",
     "vuetify": "^3.5.8",
     "webfontloader": "^1.6.28",
