@@ -7,10 +7,6 @@ jobs:
     if: github.repository_owner == 'PanthorDE'
     runs-on: 'ubuntu-latest'
 
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
