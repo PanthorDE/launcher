@@ -76,6 +76,7 @@
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceRoot}",
+      "envFile": "${workspaceFolder}/.env",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
           "run-script", "publish"
