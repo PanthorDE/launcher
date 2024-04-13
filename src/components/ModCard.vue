@@ -26,17 +26,12 @@
     </v-row>
     <v-row justify="center" class="my-3" v-if="arma_path !== '' && mod.worker_status">
       <v-btn-group density="comfortable" divided>
-        <v-btn color="success" prepend-icon="mdi-launch" @click="$emit('launch-game', mod)" v-if="mod.worker_status.status == 1">Starten</v-btn>
-        <v-btn color="success" prepend-icon="mdi-download" @click="updateMod" v-if="(mod.worker_status.status == 3 || mod.worker_status.status == 5 || mod.worker_status.status == 6)"><span v-if="mod.worker_status.status == 6">Download</span><span v-else>Update</span></v-btn>
-        <v-btn color="warning" prepend-icon="mdi-server" @click="$emit('open-server')" v-if="mod.worker_status.status == 1">Server</v-btn>
-        <v-btn color="secondary" prepend-icon="mdi-file-cog" @click="verifyMod" v-if="(mod.worker_status.status != 4 && mod.worker_status.status != 2)">Prüfen</v-btn>
-        <v-btn color="primary" prepend-icon="mdi-stop" @click="stopMod" v-if="mod.worker_status.status == 4 || mod.worker_status.status == 2">Abbruch</v-btn>
+        <v-btn color="success" prepend-icon="mdi-launch" @click="$emit('launch-game', mod)" v-if="mod.worker_status.status == UpdateStatus.INTACT">Starten</v-btn>
+        <v-btn color="success" prepend-icon="mdi-download" @click="updateMod" v-if="(mod.worker_status.status == UpdateStatus.HASHED_UPDATE_REQUIRED || mod.worker_status.status == UpdateStatus.DOWNLOADED_UPDATE_REQUIRED || mod.worker_status.status == UpdateStatus.NOT_FOUND)"><span v-if="mod.worker_status.status == UpdateStatus.NOT_FOUND">Download</span><span v-else>Update</span></v-btn>
+        <v-btn color="warning" prepend-icon="mdi-server" @click="$emit('open-server')" v-if="mod.worker_status.status == UpdateStatus.INTACT">Server</v-btn>
+        <v-btn color="secondary" prepend-icon="mdi-file-cog" @click="verifyMod" v-if="(mod.worker_status.status != UpdateStatus.DOWNLOADING && mod.worker_status.status != UpdateStatus.HASHING && mod.worker_status.status != UpdateStatus.QUICK_HASHING)">Prüfen</v-btn>
+        <v-btn color="primary" prepend-icon="mdi-stop" @click="stopMod" v-if="mod.worker_status.status == UpdateStatus.DOWNLOADING || mod.worker_status.status == UpdateStatus.HASHING || mod.worker_status.status == UpdateStatus.QUICK_HASHING">Abbruch</v-btn>
       </v-btn-group>
-      <!--
-      <v-col cols="auto">
-        <v-btn color="red" flat prepend-icon="mdi-file-certificate-outline"> Bisign </v-btn>
-      </v-col>
-      -->
     </v-row>
   </v-card>
 </template>
@@ -47,6 +42,7 @@ import { ipcRenderer } from 'electron';
 import Mod from '@/interfaces/ModInterface';
 import { PropType } from 'vue';
 import { join } from 'node:path';
+import { UpdateStatus } from '@/enums/UpdateStatusEnum';
 
 export default {
   name: 'ModCard',
@@ -55,6 +51,11 @@ export default {
     mod: { type: Object as PropType<Mod>, required: true },
     arma_path: { type: String, required: true },
     single: { type: Boolean, default: false },
+  },
+  data: () => {
+    return {
+      UpdateStatus: UpdateStatus
+    }
   },
   methods: {
     verifyMod() {

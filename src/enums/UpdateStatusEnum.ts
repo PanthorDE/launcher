@@ -5,7 +5,8 @@ export enum UpdateStatus {
     HASHED_UPDATE_REQUIRED = 3,
     DOWNLOADING = 4,
     DOWNLOADED_UPDATE_REQUIRED = 5,
-    NOT_FOUND = 6
+    NOT_FOUND = 6,
+    QUICK_HASHING = 7,
 }
 
 export var StatusTexts = {
@@ -15,7 +16,8 @@ export var StatusTexts = {
     [UpdateStatus.HASHED_UPDATE_REQUIRED]: "Überpüfung abgeschlossen, Update erforderlich",
     [UpdateStatus.DOWNLOADING]: "Download läuft",
     [UpdateStatus.DOWNLOADED_UPDATE_REQUIRED]: "Download unvollständig, Update erforderlich",
-    [UpdateStatus.NOT_FOUND]: "Nicht installiert"
+    [UpdateStatus.NOT_FOUND]: "Nicht installiert",
+    [UpdateStatus.QUICK_HASHING]: "Update Prüfung läuft"
 };
 
 export var StatusColors = {
@@ -25,7 +27,8 @@ export var StatusColors = {
     [UpdateStatus.HASHED_UPDATE_REQUIRED]: "warning",
     [UpdateStatus.DOWNLOADING]: "primary",
     [UpdateStatus.DOWNLOADED_UPDATE_REQUIRED]: "warning",
-    [UpdateStatus.NOT_FOUND]: "primary"
+    [UpdateStatus.NOT_FOUND]: "primary",
+    [UpdateStatus.QUICK_HASHING]: "primary"
 };
 
 export var StatusIcons = {
@@ -35,5 +38,6 @@ export var StatusIcons = {
     [UpdateStatus.HASHED_UPDATE_REQUIRED]: "mdi-alert-outline",
     [UpdateStatus.DOWNLOADING]: "mdi-loading mdi-spin",
     [UpdateStatus.DOWNLOADED_UPDATE_REQUIRED]: "mdi-alert-outline",
-    [UpdateStatus.NOT_FOUND]: "mdi-download-off"
+    [UpdateStatus.NOT_FOUND]: "mdi-download-off",
+    [UpdateStatus.QUICK_HASHING]: "mdi-loading mdi-spin"
 };

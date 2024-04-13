@@ -76,9 +76,14 @@ export class UpdateService {
   }
 
   private async checkAvailableSpace(): Promise<boolean> {
-    return await checkDiskSpace(this.basePath).then((diskSpace) => {
-      return (diskSpace.free > (this.totalSize + 1000000000));
-    });
+    try {
+      return await checkDiskSpace(this.basePath).then((diskSpace) => {
+        return (diskSpace.free > (this.totalSize + 1000000000));
+      });
+    } catch (error) {
+      console.error('Failed to check available space:', error);
+      return true;
+    }
   }
 
   public async download(): Promise<boolean> {
@@ -169,7 +174,12 @@ export class UpdateService {
         this.totalFiles = this.hashlist.length
         this.setTotalSize(this.hashlist);
 
-        this.status = UpdateStatus.HASHING;
+        if(quick) {
+          this.status = UpdateStatus.QUICK_HASHING;
+        } else {
+          this.status = UpdateStatus.HASHING;
+        }
+        
         this.statusChanged.emit('statusChanged', this.status);
 
         for (let i = 0; i < this.hashlist.length; i++) {

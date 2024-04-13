@@ -69,7 +69,7 @@
             </v-card>
             <div v-for="mod in api_data.mods">
               <v-card flat min-height="100" class="mt-3"
-                v-if="mod.worker_status && mod.worker_status.status != 0 && mod.worker_status.status != 1 && mod.worker_status.status != 6"
+                v-if="mod.worker_status && mod.worker_status.status != UpdateStatus.UKNOWN && mod.worker_status.status != UpdateStatus.INTACT && mod.worker_status.status != UpdateStatus.NOT_FOUND"
                 @click="tab = 1">
                 <v-card-title><v-icon icon="mdi-download-network-outline" size="small" class="float-right"
                     :color="mod.worker_status.color"></v-icon>
@@ -80,14 +80,14 @@
                   <v-progress-linear rounded striped v-model="mod.worker_status.fileop_progress"
                     :color="mod.worker_status.color" :height="16" :stream="mod.worker_status.fileop_progress != 0"
                     :indeterminate="mod.worker_status.fileop_progress == 0"
-                    v-if="mod.worker_status.status === 2 || mod.worker_status.status === 4">
+                    v-if="mod.worker_status.status === UpdateStatus.HASHING || mod.worker_status.status === UpdateStatus.QUICK_HASHING || mod.worker_status.status === UpdateStatus.DOWNLOADING">
                     <strong v-if="mod.worker_status.fileop_progress > 0">{{ Math.ceil(mod.worker_status.fileop_progress)
                       }}%</strong>
                   </v-progress-linear>
                 </v-row>
                 <Transition name="fade">
                   <v-row class="text-center justify-center mb-0 pt-3"
-                    v-if="mod.worker_status.status === 3 || mod.worker_status.status === 5">
+                    v-if="mod.worker_status.status === UpdateStatus.HASHED_UPDATE_REQUIRED || mod.worker_status.status === UpdateStatus.DOWNLOADED_UPDATE_REQUIRED">
                     <v-col cols="auto" class="pt-0">
                       <v-chip class="ma-2" color="warning" variant="outlined">
                         <v-icon start icon="mdi-file-alert"></v-icon>
@@ -435,6 +435,7 @@ export default defineComponent({
       showed_news: false,
       show_news: false,
       human_file_size: PanthorUtils.humanFileSize,
+      UpdateStatus: UpdateStatus
     };
   },
   methods: {
@@ -781,7 +782,7 @@ export default defineComponent({
 
           this.api_data.servers.forEach((server) => {
             if (server.mod_id === mod_id) {
-              if (worker_status.status === 1) {
+              if (worker_status.status === UpdateStatus.INTACT) {
                 server.mod_ready = true
               } else {
                 server.mod_ready = false
