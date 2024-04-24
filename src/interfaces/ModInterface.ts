@@ -10,6 +10,7 @@ export default interface Mod {
   img: string;
   has_files: boolean;
   dir: string;
+  dir_legacy: string;
   worker_status: WorkerStatus;
   version_hash: string;
 }

@@ -41,6 +41,9 @@ if (!app.requestSingleInstanceLock()) {
   process.exit(0);
 }
 
+app.commandLine.appendSwitch('--no-proxy-server')
+app.commandLine.appendSwitch('--disable-renderer-backgrounding')
+
 // Remove electron security warnings
 // This warning only shows in development mode
 // Read more on https://www.electronjs.org/docs/latest/tutorial/security
