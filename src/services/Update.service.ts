@@ -403,7 +403,8 @@ export class UpdateService {
               } catch (error) {
                 console.error('Failed to unlink due to wrong hash: ', error);
               }
-              if (!this.retriedFiles.includes(file)) {
+              const retriedTimes = this.retriedFiles.filter((retriedFile) => retriedFile.FileName === file.FileName).length
+              if (retriedTimes < 5) {
                 console.log('Retrying download for', file.FileName)
                 this.retriedFiles.push(file)
                 await this.downloadFile(file)
@@ -522,7 +523,7 @@ export class UpdateService {
         }
         */
 
-        if (!quick || file.FileName.includes('.bisign') && file.FileName.includes('.dll') && file.FileName.includes('.paa') && file.FileName.includes('.cpp') && fileSize < 5000000) {
+        if (!quick || file.FileName.includes('.bisign') || file.FileName.includes('.dll') || file.FileName.includes('.paa') || file.FileName.includes('.cpp') || fileSize < 1000000) {
           const hash = crypto.createHash('md5');
           const fileData = await readFile(fullFilePath);
 
@@ -536,7 +537,7 @@ export class UpdateService {
           if (hashDigest !== file.Hash.toUpperCase()) {
             this.wrongHashes.push(file);
           } else {
-            //if (!file.FileName.includes('.bisign') && !file.FileName.includes('.dll') && !file.FileName.includes('.paa') && !file.FileName.includes('.cpp'))
+            
             //this.writeHashFile(file, hashDigest)
           }
           resolve(true)
