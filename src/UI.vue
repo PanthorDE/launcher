@@ -396,7 +396,7 @@ import News from './interfaces/NewsInterface';
 import Notification from './interfaces/NotificationInterface';
 import SettingsStore, { defaultSettings } from './interfaces/SettingsStoreInterface';
 import { PanthorApiService } from './services/PanthorApi.service';
-import { useElementSize } from '@vueuse/core';
+import { set, useElementSize } from '@vueuse/core';
 import { UpdateStatus } from './enums/UpdateStatusEnum';
 import PanthorUtils from './services/PanthorUtils.service';
 
@@ -792,6 +792,9 @@ export default defineComponent({
         }
       });
     });
+    setInterval(() => {
+      this.loadAPIDataUI();
+    }, 300000);
   },
   setup() {
     const twitch2 = ref(null)

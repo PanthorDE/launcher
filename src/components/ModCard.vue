@@ -1,7 +1,7 @@
 <template>
   <v-card flat>
     <v-img :height="single ? 500 : 230" :src="mod.img" cover>
-      <v-btn color="white" flat icon="mdi-folder-open" rounded="sm" class="float-right mt-2 mr-2" size="small"
+      <v-btn color="white" flat icon="mdi-folder-open" rounded="sm" class="float-right mt-2 mr-2" size="small" :disabled="mod.worker_status.status == UpdateStatus.NOT_FOUND"
         @click="requestFolderOpen">
         <v-icon icon="mdi-folder-open"></v-icon>
         <v-tooltip activator="parent" location="bottom">Ordner öffnen</v-tooltip>
