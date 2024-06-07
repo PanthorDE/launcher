@@ -67,7 +67,6 @@
 
 <script lang="ts">
 import Changelog from '@/interfaces/ChangelogInterface';
-import PanthorUtils from '@/services/PanthorUtils.service';
 import { shell } from 'electron';
 import { useGoTo } from 'vuetify'
 
@@ -81,8 +80,7 @@ export default {
     return { goTo }
   },
   data() {
-    return {
-      human_file_size: PanthorUtils.humanFileSize,
+    return {  
     };
   },
   methods: {
