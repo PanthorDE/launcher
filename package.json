@@ -92,7 +92,7 @@
     "vue": "^3.4.22",
     "vue-chartjs": "^5.3.1",
     "vue-router": "^4.3.0",
-    "vuetify": "^3.5.15",
+    "vuetify": "^3.6.8",
     "webfontloader": "^1.6.28",
     "winreg": "^1.2.5",
     "xml-js": "^1.6.11"
