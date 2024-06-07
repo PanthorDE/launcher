@@ -16,6 +16,9 @@
             </v-list-item-title>
           </v-list-item>
         </v-list>
+        <v-card-actions>
+          <v-btn @click="openURL('https://info.panthor.de/changelog')" block color="primary" variant="outlined" prepend-icon="mdi-open-in-new">Alle Changelogs</v-btn>
+        </v-card-actions>
       </v-card>
     </v-col>
     <v-col cols="9" style="overflow-y: scroll" :style="{ 'max-height': `${scroll_height-88}px` }" id="scrollContainer">
@@ -27,8 +30,12 @@
             year: '2-digit',
           })} - ${new Date(changelog.release_at).toLocaleTimeString([], { hour: '2-digit' })}` }}</span>
         </v-card-title>
+        <v-card-text v-if="changelog.note">
+          <v-code>{{ changelog.note }}</v-code>
+        </v-card-text>
         <v-card-subtitle v-if="changelog.change_mission.length > 0"><v-icon icon="mdi-map"></v-icon>
-          Mission</v-card-subtitle>
+          Mission <span v-if="changelog.size" class="float-end text-primary"><v-icon icon="mdi-file-download"></v-icon>
+          {{ changelog.size }} Download</span></v-card-subtitle>
         <v-card-text v-if="changelog.change_mission.length > 0">
           <v-list density="compact" class="pt-0">
             <v-list-item v-for="change in changelog.change_mission">
@@ -60,6 +67,8 @@
 
 <script lang="ts">
 import Changelog from '@/interfaces/ChangelogInterface';
+import PanthorUtils from '@/services/PanthorUtils.service';
+import { shell } from 'electron';
 import { useGoTo } from 'vuetify'
 
 export default {
@@ -72,7 +81,9 @@ export default {
     return { goTo }
   },
   data() {
-    return {};
+    return {
+      human_file_size: PanthorUtils.humanFileSize,
+    };
   },
   methods: {
     scrollTo(target: string) {
@@ -100,6 +111,9 @@ export default {
     },
     formatChangeText(change: string) {
       return change.replace("Hinzugefügt:", "").replace("Behoben:", "").replace("Bearbeitet:", "").replace("Entfernt:", "");
+    },
+    openURL(url: string) {
+      shell.openExternal(url);
     },
   },
   computed: {

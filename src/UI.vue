@@ -166,7 +166,7 @@
             <v-window v-model="tab" class="h-100">
               <!-- Home -->
               <v-window-item :value="0">
-                <home-window :changelogs="api_data.changelogs" :news="news" @switch-tab="switchTab(3)"></home-window>
+                <home-window :changelogs="api_data.changelogs.slice(0, 1)" :news="news" @switch-tab="switchTab(3)"></home-window>
               </v-window-item>
               <!-- Mods -->
               <v-window-item :value="1">
@@ -183,7 +183,7 @@
 
               <!-- Changelogs -->
               <v-window-item :value="3">
-                <changelog-window :changelogs="api_data.changelogs"></changelog-window>
+                <changelog-window :changelogs="api_data.changelogs.slice(0, 15)"></changelog-window>
               </v-window-item>
 
               <!-- Tfar -->
