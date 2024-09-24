@@ -56,7 +56,10 @@
         "de_DE"
       ],
       "deleteAppDataOnUninstall": true
-    }
+    },
+    "files": [
+      "!build-dist/${/*}"
+    ]
   },
   "devDependencies": {
     "@babel/types": "^7.24.0",
