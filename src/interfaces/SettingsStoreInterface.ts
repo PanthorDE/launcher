@@ -9,6 +9,7 @@ export default interface SettingsStore {
   windowed: boolean;
   noPause: boolean;
   noPauseAudio: boolean;
+  hugePages: boolean;
   showScriptErrors: boolean;
   command_line: string;
   first_run: boolean;
@@ -25,6 +26,7 @@ export const defaultSettings: SettingsStore = {
   windowed: false,
   noPause: false,
   noPauseAudio: false,
+  hugePages: true,
   showScriptErrors: false,
   command_line: '',
   first_run: true,

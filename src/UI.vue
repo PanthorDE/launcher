@@ -245,6 +245,8 @@
                                 color="primary"></v-switch>
                               <v-switch v-model="settings.setThreadCharacteristics" hide-details inset
                                 label="Windows Gaming Optimierung" color="primary"></v-switch>
+                              <v-switch v-model="settings.hugePages" hide-details inset
+                                label="Speicherzuweisung mit große Seiten (hugePages)" color="primary"></v-switch>
                             </v-card-text>
                           </v-col>
                           <v-col cols="6">
@@ -690,6 +692,7 @@ export default defineComponent({
       if (this.settings.noPauseAudio) params.push('-noPauseAudio');
       if (this.settings.setThreadCharacteristics) params.push('-setThreadCharacteristics');
       if (this.settings.showScriptErrors) params.push('-showScriptErrors');
+      if (this.settings.hugePages) params.push('-hugepages');
       if (this.settings.command_line && this.settings.command_line.length > 0) {
         this.settings.command_line.split(' ').forEach((par) => {
           params.push(par);

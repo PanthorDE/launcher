@@ -1,13 +1,13 @@
 <template>
   <v-card style="margin-bottom: 1rem">
     <v-card-item>
-      <v-card-title>Task Force Radio installieren <v-chip label class="float-right" prepend-icon="mdi-asterisk"
+      <v-card-title>Task Force Radio installieren (nur für Teamspeak 3 verfügbar) <v-chip label class="float-right" prepend-icon="mdi-asterisk"
           color="primary">Benötigt</v-chip></v-card-title>
     </v-card-item>
 
     <v-card-item>
       <ol style="margin-left: 1rem">
-        <li>Stelle sicher, dass Teamspeak vor der Installation vollständig geschlossen ist.</li>
+        <li>Stelle sicher, dass Teamspeak 3 vor der Installation vollständig geschlossen ist.</li>
         <li>Lade die <code>.ts3_plugin</code> Datei herunter, indem du den "Plugin Download" Button unten klickst.</li>
         <li>
           Falls die automatische Ausführung fehlschlägt, öffne den heruntergeladenen "Panthor" Ordner in deinem
@@ -16,7 +16,7 @@
         <li>Entpacke den Inhalt manuell in den Teamspeak-Installationsordner.</li>
       </ol>
 
-      <p>Benötigst du Hilfe oder hast du Probleme? Melde dich bitte bei unserem Support-Team!</p>
+      <p>Benötigst du Hilfe oder hast du Probleme? Melde dich bitte bei unserem Support-Team im Teamspeak Channel: "Warte auf Support"!</p>
     </v-card-item>
 
     <v-card-actions>
