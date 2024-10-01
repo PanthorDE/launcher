@@ -72,7 +72,7 @@
     "typescript": "^5.4.5",
     "vite": "^4.5.2",
     "vite-plugin-electron": "^0.28.6",
-    "vite-plugin-electron-renderer": "^0.14.5",
+    "vite-plugin-electron-renderer": "^0.14.6",
     "vite-plugin-vuetify": "^1.0.2",
     "vue-tsc": "^2.0.14"
   },
