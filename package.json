@@ -84,7 +84,7 @@
     "@types/winreg": "^1.2.36",
     "@vueuse/core": "^11.0.3",
     "axios": "^1.6.8",
-    "chart.js": "^4.4.2",
+    "chart.js": "^4.4.4",
     "check-disk-space": "^3.4.0",
     "electron-store": "^8.2.0",
     "electron-updater": "^6.1.8",
