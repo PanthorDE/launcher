@@ -86,7 +86,7 @@
     "axios": "^1.6.8",
     "chart.js": "^4.4.2",
     "check-disk-space": "^3.4.0",
-    "electron-store": "^8.2.0",
+    "electron-store": "^10.0.0",
     "electron-updater": "^6.1.8",
     "humanize-duration-ts": "^2.1.1",
     "ping": "^0.4.4",
